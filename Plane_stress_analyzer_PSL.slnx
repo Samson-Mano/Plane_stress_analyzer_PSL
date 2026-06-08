@@ -1,0 +1,9 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+  </Configurations>
+  <Project Path="Plane_stress_analyzer_PSL/Plane_stress_analyzer_PSL.csproj" Id="c765d776-974d-4455-b712-daeb4a171cf4">
+    <Platform Solution="*|x64" Project="x64" />
+  </Project>
+</Solution>
