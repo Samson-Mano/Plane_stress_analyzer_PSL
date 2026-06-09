@@ -121,8 +121,28 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Resources\Resource_font.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resource_font.resx</DependentUpon>
+    </Compile>
+    <Compile Include="src\events_handler\drawing_events.cs" />
+    <Compile Include="src\events_handler\file_events.cs" />
     <Compile Include="src\global_variables\gvariables_static.cs" />
+    <Compile Include="src\model_store\fe_objects\elementquad_list_store.cs" />
+    <Compile Include="src\model_store\fe_objects\elementtri_list_store.cs" />
+    <Compile Include="src\model_store\fe_objects\fedata_store.cs" />
+    <Compile Include="src\model_store\fe_objects\nodecnst_list_store.cs" />
+    <Compile Include="src\model_store\fe_objects\nodeload_list_store.cs" />
+    <Compile Include="src\model_store\fe_objects\node_list_store.cs" />
+    <Compile Include="src\model_store\geom_objects\selectcircle_store.cs" />
+    <Compile Include="src\model_store\geom_objects\selectrectangle_store.cs" />
+    <Compile Include="src\model_store\modeldata_store.cs" />
     <Compile Include="src\opentk_control\opentk_buffer\fontAtlas.cs" />
+    <Compile Include="src\opentk_control\opentk_buffer\IndexBuffer.cs" />
+    <Compile Include="src\opentk_control\opentk_buffer\VertexArray.cs" />
+    <Compile Include="src\opentk_control\opentk_buffer\VertexBuffer.cs" />
+    <Compile Include="src\opentk_control\opentk_buffer\VertexBufferLayout.cs" />
     <Compile Include="src\opentk_control\shader_compiler\Shader.cs" />
     <Compile Include="src\opentk_control\shader_compiler\ShaderLibrary.cs" />
     <EmbeddedResource Include="main_frm.resx">
@@ -136,7 +156,12 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="Resources\Resource_font.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resource_font.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <None Include="OpenTK.dll.config" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
@@ -148,17 +173,19 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <None Include="Resources\HyperFont.ttf" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="logo_ico_png.ico" />
+    <None Include="Resources\FreeSans.ttf" />
+    <None Include="Resources\gaussian_pic.png" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Example_model\" />
-    <Folder Include="src\events_handler\" />
-    <Folder Include="src\model_store\" />
+    <Folder Include="src\model_store\rslt_objects\" />
     <Folder Include="src\solver\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -31,16 +31,16 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(main_frm));
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.boundaryConditionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.solveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.importTXTFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.importModelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exportModelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.optionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.boundaryConditionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addLoadsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addConstraintsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.materialPropertiesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.solveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel_zoom_value = new System.Windows.Forms.ToolStripStatusLabel();
             this.glControl_main_panel = new OpenTK.GLControl();
@@ -72,6 +72,36 @@
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.fileToolStripMenuItem.Text = "File";
             // 
+            // importTXTFileToolStripMenuItem
+            // 
+            this.importTXTFileToolStripMenuItem.Name = "importTXTFileToolStripMenuItem";
+            this.importTXTFileToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+            this.importTXTFileToolStripMenuItem.Text = "Import TXT File";
+            // 
+            // importModelToolStripMenuItem
+            // 
+            this.importModelToolStripMenuItem.Name = "importModelToolStripMenuItem";
+            this.importModelToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+            this.importModelToolStripMenuItem.Text = "Import Model";
+            // 
+            // exportModelToolStripMenuItem
+            // 
+            this.exportModelToolStripMenuItem.Name = "exportModelToolStripMenuItem";
+            this.exportModelToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+            this.exportModelToolStripMenuItem.Text = "Export Model";
+            // 
+            // optionToolStripMenuItem
+            // 
+            this.optionToolStripMenuItem.Name = "optionToolStripMenuItem";
+            this.optionToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+            this.optionToolStripMenuItem.Text = "Option";
+            // 
+            // exitToolStripMenuItem
+            // 
+            this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+            this.exitToolStripMenuItem.Text = "Exit";
+            // 
             // boundaryConditionToolStripMenuItem
             // 
             this.boundaryConditionToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -82,59 +112,29 @@
             this.boundaryConditionToolStripMenuItem.Size = new System.Drawing.Size(126, 20);
             this.boundaryConditionToolStripMenuItem.Text = "Boundary Condition";
             // 
-            // solveToolStripMenuItem
-            // 
-            this.solveToolStripMenuItem.Name = "solveToolStripMenuItem";
-            this.solveToolStripMenuItem.Size = new System.Drawing.Size(47, 20);
-            this.solveToolStripMenuItem.Text = "Solve";
-            // 
-            // importTXTFileToolStripMenuItem
-            // 
-            this.importTXTFileToolStripMenuItem.Name = "importTXTFileToolStripMenuItem";
-            this.importTXTFileToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.importTXTFileToolStripMenuItem.Text = "Import TXT File";
-            // 
-            // importModelToolStripMenuItem
-            // 
-            this.importModelToolStripMenuItem.Name = "importModelToolStripMenuItem";
-            this.importModelToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.importModelToolStripMenuItem.Text = "Import Model";
-            // 
-            // exportModelToolStripMenuItem
-            // 
-            this.exportModelToolStripMenuItem.Name = "exportModelToolStripMenuItem";
-            this.exportModelToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.exportModelToolStripMenuItem.Text = "Export Model";
-            // 
-            // optionToolStripMenuItem
-            // 
-            this.optionToolStripMenuItem.Name = "optionToolStripMenuItem";
-            this.optionToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.optionToolStripMenuItem.Text = "Option";
-            // 
-            // exitToolStripMenuItem
-            // 
-            this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.exitToolStripMenuItem.Text = "Exit";
-            // 
             // addLoadsToolStripMenuItem
             // 
             this.addLoadsToolStripMenuItem.Name = "addLoadsToolStripMenuItem";
-            this.addLoadsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.addLoadsToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
             this.addLoadsToolStripMenuItem.Text = "Add Loads";
             // 
             // addConstraintsToolStripMenuItem
             // 
             this.addConstraintsToolStripMenuItem.Name = "addConstraintsToolStripMenuItem";
-            this.addConstraintsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.addConstraintsToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
             this.addConstraintsToolStripMenuItem.Text = "Add Constraints";
             // 
             // materialPropertiesToolStripMenuItem
             // 
             this.materialPropertiesToolStripMenuItem.Name = "materialPropertiesToolStripMenuItem";
-            this.materialPropertiesToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.materialPropertiesToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
             this.materialPropertiesToolStripMenuItem.Text = "Material Properties";
+            // 
+            // solveToolStripMenuItem
+            // 
+            this.solveToolStripMenuItem.Name = "solveToolStripMenuItem";
+            this.solveToolStripMenuItem.Size = new System.Drawing.Size(47, 20);
+            this.solveToolStripMenuItem.Text = "Solve";
             // 
             // statusStrip1
             // 

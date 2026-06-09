@@ -11,7 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-
+using Plane_stress_analyzer_PSL.Resources;
 
 
 namespace Plane_stress_analyzer_PSL.src.opentk_control.opentk_buffer
