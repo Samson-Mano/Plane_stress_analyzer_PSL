@@ -7,6 +7,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+using Plane_stress_analyzer_PSL.src.opentk_control.opentk_buffer;
+
+
 namespace Plane_stress_analyzer_PSL.src.global_variables
 {
     public static class gvariables_static

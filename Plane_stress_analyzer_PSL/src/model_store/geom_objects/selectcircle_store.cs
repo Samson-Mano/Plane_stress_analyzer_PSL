@@ -54,8 +54,9 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
             InitializeShader();
             InitializeBuffers();
             SetupIndexBuffers();
-
         }
+
+
 
         private void InitializeShader()
         {

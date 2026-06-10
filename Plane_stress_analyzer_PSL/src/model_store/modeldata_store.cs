@@ -1,10 +1,13 @@
-﻿using OpenTK;
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
+// OpenTK library
+using OpenTK;
+using OpenTK.Graphics;
+using OpenTK.Graphics.OpenGL4;
 
 
 using Plane_stress_analyzer_PSL.src.events_handler;
@@ -49,8 +52,8 @@ namespace Plane_stress_analyzer_PSL.src.model_store
             graphic_events_control = new drawing_events(this);
 
             // Set the selection rectangle  & selection circle
-            selection_rectangle = new selectrectangle_store();
-            selection_circle = new selectcircle_store();
+           // selection_rectangle = new selectrectangle_store();
+           // selection_circle = new selectcircle_store();
 
             // Set a default geometry bounds
             min_bounds = new Vector3(-1);
@@ -60,6 +63,11 @@ namespace Plane_stress_analyzer_PSL.src.model_store
 
             IsModelSet = false;
         }
+        
+
+
+
+
 
 
         public void paint_model()

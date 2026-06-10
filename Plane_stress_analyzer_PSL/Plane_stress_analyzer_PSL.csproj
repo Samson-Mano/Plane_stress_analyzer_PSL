@@ -135,6 +135,8 @@
     <Compile Include="src\model_store\fe_objects\nodecnst_list_store.cs" />
     <Compile Include="src\model_store\fe_objects\nodeload_list_store.cs" />
     <Compile Include="src\model_store\fe_objects\node_list_store.cs" />
+    <Compile Include="src\model_store\geom_objects\label_list_store.cs" />
+    <Compile Include="src\model_store\geom_objects\meshdata_store.cs" />
     <Compile Include="src\model_store\geom_objects\selectcircle_store.cs" />
     <Compile Include="src\model_store\geom_objects\selectrectangle_store.cs" />
     <Compile Include="src\model_store\modeldata_store.cs" />
@@ -179,6 +181,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="freetype6.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="logo_ico_png.ico" />
     <None Include="Resources\FreeSans.ttf" />
     <None Include="Resources\gaussian_pic.png" />

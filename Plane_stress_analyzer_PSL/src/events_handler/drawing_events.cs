@@ -324,8 +324,8 @@ namespace Plane_stress_analyzer_PSL.src.events_handler
         private void select_operation_end(Vector2 current_loc)
         {
             // Location when the selection rectangle ends
-            modeldata.selection_rectangle.update_selection_rectangle(new Vector2(0), new Vector2(0), false);
-            modeldata.selection_circle.update_selection_circle(new Vector2(0), new Vector2(0), false);
+            modeldata.selection_rectangle.UpdateSelectionRectangle(new Vector2(0), new Vector2(0), false);
+            modeldata.selection_circle.UpdateSelectionCircle(new Vector2(0), new Vector2(0), false);
 
 
             int max_dim = window_width > window_height ? window_width : window_height;
@@ -457,12 +457,12 @@ namespace Plane_stress_analyzer_PSL.src.events_handler
             if (gvariables_static.is_RectangleSelection == true)
             {
                 // Update the selection rectangle points
-                this.modeldata.selection_rectangle.update_selection_rectangle(o_pt, c_pt, true);
+                this.modeldata.selection_rectangle.UpdateSelectionRectangle(o_pt, c_pt, true);
             }
             else
             {
                 // Update the selection circle points
-                this.modeldata.selection_circle.update_selection_circle(o_pt, c_pt, true);
+                this.modeldata.selection_circle.UpdateSelectionCircle(o_pt, c_pt, true);
             }
 
         }

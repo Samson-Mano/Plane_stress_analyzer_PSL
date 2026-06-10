@@ -44,13 +44,11 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
         public bool IsDrawing => _isDrawing;
 
 
-
         public selectrectangle_store()
         {
             InitializeShader();
             InitializeBuffers();
             SetupIndexBuffers();
-
         }
 
         private void InitializeShader()
