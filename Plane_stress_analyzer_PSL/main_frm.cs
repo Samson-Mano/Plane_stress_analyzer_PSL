@@ -8,6 +8,7 @@ using Plane_stress_analyzer_PSL.src.global_variables;
 using Plane_stress_analyzer_PSL.src.model_store;
 using Plane_stress_analyzer_PSL.src.model_store.fe_objects;
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -67,7 +68,7 @@ namespace Plane_stress_analyzer_PSL
 
             // Create the main font atlas
             gvariables_static.main_font.CreateAtlas();
-
+            modeldata.InitializeModelGeom();
 
         }
 
@@ -297,9 +298,99 @@ namespace Plane_stress_analyzer_PSL
             }
         }
 
+
+
+
+
+
+
+
+        #endregion
+
+        #region "Menu Events"
+
+        #region "File Events"
+        private void importTXTFileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                Title = "Import Model File",
+                Filter = "Text Files (*.txt)|*.txt|All Files (*.*)|*.*",
+                // InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
+            };
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                string filePath = openFileDialog.FileName;
+
+                try
+                {
+                    string fileContent = File.ReadAllText(filePath);
+
+                    modeldata.importTXTFile(fileContent);
+
+                    // Do something with the file content, e.g., parse the model
+                    // MessageBox.Show("Model file loaded successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error reading text file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+
+            glControl_main_panel_SizeChanged(sender, e);
+
+            glControl_main_panel.Refresh();
+            glControl_main_panel.Invalidate();
+
+
+        }
+
+        private void importModelToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void exportModelToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void optionToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Exit application
+            this.Close();
+
+        }
+
         #endregion
 
 
+        #region "Boundary condition menu events"
+        private void addLoadsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void addConstraintsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void materialPropertiesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        #endregion
+
+
+        #endregion
 
 
 

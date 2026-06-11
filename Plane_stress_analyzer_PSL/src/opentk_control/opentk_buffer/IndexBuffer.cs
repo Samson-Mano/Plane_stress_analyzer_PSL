@@ -21,9 +21,12 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.opentk_buffer
         private int _capacity;  // Capacity in indices
         private int _size;     // Current size of indices in bytes
         private bool _disposed;
+        private int _bufferCount;
 
         public int Size => _size;
         public int Capacity => _capacity;
+
+        public int BufferCount => _bufferCount;
 
 
         public IndexBuffer(int indexbuffer_count = 10)
@@ -31,6 +34,7 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.opentk_buffer
             _rendererId = GL.GenBuffer();
             _capacity = indexbuffer_count * sizeof(uint);
             _size = 0;
+            _bufferCount = 0;
 
             Bind();
             GL.BufferData(BufferTarget.ElementArrayBuffer, _capacity ,
@@ -55,6 +59,7 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.opentk_buffer
             GL.BufferSubData(BufferTarget.ElementArrayBuffer, (IntPtr)_size,
                             indexbuffer_size, indexbuffer_indices);
 
+            _bufferCount += indexbuffer_indices.Length;
             _size += indexbuffer_size;
             UnBind();
         }

@@ -25,33 +25,19 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
 
             #version 330 core
 
-            uniform mat4 uMVP; 
+            // Pre-computed MVP matrix on CPU for better performance
+            uniform mat4 uMVP;           // Model-View-Projection matrix
+            uniform vec4 vertexColor;
+                    
+            layout(location = 0) in vec3 aPosition;
+                    
 
-            uniform float vertexTransparency; // Transparency of the mesh
-            uniform float sinevalue = 1.0f;
-
-            layout(location = 0) in vec2 node_position;
-            layout(location = 1) in vec3 vertexColor;
-            layout(location = 2) in float is_dynamic;
-            layout(location = 3) in float deflscale; 
-
-            out vec3 v_Color;
-            out float v_is_dynamic;
-            out float v_deflscale;
-            out float v_Transparency;
-
+            out vec4 vColor;
+                    
             void main()
             {
-                
-                v_is_dynamic = is_dynamic;
-                v_deflscale = deflscale * sinevalue;
-
-                // Set the point color and transparency
-                v_Color = vertexColor;
-                v_Transparency = vertexTransparency;
-
-                // Final position with projection matrix
-                gl_Position = uMVP * vec4(node_position, 0.0, 1.0);
+                gl_Position = uMVP * vec4(aPosition, 1.0);
+                vColor = vertexColor;
             }
 
 
@@ -69,32 +55,13 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
 
             #version 330 core
 
-            in vec3 v_Color;
-            in float v_is_dynamic;
-            in float v_deflscale;
-            in float v_Transparency;
-
-            out vec4 f_Color; // fragment's final color (out to the fragment shader)
-
-
-            vec3 jetHeatmap(float value) 
-            {
-                float t = (value + 1.0) * 0.5;
-                return clamp(vec3(1.5) - abs(4.0 * vec3(t) + vec3(-3, -2, -1)), vec3(0), vec3(1));
-            }
-
-
-            void main() 
-            {
-
-                vec3 vertexColor = v_Color;
+            in vec4 vColor;
+            out vec4 fColor;
     
-                if (v_is_dynamic == 1.0f)
-                {
-                    vertexColor = jetHeatmap(v_deflscale);
-                }
-
-                f_Color = vec4(vertexColor, v_Transparency); // Set the final color
+            void main()
+            {
+                // Simple color output without lighting
+                fColor = vColor;
             }
 
 

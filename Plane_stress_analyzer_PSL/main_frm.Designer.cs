@@ -57,7 +57,8 @@
             this.solveToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1067, 28);
+            this.menuStrip1.Padding = new System.Windows.Forms.Padding(4, 2, 0, 2);
+            this.menuStrip1.Size = new System.Drawing.Size(800, 24);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -70,38 +71,43 @@
             this.optionToolStripMenuItem,
             this.exitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(46, 24);
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.fileToolStripMenuItem.Text = "File";
             // 
             // importTXTFileToolStripMenuItem
             // 
             this.importTXTFileToolStripMenuItem.Name = "importTXTFileToolStripMenuItem";
-            this.importTXTFileToolStripMenuItem.Size = new System.Drawing.Size(193, 26);
+            this.importTXTFileToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.importTXTFileToolStripMenuItem.Text = "Import TXT File";
+            this.importTXTFileToolStripMenuItem.Click += new System.EventHandler(this.importTXTFileToolStripMenuItem_Click);
             // 
             // importModelToolStripMenuItem
             // 
             this.importModelToolStripMenuItem.Name = "importModelToolStripMenuItem";
-            this.importModelToolStripMenuItem.Size = new System.Drawing.Size(193, 26);
+            this.importModelToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.importModelToolStripMenuItem.Text = "Import Model";
+            this.importModelToolStripMenuItem.Click += new System.EventHandler(this.importModelToolStripMenuItem_Click);
             // 
             // exportModelToolStripMenuItem
             // 
             this.exportModelToolStripMenuItem.Name = "exportModelToolStripMenuItem";
-            this.exportModelToolStripMenuItem.Size = new System.Drawing.Size(193, 26);
+            this.exportModelToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.exportModelToolStripMenuItem.Text = "Export Model";
+            this.exportModelToolStripMenuItem.Click += new System.EventHandler(this.exportModelToolStripMenuItem_Click);
             // 
             // optionToolStripMenuItem
             // 
             this.optionToolStripMenuItem.Name = "optionToolStripMenuItem";
-            this.optionToolStripMenuItem.Size = new System.Drawing.Size(193, 26);
+            this.optionToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.optionToolStripMenuItem.Text = "Option";
+            this.optionToolStripMenuItem.Click += new System.EventHandler(this.optionToolStripMenuItem_Click);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(193, 26);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.exitToolStripMenuItem.Text = "Exit";
+            this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
             // boundaryConditionToolStripMenuItem
             // 
@@ -110,31 +116,34 @@
             this.addConstraintsToolStripMenuItem,
             this.materialPropertiesToolStripMenuItem});
             this.boundaryConditionToolStripMenuItem.Name = "boundaryConditionToolStripMenuItem";
-            this.boundaryConditionToolStripMenuItem.Size = new System.Drawing.Size(155, 24);
+            this.boundaryConditionToolStripMenuItem.Size = new System.Drawing.Size(126, 20);
             this.boundaryConditionToolStripMenuItem.Text = "Boundary Condition";
             // 
             // addLoadsToolStripMenuItem
             // 
             this.addLoadsToolStripMenuItem.Name = "addLoadsToolStripMenuItem";
-            this.addLoadsToolStripMenuItem.Size = new System.Drawing.Size(218, 26);
+            this.addLoadsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.addLoadsToolStripMenuItem.Text = "Add Loads";
+            this.addLoadsToolStripMenuItem.Click += new System.EventHandler(this.addLoadsToolStripMenuItem_Click);
             // 
             // addConstraintsToolStripMenuItem
             // 
             this.addConstraintsToolStripMenuItem.Name = "addConstraintsToolStripMenuItem";
-            this.addConstraintsToolStripMenuItem.Size = new System.Drawing.Size(218, 26);
+            this.addConstraintsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.addConstraintsToolStripMenuItem.Text = "Add Constraints";
+            this.addConstraintsToolStripMenuItem.Click += new System.EventHandler(this.addConstraintsToolStripMenuItem_Click);
             // 
             // materialPropertiesToolStripMenuItem
             // 
             this.materialPropertiesToolStripMenuItem.Name = "materialPropertiesToolStripMenuItem";
-            this.materialPropertiesToolStripMenuItem.Size = new System.Drawing.Size(218, 26);
+            this.materialPropertiesToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.materialPropertiesToolStripMenuItem.Text = "Material Properties";
+            this.materialPropertiesToolStripMenuItem.Click += new System.EventHandler(this.materialPropertiesToolStripMenuItem_Click);
             // 
             // solveToolStripMenuItem
             // 
             this.solveToolStripMenuItem.Name = "solveToolStripMenuItem";
-            this.solveToolStripMenuItem.Size = new System.Drawing.Size(59, 24);
+            this.solveToolStripMenuItem.Size = new System.Drawing.Size(47, 20);
             this.solveToolStripMenuItem.Text = "Solve";
             // 
             // statusStrip1
@@ -142,26 +151,25 @@
             this.statusStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel_zoom_value});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 528);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 428);
             this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Padding = new System.Windows.Forms.Padding(1, 0, 19, 0);
-            this.statusStrip1.Size = new System.Drawing.Size(1067, 26);
+            this.statusStrip1.Size = new System.Drawing.Size(800, 22);
             this.statusStrip1.TabIndex = 1;
             this.statusStrip1.Text = "statusStrip1";
             // 
             // toolStripStatusLabel_zoom_value
             // 
             this.toolStripStatusLabel_zoom_value.Name = "toolStripStatusLabel_zoom_value";
-            this.toolStripStatusLabel_zoom_value.Size = new System.Drawing.Size(92, 20);
+            this.toolStripStatusLabel_zoom_value.Size = new System.Drawing.Size(73, 17);
             this.toolStripStatusLabel_zoom_value.Text = "Zoom: 100%";
             // 
             // glControl_main_panel
             // 
             this.glControl_main_panel.BackColor = System.Drawing.Color.Black;
-            this.glControl_main_panel.Location = new System.Drawing.Point(217, 176);
-            this.glControl_main_panel.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
+            this.glControl_main_panel.Location = new System.Drawing.Point(163, 143);
+            this.glControl_main_panel.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.glControl_main_panel.Name = "glControl_main_panel";
-            this.glControl_main_panel.Size = new System.Drawing.Size(344, 185);
+            this.glControl_main_panel.Size = new System.Drawing.Size(258, 150);
             this.glControl_main_panel.TabIndex = 2;
             this.glControl_main_panel.VSync = false;
             this.glControl_main_panel.Load += new System.EventHandler(this.glControl_main_panel_Load);
@@ -177,15 +185,14 @@
             // 
             // main_frm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1067, 554);
+            this.ClientSize = new System.Drawing.Size(800, 450);
             this.Controls.Add(this.glControl_main_panel);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.menuStrip1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.Name = "main_frm";
             this.Text = "Plane Stress Analyzer - Principal Stress Line PSL";
             this.Load += new System.EventHandler(this.main_frm_Load);

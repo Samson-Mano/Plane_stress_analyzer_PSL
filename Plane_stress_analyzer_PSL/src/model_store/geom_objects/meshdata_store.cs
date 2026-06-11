@@ -1,4 +1,6 @@
-﻿using Plane_stress_analyzer_PSL.src.model_store.fe_objects;
+﻿using Plane_stress_analyzer_PSL.src.events_handler;
+using Plane_stress_analyzer_PSL.src.global_variables;
+using Plane_stress_analyzer_PSL.src.model_store.fe_objects;
 using Plane_stress_analyzer_PSL.src.opentk_control.opentk_buffer;
 using Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler;
 using SharpFont.Cache;
@@ -11,6 +13,13 @@ using System.Text;
 using System.Threading.Tasks;
 using static System.Windows.Forms.LinkLabel;
 
+// OpenTK library
+using OpenTK;
+using OpenTK.Graphics;
+using OpenTK.Graphics.OpenGL4;
+
+
+
 namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
 {
 
@@ -19,7 +28,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
 
         private struct point_store
         {
-           public int point_id;
+            public int point_id;
             public float x_coord;
             public float y_coord;
         }
@@ -28,7 +37,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
         {
             public int line_id;
             public int line_start_id;
-            public int line_end_id;    
+            public int line_end_id;
         }
 
         private struct tri_store
@@ -48,7 +57,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
             public int pt_id4;
         }
 
-        private struct mat_mesh_store
+        private class mat_mesh_store
         {
             public int material_id;
 
@@ -56,30 +65,31 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
             public IndexBuffer triangle_ibo;
             public IndexBuffer quadrilateral_ibo;
 
-            public List<tri_store> tris;
-            public List<quad_store> quads;
+            public List<tri_store> tris = new List<tri_store>();
+            public List<quad_store> quads = new List<quad_store>();
         }
 
         private const int FLOATS_PER_VERTEX = 2;
 
-        List <point_store> points;
-        List<line_store> wireframe_lines;
-        Dictionary<int, mat_mesh_store> mat_mesh_data;
+        private List<point_store> points = new List<point_store>();
+        private List<line_store> wireframe_lines = new List<line_store>();
+        private Dictionary<int, mat_mesh_store> mat_mesh_data = new Dictionary<int, mat_mesh_store>();
 
         // Geometry data for OpenGL
-        Dictionary<int, int> pointIDToIndex;
+        private Dictionary<int, int> pointIDToIndex = new Dictionary<int, int>();
 
-        Shader meshShader;
+       private Shader meshShader;
 
         // Vertex Buffer object and Vertex Array object 
-        VertexBuffer point_vbo;
-        VertexArray point_vao;
+        private VertexBuffer point_vbo;
+        private VertexArray point_vao;
 
         // Index buffer for the points, lines and triangles, quadrilaterals (EBO)
-        IndexBuffer point_ibo;
-        IndexBuffer selected_point_ibo;
-        IndexBuffer wireframe_ibo;
+        private IndexBuffer point_ibo;
+        private IndexBuffer selected_point_ibo;
+        private IndexBuffer wireframe_ibo;
 
+        private bool buffersInitialized = false;
 
         public meshdata_store()
         {
@@ -89,119 +99,273 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
 
         public void add_point(int point_id, float x, float y)
         {
-            points.Add(new point_store() 
-            { 
-                point_id = point_id, 
-                x_coord = x, 
-                y_coord = y 
+            points.Add(new point_store()
+            {
+                point_id = point_id,
+                x_coord = x,
+                y_coord = y
             });
         }
 
         public void add_tri(int tri_id, int pt_id1, int pt_id2, int pt_id3, int mat_id)
         {
-            if(mat_mesh_data.ContainsKey(mat_id) ==  false)
+            if (!mat_mesh_data.TryGetValue(mat_id, out var matMesh))
             {
-                mat_mesh_store temp_mesh = new mat_mesh_store();
-                temp_mesh.material_id = mat_id;
-                temp_mesh.tris.Add(new tri_store() 
-                { 
-                    tri_id = tri_id, 
-                    pt_id1 = pt_id1, 
-                    pt_id2 = pt_id2, 
-                    pt_id3 = pt_id3 
-                });
+                matMesh = new mat_mesh_store() { material_id = mat_id };
+                mat_mesh_data[mat_id] = matMesh;
+            }
 
-                mat_mesh_data.Add(mat_id, temp_mesh);
-            }
-            else
+            matMesh.tris.Add(new tri_store()
             {
-                mat_mesh_data[mat_id].tris.Add(new tri_store()
-                {
-                    tri_id = tri_id,
-                    pt_id1 = pt_id1,
-                    pt_id2 = pt_id2,
-                    pt_id3 = pt_id3
-                });
-            }
+                tri_id = tri_id,
+                pt_id1 = pt_id1,
+                pt_id2 = pt_id2,
+                pt_id3 = pt_id3
+            });
 
         }
 
         public void add_quad(int quad_id, int pt_id1, int pt_id2, int pt_id3, int pt_id4, int mat_id)
         {
-            if (mat_mesh_data.ContainsKey(mat_id) == false)
+            if (!mat_mesh_data.TryGetValue(mat_id, out var matMesh))
             {
-                mat_mesh_store temp_mesh = new mat_mesh_store();
-                temp_mesh.material_id = mat_id;
-                temp_mesh.quads.Add(new quad_store()
-                {
-                    quad_id = quad_id,
-                    pt_id1 = pt_id1,
-                    pt_id2 = pt_id2,
-                    pt_id3 = pt_id3,
-                    pt_id4 = pt_id4
-                });
+                matMesh = new mat_mesh_store() { material_id = mat_id };
+                mat_mesh_data[mat_id] = matMesh;
+            }
 
-                mat_mesh_data.Add(mat_id, temp_mesh);
-            }
-            else
+            matMesh.quads.Add(new quad_store()
             {
-                mat_mesh_data[mat_id].quads.Add(new quad_store()
-                {
-                    quad_id = quad_id,
-                    pt_id1 = pt_id1,
-                    pt_id2 = pt_id2,
-                    pt_id3 = pt_id3,
-                    pt_id4 = pt_id4
-                });
-            }
+                quad_id = quad_id,
+                pt_id1 = pt_id1,
+                pt_id2 = pt_id2,
+                pt_id3 = pt_id3,
+                pt_id4 = pt_id4
+            });
+        }
+
+        public void update_tri_materialid(int tri_id, int mat_id)
+        {
+
+        }
+
+        public void update_quad_materialid(int quad_id, int mat_id)
+        {
+
         }
 
 
         private void InitializeShader()
         {
             // Create Shader
-            meshShader = new Shader(ShaderLibrary.get_vertex_shader(ShaderLibrary.ShaderType.MeshShader),
-                ShaderLibrary.get_fragment_shader(ShaderLibrary.ShaderType.MeshShader));
+            meshShader = new Shader(
+                ShaderLibrary.get_vertex_shader(ShaderLibrary.ShaderType.MeshShader),
+                ShaderLibrary.get_fragment_shader(ShaderLibrary.ShaderType.MeshShader)
+                );
 
         }
 
-   
+
         public void paint_mesh()
         {
+            if (!gvariables_static.is_paint_mesh || !buffersInitialized)
+                return;
+
+            meshShader.Bind();
+            point_vao.Bind();
+
+            foreach (mat_mesh_store mat_mesh_vals in mat_mesh_data.Values)
+            {
+
+                // Get the Color for the mesh (based on material ID)
+                Vector4 MeshColor = new Vector4(gvariables_static.ColorUtils.MeshGetRandomColor(mat_mesh_vals.material_id),
+                    gvariables_static.geom_transparency);
+
+                
+                meshShader.SetVector4("vertexColor", MeshColor);
+             
+
+                if (mat_mesh_vals.triangle_ibo.BufferCount > 0)
+                {
+                    // Paint the triangle mesh
+                    mat_mesh_vals.triangle_ibo.Bind();
+                    GL.DrawElements(PrimitiveType.Triangles, mat_mesh_vals.triangle_ibo.BufferCount, 
+                        DrawElementsType.UnsignedInt, 0);
+                    mat_mesh_vals.triangle_ibo.UnBind();
+                }
+
+                if(mat_mesh_vals.quadrilateral_ibo.BufferCount > 0)
+                {
+                    // Paint the quadrilateral mesh
+                    mat_mesh_vals.quadrilateral_ibo.Bind();
+                    GL.DrawElements(PrimitiveType.Triangles, mat_mesh_vals.quadrilateral_ibo.BufferCount, 
+                        DrawElementsType.UnsignedInt, 0);
+                    mat_mesh_vals.quadrilateral_ibo.UnBind();
+                }
+
+            }
+
+
+            meshShader.UnBind();
+            point_vao.UnBind();
 
         }
 
 
         public void paint_mesh_wireframe()
         {
+            if (!gvariables_static.is_paint_mesh_boundaries || !buffersInitialized)
+                return;
 
+
+            if(wireframe_ibo.BufferCount > 0)
+            {
+                // Paint the wire frame
+                Vector4 WireframeColor = new Vector4(gvariables_static.ColorUtils.get_WireframeColor(),
+                    gvariables_static.geom_transparency);
+
+                meshShader.Bind();
+                meshShader.SetVector4("vertexColor", WireframeColor);
+
+                point_vao.Bind();
+                wireframe_ibo.Bind();
+
+                GL.DrawElements(PrimitiveType.Lines, wireframe_ibo.BufferCount, DrawElementsType.UnsignedInt, 0);
+
+                meshShader.UnBind();
+                point_vao.UnBind();
+                wireframe_ibo.UnBind();
+
+            }
 
         }
 
 
         public void paint_mesh_points()
         {
+            if (!gvariables_static.is_paint_meshpoints || !buffersInitialized)
+                return;
 
+
+            if(point_ibo.BufferCount > 0)
+            {
+                // Paint the mesh points
+                Vector4 PtColor = new Vector4(gvariables_static.ColorUtils.get_PtColor(),
+                    gvariables_static.geom_transparency);
+
+                meshShader.Bind();
+                meshShader.SetVector4("vertexColor", PtColor);
+
+                point_vao.Bind();
+                point_ibo.Bind();
+
+                // GL.PointSize(1.0f);
+                GL.DrawElements(PrimitiveType.Points,point_ibo.BufferCount, DrawElementsType.UnsignedInt, 0);
+                // GL.PointSize(1.0f);
+
+                meshShader.UnBind();
+                point_vao.UnBind();
+                point_ibo.UnBind();
+
+            }
 
         }
 
 
         public void paint_selected_mesh_points()
         {
+            if(selected_point_ibo.BufferCount > 0)
+            {
+                // Paint the selected points
+                Vector4 selectedPtColor = new Vector4(gvariables_static.ColorUtils.get_SelectionPtColor(), 
+                    gvariables_static.geom_transparency);
 
+                meshShader.Bind();
+                meshShader.SetVector4("vertexColor", selectedPtColor);
+
+                point_vao.Bind();
+                selected_point_ibo.Bind();
+
+                GL.PointSize(4.0f);
+                GL.DrawElements(PrimitiveType.Points, selected_point_ibo.BufferCount, DrawElementsType.UnsignedInt, 0);
+                GL.PointSize(1.0f);
+
+                meshShader.UnBind();
+                point_vao.UnBind();
+                selected_point_ibo.UnBind();
+
+            }
 
         }
 
 
         public void add_selected_points(List<int> selected_point_ids)
         {
+            List<int> selectedPointIndexData = new List<int>();
 
+            foreach (int pointId in selected_point_ids)
+            {
+                if (pointIDToIndex.TryGetValue(pointId, out int index))
+                {
+                    selectedPointIndexData.Add(index);
+                }
+            }
+
+
+            // Update the selected point ibo
+            selected_point_ibo.ClearIndexBuffer();
+            selected_point_ibo.AppendIndexBuffer(selectedPointIndexData.ToArray());
 
         }
 
 
         public void create_wireframe()
         {
+            // Create the wireframe from the mesh data
+            wireframe_lines = new List<line_store>();
+
+            // HashSet to track unique edges (using Tuple for pair)
+            HashSet<(int, int)> edgeSet = new HashSet<(int, int)>();
+            int wireframeLineId = 0;
+
+            // Local function to add unique edge
+            void AddUniqueEdge(int a, int b)
+            {
+                // Create ordered pair (smaller first, larger second) for uniqueness
+                var edge = (Math.Min(a, b), Math.Max(a, b));
+
+                // HashSet.Add returns true if the element was added to the HashSet
+                if (edgeSet.Add(edge))
+                {
+                    wireframe_lines.Add(new line_store()
+                    {
+                        line_id = wireframeLineId++,
+                        line_start_id = edge.Item1,
+                        line_end_id = edge.Item2
+                    });
+                }
+            }
+
+
+            foreach (mat_mesh_store mat_mesh_vals in mat_mesh_data.Values)
+            {
+                foreach (tri_store tri in mat_mesh_vals.tris)
+                {
+                    AddUniqueEdge(tri.pt_id1, tri.pt_id2);
+                    AddUniqueEdge(tri.pt_id2, tri.pt_id3);
+                    AddUniqueEdge(tri.pt_id3, tri.pt_id1);
+
+                }
+
+                foreach (quad_store quad in mat_mesh_vals.quads)
+                {
+                    AddUniqueEdge(quad.pt_id1, quad.pt_id2);
+                    AddUniqueEdge(quad.pt_id2, quad.pt_id3);
+                    AddUniqueEdge(quad.pt_id3, quad.pt_id4);
+                    AddUniqueEdge(quad.pt_id4, quad.pt_id1);
+
+                }
+
+            }
 
         }
 
@@ -211,32 +375,35 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
             // Create the OpenGL buffer for the mesh
             pointIDToIndex.Clear();
 
-
-            List<int> pointIndexData = new List<int>();
-
+            // Build point index mapping
             for (int i = 0; i < points.Count; i++)
             {
                 pointIDToIndex[points[i].point_id] = i;
 
-                pointIndexData.Add(i);
             }
+
 
             //_______________________________________________________________
             // prepare the Vertex data for openGL
             List<float> vertexData = new List<float>();
+            List<int> pointIndexData = new List<int>();
 
-            foreach(point_store pt in points)
+            for (int i = 0; i < points.Count; i++)
             {
+                point_store pt  = points[i];
                 vertexData.Add(pt.x_coord);
                 vertexData.Add(pt.y_coord);
+                pointIndexData.Add(i);
             }
 
-
+            // Create VAO and VBO for points
             point_vao = new VertexArray();
-            point_vbo = new VertexBuffer(10);
-            point_ibo = new IndexBuffer(10);
+            point_vbo = new VertexBuffer(Math.Max(10, vertexData.Count));
+            point_ibo = new IndexBuffer(Math.Max(10, pointIndexData.Count));
+            selected_point_ibo = new IndexBuffer(10); // Added dynamically
 
-            var pointLayout = new VertexBufferLayout();
+
+            VertexBufferLayout pointLayout = new VertexBufferLayout();
             pointLayout.AddFloat(FLOATS_PER_VERTEX);
             point_vao.Add_vertexBuffer(point_vbo, pointLayout);
 
@@ -250,99 +417,113 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
 
             foreach (line_store ln in wireframe_lines)
             {
-                int start_idx = pointIDToIndex[ln.line_start_id];
-                int end_idx = pointIDToIndex[ln.line_end_id];
 
-                wireframeIndexData.Add(start_idx);
-                wireframeIndexData.Add(end_idx);
-
-            }
-
-
-            wireframe_ibo = new IndexBuffer(10);
-            wireframe_ibo.AppendIndexBuffer(wireframeIndexData.ToArray());
-
-            //_______________________________________________________________
-            // prepare triangle index data for openGL
-
-            for (int i = 0; i < mat_mesh_data.Count; i++)
-            {
-
-
-            }
-
-
-            foreach(int mat_mesh_key in mat_mesh_data.Keys)
-            {
-                mat_mesh_data[mat_mesh_key].triangle_ibo = new IndexBuffer(10);
-                mat_mesh_data[mat_mesh_key].quadrilateral_ibo = new IndexBuffer(10);
-
-
-
-
-            }
-
-
-
-            this->triangleIndexData.clear();
-
-            for (const elementtri_store&tri : this->tris)
-	{
-                auto it_nd1 = this->pointIdToIndex.find(tri.nd1_id);
-                auto it_nd2 = this->pointIdToIndex.find(tri.nd2_id);
-                auto it_nd3 = this->pointIdToIndex.find(tri.nd3_id);
-
-                if (it_nd1 != this->pointIdToIndex.end() && it_nd2 != this->pointIdToIndex.end() &&
-                    it_nd3 != this->pointIdToIndex.end())
+                if (pointIDToIndex.TryGetValue(ln.line_start_id, out int startIdx) &&
+                        pointIDToIndex.TryGetValue(ln.line_end_id, out int endIdx))
                 {
-                    this->triangleIndexData.push_back(it_nd1->second);
-                    this->triangleIndexData.push_back(it_nd2->second);
-                    this->triangleIndexData.push_back(it_nd3->second);
+                    wireframeIndexData.Add(startIdx);
+                    wireframeIndexData.Add(endIdx);
                 }
+
+                //int start_idx = pointIDToIndex[ln.line_start_id];
+                //int end_idx = pointIDToIndex[ln.line_end_id];
+
+                //wireframeIndexData.Add(start_idx);
+                //wireframeIndexData.Add(end_idx);
+
+            }
+
+
+            wireframe_ibo = new IndexBuffer(Math.Max(10, wireframeIndexData.Count));
+            if (wireframeIndexData.Count > 0)
+            {
+                wireframe_ibo.AppendIndexBuffer(wireframeIndexData.ToArray());
             }
 
             //_______________________________________________________________
-            // prepare quadrilateral index data for openGL
-            this->quadrilateralIndexData.clear();
+            // prepare triangle and quadrilateral index data for openGL
 
-            for (const elementquad_store&quad : this->quads)
-	{
-                auto it_nd1 = this->pointIdToIndex.find(quad.nd1_id);
-                auto it_nd2 = this->pointIdToIndex.find(quad.nd2_id);
-                auto it_nd3 = this->pointIdToIndex.find(quad.nd3_id);
-                auto it_nd4 = this->pointIdToIndex.find(quad.nd4_id);
+            foreach (mat_mesh_store matMesh in mat_mesh_data.Values)
+            {
+                List<int> triangleIndexData = new List<int>();
 
 
-                if (it_nd1 != this->pointIdToIndex.end() && it_nd2 != this->pointIdToIndex.end() &&
-                    it_nd3 != this->pointIdToIndex.end() && it_nd4 != this->pointIdToIndex.end())
+                foreach (tri_store tri in matMesh.tris)
                 {
+                    int pt_idx1 = pointIDToIndex[tri.pt_id1];
+                    int pt_idx2 = pointIDToIndex[tri.pt_id2];
+                    int pt_idx3 = pointIDToIndex[tri.pt_id3];
+
+
+                    triangleIndexData.Add(pt_idx1);
+                    triangleIndexData.Add(pt_idx2);
+                    triangleIndexData.Add(pt_idx3);
+
+                }
+
+                matMesh.triangle_ibo = new IndexBuffer(Math.Max(10, triangleIndexData.Count));
+                if (triangleIndexData.Count > 0)
+                {
+                    matMesh.triangle_ibo.AppendIndexBuffer(triangleIndexData.ToArray());
+                }
+
+                List<int> quadrilateralIndexData = new List<int>();
+
+                foreach (quad_store quad in matMesh.quads)
+                {
+                    int pt_idx1 = pointIDToIndex[quad.pt_id1];
+                    int pt_idx2 = pointIDToIndex[quad.pt_id2];
+                    int pt_idx3 = pointIDToIndex[quad.pt_id3];
+                    int pt_idx4 = pointIDToIndex[quad.pt_id4];
+
+
                     // Make two triangles from the quad (pt1, pt2, pt3) and (pt1, pt3, pt4)
                     // Triangle 1 (nd1, nd2, nd3)
-                    this->quadrilateralIndexData.push_back(it_nd1->second);
-                    this->quadrilateralIndexData.push_back(it_nd2->second);
-                    this->quadrilateralIndexData.push_back(it_nd3->second);
+                    quadrilateralIndexData.Add(pt_idx1);
+                    quadrilateralIndexData.Add(pt_idx2);
+                    quadrilateralIndexData.Add(pt_idx3);
 
                     // Triangle 2 (nd1, nd3, nd4)
-                    this->quadrilateralIndexData.push_back(it_nd1->second);
-                    this->quadrilateralIndexData.push_back(it_nd3->second);
-                    this->quadrilateralIndexData.push_back(it_nd4->second);
+                    quadrilateralIndexData.Add(pt_idx1);
+                    quadrilateralIndexData.Add(pt_idx3);
+                    quadrilateralIndexData.Add(pt_idx4);
+
                 }
+
+                matMesh.quadrilateral_ibo = new IndexBuffer(Math.Max(10, quadrilateralIndexData.Count));
+                if (quadrilateralIndexData.Count > 0)
+                {
+                    matMesh.quadrilateral_ibo.AppendIndexBuffer(quadrilateralIndexData.ToArray());
+                }
+
             }
 
-            //_______________________________________________________________
-            // Prepare vertex normal data for OpenGL
-            create_vertex_normals(vnormals);
-            //
-
-
-
+            buffersInitialized = true;
         }
 
 
-        public void update_openTK_uniforms()
+        public void update_openTK_uniforms(drawing_events graphic_events_control)
         {
+            Matrix4 uMVP = graphic_events_control.projectionMatrix *
+                graphic_events_control.viewMatrix * graphic_events_control.modelMatrix;
 
+            meshShader.SetMatrix4("uMVP", uMVP);
+        }
 
+        public void Dispose()
+        {
+            point_vbo?.Dispose();
+            point_vao?.Dispose();
+            point_ibo?.Dispose();
+            selected_point_ibo?.Dispose();
+            wireframe_ibo?.Dispose();
+            // meshShader?.Dispose();
+
+            foreach (var matMesh in mat_mesh_data.Values)
+            {
+                matMesh.triangle_ibo?.Dispose();
+                matMesh.quadrilateral_ibo?.Dispose();
+            }
         }
 
 

@@ -1,18 +1,16 @@
-﻿using System;
+﻿// OpenTK library
+using OpenTK;
+using OpenTK.Graphics;
+using OpenTK.Graphics.OpenGL4;
+using Plane_stress_analyzer_PSL.src.events_handler;
+using Plane_stress_analyzer_PSL.src.global_variables;
+using Plane_stress_analyzer_PSL.src.model_store.fe_objects;
+using Plane_stress_analyzer_PSL.src.model_store.geom_objects;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
-// OpenTK library
-using OpenTK;
-using OpenTK.Graphics;
-using OpenTK.Graphics.OpenGL4;
-
-
-using Plane_stress_analyzer_PSL.src.events_handler;
-using Plane_stress_analyzer_PSL.src.model_store.geom_objects;
-using Plane_stress_analyzer_PSL.src.model_store.fe_objects;
 
 namespace Plane_stress_analyzer_PSL.src.model_store
 {
@@ -29,8 +27,8 @@ namespace Plane_stress_analyzer_PSL.src.model_store
         public Vector3 geom_bounds = new Vector3(2);
 
 
-        public selectrectangle_store selection_rectangle { get; }
-        public selectcircle_store selection_circle { get; }
+        public selectrectangle_store selection_rectangle; // { get; }
+        public selectcircle_store selection_circle; // { get; }
 
         // To control the drawing events
         public drawing_events graphic_events_control { get; private set; }
@@ -51,10 +49,6 @@ namespace Plane_stress_analyzer_PSL.src.model_store
             // To control the drawing graphics
             graphic_events_control = new drawing_events(this);
 
-            // Set the selection rectangle  & selection circle
-           // selection_rectangle = new selectrectangle_store();
-           // selection_circle = new selectcircle_store();
-
             // Set a default geometry bounds
             min_bounds = new Vector3(-1);
             max_bounds = new Vector3(1);
@@ -63,22 +57,68 @@ namespace Plane_stress_analyzer_PSL.src.model_store
 
             IsModelSet = false;
         }
-        
 
 
+        public void InitializeModelGeom()
+        {
+            // Set the selection rectangle  & selection circle
+            selection_rectangle = new selectrectangle_store();
+            selection_circle = new selectcircle_store();
 
+        }
+
+
+        public void importTXTFile(string fileContent)
+        {
+            List<Vector3> nodePtsList = new List<Vector3>();
+            IsModelSet = false;
+
+            fe_data = new fedata_store();
+
+            file_events.import_txt_mesh(fileContent, ref fe_data, ref nodePtsList, ref IsModelSet);
+
+
+            if (IsModelSet == false)
+                return;
+
+            // Set the mesh boundaries
+            Vector3 geometry_center = gvariables_static.FindGeometricCenter(nodePtsList);
+            Tuple<Vector3, Vector3> geom_extremes = gvariables_static.FindMinMaxXY(nodePtsList);
+
+
+            // Set the geometry bounds
+            this.min_bounds = geom_extremes.Item1; // Minimum bound
+            this.max_bounds = geom_extremes.Item2; // Maximum bound
+
+            this.geom_bounds = max_bounds - min_bounds;
+
+            // update the global static value
+            gvariables_static.geom_size = this.geom_bounds.Length;
+
+
+            fe_data.set_meshdrawing_data();
+
+            update_openTK_uniforms();
+
+        }
 
 
 
         public void paint_model()
         {
-          
+            if (!IsModelSet)
+                return;
+
+            fe_data.paint_model();
         }
 
 
         public void update_openTK_uniforms()
         {
+            if (!IsModelSet)
+                return;
 
+            fe_data.update_openTK_uniforms(graphic_events_control);
 
         }
 

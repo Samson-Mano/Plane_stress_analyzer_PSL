@@ -61,50 +61,53 @@ namespace Plane_stress_analyzer_PSL.src.global_variables
             }
 
 
+            public static Vector3 get_PtColor()
+            {
+                Color color = Color.LightCoral;
+
+                return new Vector3(color.R / 255.0f, color.G / 255.0f, color.B / 255.0f);
+            }
+
+
+            public static Vector3 get_SelectionPtColor()
+            {
+                Color color = Color.Red;
+
+                return new Vector3(color.R / 255.0f, color.G / 255.0f, color.B / 255.0f);
+            }
+
+            public static Vector3 get_ConstraintColor()
+            {
+                Color color = Color.Magenta;
+
+                return new Vector3(color.R / 255.0f, color.G / 255.0f, color.B / 255.0f);
+            }
+
+            public static Vector3 get_LoadColor()
+            {
+                Color color = Color.Green;
+
+                return new Vector3(color.R / 255.0f, color.G / 255.0f, color.B / 255.0f);
+            }
+
+
+            public static Vector3 get_WireframeColor()
+            {
+                Color color = Color.Black;
+
+                return new Vector3(color.R / 255.0f, color.G / 255.0f, color.B / 255.0f);
+            }
+
 
             /// <summary>
             /// Returns a Vector3 representation of a color for mesh rendering.
-            /// Special IDs:
-            /// -1: Black (default)
-            /// -2: White (selection)
             /// </summary>
             public static Vector3 MeshGetRandomColor(int colorId)
             {
 
-                Color color;
+                Color color = GetRandomColor(colorId);
 
-                switch (colorId)
-                {
-                    case -1:
-                        // Default color for mesh boundaries
-                        color = Color.Black;
-                        break;
-                    case -2:
-                        // Selection color 1
-                        color = Color.Red;
-                        break;
-                    case -3:
-                        // Constraint colors (field value)
-                        color = Color.BlueViolet;
-                        break;
-                    case -4:
-                        // Constraint colors (source value)
-                        color = Color.Magenta;
-                        break;
-                    case -5:
-                        // Constraint colors (Sommerfield Radiation value)
-                        color = Color.MediumVioletRed;
-                        break;
-                    default:
-                        color = GetRandomColor(colorId);
-                        break;
-                }
-
-                return new Vector3(
-                    color.R / 255.0f,
-                    color.G / 255.0f,
-                    color.B / 255.0f
-                );
+                return new Vector3(color.R / 255.0f, color.G / 255.0f, color.B / 255.0f);
 
             }
 
@@ -116,12 +119,13 @@ namespace Plane_stress_analyzer_PSL.src.global_variables
         public static Color glcontrol_background_color = Color.White;
 
         // Garphics Control variables
+        public static bool is_paint_meshpoints = true;
         public static bool is_paint_mesh_boundaries = true;
         public static bool is_paint_mesh = true;
         public static bool is_paint_constraints = true;
         public static bool is_paint_loads = true;
 
-        public static bool is_paint_constraints_label = true;
+        public static bool is_paint_loads_label = true;
 
         public static bool is_paint_shrunk_triangle = false;
 

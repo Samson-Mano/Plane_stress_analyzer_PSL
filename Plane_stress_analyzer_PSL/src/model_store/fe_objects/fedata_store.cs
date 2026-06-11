@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Plane_stress_analyzer_PSL.src.events_handler;
+using Plane_stress_analyzer_PSL.src.model_store.geom_objects;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -36,6 +38,10 @@ namespace Plane_stress_analyzer_PSL.src.model_store.fe_objects
         public List<int> materialids;
         // public label_list_store materiallabels;
 
+        // Drawing data
+        private meshdata_store meshdrawingdata;
+        private bool IsMeshDrawingDataSet = false;
+
 
         public fedata_store()
         {
@@ -52,10 +58,74 @@ namespace Plane_stress_analyzer_PSL.src.model_store.fe_objects
             fe_materials = new Dictionary<int, material_data>();
             materialids = new List<int>();
 
+            IsMeshDrawingDataSet = false;
+        }
 
+        public void set_meshdrawing_data()
+        {
+            meshdrawingdata = new meshdata_store();
+
+            // Add the mesh points
+            foreach (var nd_m in fe_nodes.nodeMap)
+            {
+                node_store nd = nd_m.Value;
+
+                meshdrawingdata.add_point(nd.node_id, (float)nd.node_pt_x_coord, (float)nd.node_pt_y_coord);
+
+            }
+
+            // Add the mesh tris
+            foreach (var tri_m in fe_tris.elementtriMap)
+            {
+                elementtri_store tri = tri_m.Value;
+
+                meshdrawingdata.add_tri(tri.tri_id, tri.nodeid1, tri.nodeid2, tri.nodeid3, tri.material_id);
+
+            }
+
+            // Add the mesh quads
+            foreach (var quad_m in fe_quads.elementquadMap)
+            {
+                elementquad_store quad = quad_m.Value;
+
+                meshdrawingdata.add_quad(quad.quad_id, quad.nodeid1, quad.nodeid2, quad.nodeid3, quad.nodeid4, quad.material_id);
+
+            }
+
+            // Create the mesh boundaries
+            meshdrawingdata.create_wireframe();
+
+            // Create the mesh buffer
+            meshdrawingdata.create_buffer_data();
+
+
+            IsMeshDrawingDataSet = true;
+        }
+
+
+        public void paint_model()
+        {
+            if (!IsMeshDrawingDataSet)
+                return;
+
+            meshdrawingdata.paint_mesh();
+            meshdrawingdata.paint_mesh_wireframe();
+            meshdrawingdata.paint_mesh_points();
+            meshdrawingdata.paint_selected_mesh_points();
 
         }
 
+
+
+        public void update_openTK_uniforms(drawing_events graphic_events_control)
+        {
+            if (!IsMeshDrawingDataSet)
+                return;
+
+            meshdrawingdata.update_openTK_uniforms(graphic_events_control);
+
+
+        }
 
 
 
