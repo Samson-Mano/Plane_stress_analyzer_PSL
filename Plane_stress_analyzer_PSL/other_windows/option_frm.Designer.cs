@@ -31,12 +31,12 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(option_frm));
             this.button_ok = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.checkBox_paintmeshpoints = new System.Windows.Forms.CheckBox();
             this.checkBox_paintconstraints = new System.Windows.Forms.CheckBox();
             this.checkBox_paintloads = new System.Windows.Forms.CheckBox();
             this.checkBox_paintmeshboundaries = new System.Windows.Forms.CheckBox();
             this.checkBox_paintmesh = new System.Windows.Forms.CheckBox();
             this.checkBox_paintshrinkmesh = new System.Windows.Forms.CheckBox();
-            this.checkBox_paintmeshpoints = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -64,6 +64,17 @@
             this.groupBox1.TabIndex = 2;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Drawing Option";
+            // 
+            // checkBox_paintmeshpoints
+            // 
+            this.checkBox_paintmeshpoints.AutoSize = true;
+            this.checkBox_paintmeshpoints.Location = new System.Drawing.Point(31, 52);
+            this.checkBox_paintmeshpoints.Name = "checkBox_paintmeshpoints";
+            this.checkBox_paintmeshpoints.Size = new System.Drawing.Size(143, 20);
+            this.checkBox_paintmeshpoints.TabIndex = 5;
+            this.checkBox_paintmeshpoints.Text = "Paint Mesh Points";
+            this.checkBox_paintmeshpoints.UseVisualStyleBackColor = true;
+            this.checkBox_paintmeshpoints.CheckedChanged += new System.EventHandler(this.checkBox_paintmeshpoints_CheckedChanged);
             // 
             // checkBox_paintconstraints
             // 
@@ -120,17 +131,6 @@
             this.checkBox_paintshrinkmesh.UseVisualStyleBackColor = true;
             this.checkBox_paintshrinkmesh.CheckedChanged += new System.EventHandler(this.checkBox_paintshrinkmesh_CheckedChanged);
             // 
-            // checkBox_paintmeshpoints
-            // 
-            this.checkBox_paintmeshpoints.AutoSize = true;
-            this.checkBox_paintmeshpoints.Location = new System.Drawing.Point(31, 52);
-            this.checkBox_paintmeshpoints.Name = "checkBox_paintmeshpoints";
-            this.checkBox_paintmeshpoints.Size = new System.Drawing.Size(143, 20);
-            this.checkBox_paintmeshpoints.TabIndex = 5;
-            this.checkBox_paintmeshpoints.Text = "Paint Mesh Points";
-            this.checkBox_paintmeshpoints.UseVisualStyleBackColor = true;
-            this.checkBox_paintmeshpoints.CheckedChanged += new System.EventHandler(this.checkBox_paintmeshpoints_CheckedChanged);
-            // 
             // option_frm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -140,8 +140,9 @@
             this.Controls.Add(this.groupBox1);
             this.Font = new System.Drawing.Font("Verdana", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "option_frm";
+            this.Opacity = 0.85D;
             this.Text = "Options";
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();

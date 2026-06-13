@@ -224,7 +224,7 @@ namespace Plane_stress_analyzer_PSL
             // Update the Nodal Constraint Form data
             if (modeldata.isConstraintUpdateInProgress == true)
             {
-                // nodalconstraint_Form.update_selected_node_list();
+                constraint_Form.update_selected_node_list();
 
             }
 
@@ -460,16 +460,118 @@ namespace Plane_stress_analyzer_PSL
         #region "Boundary condition menu events"
         private void addLoadsToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (modeldata.IsModelSet == false)
+                return;
+
+            // Check if nodalload_Form is null or disposed
+            if (load_Form == null || load_Form.IsDisposed)
+            {
+                load_Form = new load_frm(ref modeldata);
+
+                // Make it behave like a tool window
+                load_Form.FormBorderStyle = FormBorderStyle.SizableToolWindow;
+                load_Form.ShowInTaskbar = false;
+                load_Form.TopLevel = true;
+                load_Form.Owner = this;
+
+                // Manually center the form on the parent
+                int x = this.Location.X + (this.Width - load_Form.Width) / 2;
+                int y = this.Location.Y + (this.Height - load_Form.Height) / 2;
+                load_Form.StartPosition = FormStartPosition.Manual;
+                load_Form.Location = new Point(Math.Max(x, 0), Math.Max(y, 0)); // avoid negative positions
+
+            }
+
+            // Turn on Flag Nodal Constraint update form is open
+            modeldata.isLoadUpdateInProgress = true;
+            modeldata.fe_data.clear_selected_nodes();
+
+            // Show the form
+            load_Form.update_dataGridView();
+            load_Form.update_selected_node_list();
+            load_Form.Show(this);
+            load_Form.BringToFront();
+
+            glControl_main_panel.Invalidate();
 
         }
 
         private void addConstraintsToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (modeldata.IsModelSet == false)
+                return;
+
+            // Check if nodalconstraint_Form is null or disposed
+            if (constraint_Form == null || constraint_Form.IsDisposed)
+            {
+                constraint_Form = new constraint_frm(ref modeldata);
+
+                // Make it behave like a tool window
+                constraint_Form.FormBorderStyle = FormBorderStyle.SizableToolWindow;
+                constraint_Form.ShowInTaskbar = false;
+                constraint_Form.TopLevel = true;
+                constraint_Form.Owner = this;
+
+                // Manually center the form on the parent
+                int x = this.Location.X + (this.Width - constraint_Form.Width) / 2;
+                int y = this.Location.Y + (this.Height - constraint_Form.Height) / 2;
+                constraint_Form.StartPosition = FormStartPosition.Manual;
+                constraint_Form.Location = new Point(Math.Max(x, 0), Math.Max(y, 0)); // avoid negative positions
+
+            }
+
+            // Turn on Flag Nodal Constraint update form is open
+            modeldata.isConstraintUpdateInProgress = true;
+            modeldata.fe_data.clear_selected_nodes();
+
+            // Show the form
+            constraint_Form.update_dataGridView();
+            constraint_Form.update_selected_node_list();
+            constraint_Form.Show(this);
+            constraint_Form.BringToFront();
+
+            glControl_main_panel.Invalidate();
 
         }
 
         private void materialPropertiesToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (modeldata.IsModelSet == false)
+                return;
+
+            // Check if matprop_Form is null or disposed
+            if (matprop_Form == null || matprop_Form.IsDisposed)
+            {
+                matprop_Form = new matprop_frm(ref modeldata);
+
+                // Make it behave like a tool window
+                matprop_Form.FormBorderStyle = FormBorderStyle.SizableToolWindow;
+                matprop_Form.ShowInTaskbar = false;
+                matprop_Form.TopLevel = true;
+                // matprop_Form.MdiParent = this;
+                matprop_Form.Owner = this;
+
+                // Manually center the form on the parent
+                int x = this.Location.X + (this.Width - matprop_Form.Width) / 2;
+                int y = this.Location.Y + (this.Height - matprop_Form.Height) / 2;
+                matprop_Form.StartPosition = FormStartPosition.Manual;
+                matprop_Form.Location = new Point(Math.Max(x, 0), Math.Max(y, 0)); // avoid negative positions
+
+                // matprop_Form.StartPosition = FormStartPosition.CenterParent;
+
+            }
+
+            // Turn on Flag Material update form is open
+            modeldata.isMaterialUpdateInProgress = true;
+            // fedata.meshdata.clear_selected_mesh();
+
+            // Show the form
+            // matprop_Form.update_material_data();
+            // matprop_Form.update_selected_element_list();
+            matprop_Form.Show(this);
+            matprop_Form.BringToFront();
+
+            glControl_main_panel.Invalidate();
 
         }
 
@@ -479,6 +581,17 @@ namespace Plane_stress_analyzer_PSL
         #endregion
 
         #region "Call from Child Forms"
+
+        public void CallFrom_load_frm()
+        {
+            glControl_main_panel.Invalidate();
+        }
+
+
+        public void CallFrom_constraint_frm()
+        {
+            glControl_main_panel.Invalidate();
+        }
 
         public void CallFrom_option_frm()
         {

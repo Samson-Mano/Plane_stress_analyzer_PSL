@@ -57,7 +57,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.fe_objects
             nodeload_data temp_load = new nodeload_data
             {
                 load_set_id = unique_loadset_id,
-                load_node_ids = load_node_ids,
+                load_node_ids = idsCopy,
                 load_node_pts = nodePtsCopy,
                 load_amplitude = t_load_amplitude,
                 load_angle = t_load_angle

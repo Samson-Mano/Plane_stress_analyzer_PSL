@@ -331,6 +331,13 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
 
         }
 
+        public void clear_selected_points()
+        {
+            // Clear the selected points
+            selected_point_ibo.ClearIndexBuffer();
+        }
+
+
 
         public void create_wireframe()
         {

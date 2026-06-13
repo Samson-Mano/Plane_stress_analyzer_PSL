@@ -152,15 +152,10 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
                 (_originPoint.Y + _currentPoint.Y) * 0.5f
             );
 
-            float radiusX = Math.Abs(_currentPoint.X - _originPoint.X) * 0.5f;
-            float radiusY = Math.Abs(_currentPoint.Y - _originPoint.Y) * 0.5f;
+            float circle_diameter = (float)Math.Sqrt(Math.Pow((_currentPoint.X - _originPoint.X), 2) + 
+                Math.Pow((_currentPoint.Y - _originPoint.Y), 2));
+            float circle_radius = circle_diameter / 2.0f;
 
-            // Use the smaller radius to maintain circular shape, or respect aspect ratio
-            float radius = Math.Min(radiusX, radiusY);
-
-            // Adjust for aspect ratio if needed
-            float adjustedRadiusX = radius;
-            float adjustedRadiusY = radius;
 
             // Create vertices array (center + perimeter points)
             float[] vertices = new float[VERTEX_COUNT * FLOATS_PER_VERTEX];
@@ -173,8 +168,8 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
             for (int i = 0; i < NUM_SEGMENTS; i++)
             {
                 double angle = 2 * Math.PI * i / NUM_SEGMENTS;
-                float x = center.X + (float)(adjustedRadiusX * Math.Cos(angle));
-                float y = center.Y + (float)(adjustedRadiusY * Math.Sin(angle));
+                float x = center.X + (circle_radius * (float)Math.Cos(angle));
+                float y = center.Y + (circle_radius * (float)Math.Sin(angle));
 
                 int vertexIndex = (i + 1) * FLOATS_PER_VERTEX;
                 vertices[vertexIndex] = x;

@@ -13,6 +13,7 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
         {
             MeshShader,
             TextShader,
+            ConstraintShader,
             SelectionShader
         }
 
@@ -79,44 +80,42 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
         {
             return @"
 
-#version 330 core
+            #version 330 core
 
-uniform mat4 modelMatrix;
-uniform mat4 viewMatrix;
-uniform mat4 projectionMatrix;
+            uniform mat4 uMVP;           // Model-View-Projection matrix
+            uniform float zoomscale;
 
-uniform float vertexTransparency; // Transparency of the mesh
+            uniform float vertexTransparency; // Transparency of the mesh
 
-layout(location = 0) in vec2 position;
-layout(location = 1) in vec2 origin;
-layout(location = 2) in vec2 textureCoord;
-layout(location = 3) in vec3 textColor;
+            layout(location = 0) in vec2 position;
+            layout(location = 1) in vec2 origin;
+            layout(location = 2) in vec2 textureCoord;
+            layout(location = 3) in vec3 textColor;
 
-out vec4 v_textureColor;
-out vec2 v_textureCoord;
+            out vec4 v_textureColor;
+            out vec2 v_textureCoord;
 
-void main()
-{
+            void main()
+            {
 
-	// apply Translation to the final position 
-	vec4 finalPosition =  projectionMatrix * viewMatrix * modelMatrix * vec4(position,0.0f,1.0f);
+	            // apply Translation to the final position 
+	            vec4 finalPosition =  uMVP * vec4(position,0.0f,1.0f);
 
-	// apply Translation to the text origin
-	vec4 finalTextorigin =  projectionMatrix * viewMatrix * modelMatrix * vec4(origin,0.0f,1.0f);
+	            // apply Translation to the text origin
+	            vec4 finalTextorigin =  uMVP * vec4(origin,0.0f,1.0f);
     
-    float zoomscale = 1.0f; //viewMatrix[0][0];
-	// Remove the zoom scale
-	vec2 scaled_pt = vec2(finalPosition.x - finalTextorigin.x,finalPosition.y - finalTextorigin.y) / zoomscale;
+	            // Remove the zoom scale
+	            vec2 scaled_pt = vec2(finalPosition.x - finalTextorigin.x,finalPosition.y - finalTextorigin.y) / zoomscale;
 		
-	// Set the final position of the vertex
-	gl_Position = vec4(scaled_pt.x + finalTextorigin.x, scaled_pt.y + finalTextorigin.y, 0.0f, 1.0f);
+	            // Set the final position of the vertex
+	            gl_Position = vec4(scaled_pt.x + finalTextorigin.x, scaled_pt.y + finalTextorigin.y, 0.0f, 1.0f);
 
-	// Calculate texture coordinates for the glyph
-	v_textureCoord = textureCoord;
+	            // Calculate texture coordinates for the glyph
+	            v_textureCoord = textureCoord;
 	
-	// Pass the texture color to the fragment shader
-	v_textureColor = vec4(textColor,vertexTransparency);
-}
+	            // Pass the texture color to the fragment shader
+	            v_textureColor = vec4(textColor, vertexTransparency);
+            }
 
                     ";
 
@@ -127,19 +126,19 @@ void main()
         {
             return @"
 
-#version 330 core
-uniform sampler2D u_Texture;
+            #version 330 core
+            uniform sampler2D u_Texture;
 
-in vec4 v_textureColor;
-in vec2 v_textureCoord;
+            in vec4 v_textureColor;
+            in vec2 v_textureCoord;
 
-out vec4 f_Color; // fragment's final color (out to the fragment shader)
+            out vec4 f_Color; // fragment's final color (out to the fragment shader)
 
-void main()
-{
-	vec4 texColor = vec4(1.0, 1.0, 1.0, texture(u_Texture, v_textureCoord).r);
-	f_Color = v_textureColor * texColor;
-}
+            void main()
+            {
+	            vec4 texColor = vec4(1.0, 1.0, 1.0, texture(u_Texture, v_textureCoord).r);
+	            f_Color = v_textureColor * texColor;
+            }
 
                     ";
 
@@ -148,28 +147,115 @@ void main()
         #endregion
 
 
+        #region "Constraint Shader"
+
+        public static string constraint_vert_shader()
+        {
+            return @"
+
+            #version 330 core
+
+            uniform mat4 uMVP;           // Model-View-Projection matrix
+            uniform float zoomscale;
+
+            uniform vec4 vertexColor;
+
+            layout(location = 0) in vec2 position;
+            layout(location = 1) in vec2 origin;
+            layout(location = 2) in vec2 textureCoord;
+            layout(location = 3) in float textureType;
+
+
+            flat out uint v_textureType;
+            out vec2 v_textureCoord;
+            out vec3 v_textureColor;
+
+            void main()
+            {
+
+	            // apply Translation to the final position 
+	            vec4 finalPosition =  uMVP * vec4(position,0.0f,1.0f);
+
+	            // apply Translation to the text origin
+	            vec4 finalTextorigin =  uMVP * vec4(origin,0.0f,1.0f);
+    
+
+	            // Remove the zoom scale
+	            vec2 scaled_pt = vec2(finalPosition.x - finalTextorigin.x, finalPosition.y - finalTextorigin.y) / zoomscale;
+		
+	            // Set the final position of the vertex
+	            gl_Position = vec4(scaled_pt.x + finalTextorigin.x, scaled_pt.y + finalTextorigin.y, 0.0f, 1.0f);
+
+
+	            // update the texture type
+	            v_textureType = uint(textureType);
+	            v_textureCoord = textureCoord;
+	            v_textureColor = vertexColor;
+
+            }
+
+                    ";
+
+        }
+
+
+        public static string constraint_frag_shader()
+        {
+            return @"
+
+            #version 330 core
+            uniform float transparency;
+            uniform sampler2D u_TexturePin;    // Pin support texture
+            uniform sampler2D u_TextureRoller; // Roller support texture
+
+            flat in uint v_textureType;  // 0 = Pin, 1 = Roller
+            in vec2 v_textureCoord;
+            in vec3 v_textureColor;
+
+            out vec4 f_Color; // fragment's final color (out to the fragment shader)
+
+            void main()
+            {
+                vec4 texColor;
+        
+                // Select which texture to sample based on v_textureType
+                if (v_textureType == 0)
+                    texColor = texture(u_TexturePin, v_textureCoord);
+                else
+                    texColor = texture(u_TextureRoller, v_textureCoord);
+        
+                f_Color = vec4(v_textureColor, transparency) * texColor;
+            }
+
+                    ";
+
+        }
+
+
+
+        #endregion
+
+
 
         #region "Selection Shader"
-
-
 
         private static string selrect_vert_shader()
         {
             return @"
 
-#version 330 core
+            #version 330 core
 
-layout(location = 0) in vec2 node_position;
+            layout(location = 0) in vec2 node_position;
 
-out vec4 v_Color;
+            out vec4 v_Color;
 
-void main()
-{
-	v_Color = vec4(0.8039f,0.3608f,0.3608f,0.5f);
+            void main()
+            {
+	            v_Color = vec4(0.8039f,0.3608f,0.3608f,0.5f);
 
-	// Final position passed to fragment shader
-	gl_Position = vec4(node_position,0.0f,1.0f);
-}
+	            // Final position passed to fragment shader
+	            gl_Position = vec4(node_position,0.0f,1.0f);
+            }
 
                     ";
 
@@ -181,21 +267,20 @@ void main()
         {
             return @"
 
-#version 330 core
+            #version 330 core
 
-in vec4 v_Color;
+            in vec4 v_Color;
 
-out vec4 f_Color; // fragment's final color (out to the fragment shader)
+            out vec4 f_Color; // fragment's final color (out to the fragment shader)
 
-void main()
-{
-	f_Color = v_Color;
-}
+            void main()
+            {
+	            f_Color = v_Color;
+            }
 
                     ";
 
         }
-
 
 
         #endregion
@@ -213,6 +298,8 @@ void main()
                     return mesh_vert_shader();
                 case ShaderType.SelectionShader:
                     return selrect_vert_shader();
+                case ShaderType.ConstraintShader: 
+                    return constraint_vert_shader();
                 case ShaderType.TextShader:
                     return text_vert_shader();
                 default:
@@ -230,6 +317,8 @@ void main()
                     return mesh_frag_shader();
                 case ShaderType.SelectionShader:
                     return selrect_frag_shader();
+                case ShaderType.ConstraintShader:
+                    return constraint_frag_shader();
                 case ShaderType.TextShader:
                     return text_frag_shader();
                 default:

@@ -1,6 +1,9 @@
 ﻿using OpenTK;
+using Plane_stress_analyzer_PSL.Resources;
 using Plane_stress_analyzer_PSL.src.events_handler;
 using Plane_stress_analyzer_PSL.src.global_variables;
+using Plane_stress_analyzer_PSL.src.opentk_control.opentk_buffer;
+using Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,9 +21,9 @@ namespace Plane_stress_analyzer_PSL.src.model_store.fe_objects
 
         public List<int> constraint_node_ids { get; set; }
 
-        public bool Is_Xfixed { get; set; } // X Fixed boundary condition
+        public int constraint_type { get; set; }// Constraint Type = 0 & 1
 
-        public bool Is_Yfixed { get; set; } // X Fixed boundary condition
+        public double constraint_angle { get; set; } // Constraint Angle
 
     }
 
@@ -32,10 +35,17 @@ namespace Plane_stress_analyzer_PSL.src.model_store.fe_objects
         public int cnst_set_count = 0;
 
         private List<int> all_constraintset_ids = new List<int>();
-        
-        
-       // // Constraint visualization
-        // private meshdata_store ndcnst_meshdata;
+
+
+        // Constraint visualization
+        private Shader constraintShader;
+        private Texture constraintTexture_Pin;
+        private Texture constraintTexture_Roller;
+
+        // Vertex Buffer object and Vertex Array object 
+        private VertexBuffer constraint_vbo;
+        private VertexArray constraint_vao;
+        private IndexBuffer constraint_ibo;
 
 
         public nodecnst_list_store()
@@ -44,13 +54,13 @@ namespace Plane_stress_analyzer_PSL.src.model_store.fe_objects
             cnstMap = new Dictionary<int, nodecnst_data>();
             cnst_set_count = 0;
 
-            // ndcnst_meshdata = new meshdata_store(false);
-
+            InitializeShader();
+            InitializeBuffers();
         }
 
 
         public void add_nodeconstraint(List<int> constraint_node_ids, List<Vector2> constraint_node_pts,
-            bool t_Is_Xfixed, bool t_Is_Yfixed)
+            int t_constraint_type, double t_constraint_angle)
         {
             // Get an unique constraint set id
             int unique_constraintset_id = gvariables_static.get_unique_id(all_constraintset_ids);
@@ -65,8 +75,8 @@ namespace Plane_stress_analyzer_PSL.src.model_store.fe_objects
                 cnst_set_id = unique_constraintset_id,
                 constraint_node_pts = nodePtsCopy,
                 constraint_node_ids = idsCopy,
-                Is_Xfixed = t_Is_Xfixed,
-                Is_Yfixed = t_Is_Yfixed
+                constraint_type = t_constraint_type,
+                constraint_angle = t_constraint_angle
             };
 
             // Insert the constraint to nodes
@@ -120,12 +130,44 @@ namespace Plane_stress_analyzer_PSL.src.model_store.fe_objects
 
         }
 
-        public void set_shader()
+        public void InitializeShader()
         {
-            // Set the shader 
+            // Initialize the Shader 
+            constraintShader = new Shader(
+                ShaderLibrary.get_vertex_shader(ShaderLibrary.ShaderType.ConstraintShader),
+                ShaderLibrary.get_fragment_shader(ShaderLibrary.ShaderType.ConstraintShader)
+                );
 
-            // ndcnst_meshdata.set_shader();
 
+            System.Drawing.Bitmap pin_support = Resource_font.pic_pin_support;
+            constraintTexture_Pin = new Texture();
+            constraintTexture_Pin.LoadTexture(pin_support);
+
+            System.Drawing.Bitmap roller_support = Resource_font.pic_roller_support;
+            constraintTexture_Roller = new Texture();
+            constraintTexture_Roller.LoadTexture(roller_support);
+
+            // Set texture uniform variables
+            constraintShader.SetInt("u_Textures[0]", 0);
+            constraintShader.SetInt("u_Textures[1]", 1);
+
+        }
+
+
+        public void InitializeBuffers()
+        {
+            // Initialize the Buffer
+            constraint_vao = new VertexArray();
+            constraint_vbo = new VertexBuffer(10);
+            constraint_ibo = new IndexBuffer(10);
+            
+            VertexBufferLayout constraintLayout = new VertexBufferLayout();
+            constraintLayout.AddFloat(2);
+            constraintLayout.AddFloat(2);
+            constraintLayout.AddFloat(2);
+            constraintLayout.AddFloat(1);
+
+            constraint_vao.Add_vertexBuffer(constraint_vbo, constraintLayout);
         }
 
 
@@ -135,27 +177,39 @@ namespace Plane_stress_analyzer_PSL.src.model_store.fe_objects
             if (cnst_set_count == 0)
                 return;
 
+            constraintShader.Bind();
+
+            // Activate textures (pin and roller support)
+            constraintTexture_Pin.Bind(0);
+            constraintTexture_Roller.Bind(1);
+
             // Paint the constraint label
             gvariables_static.LineWidth = 3.0f;
            //  ndcnst_meshdata.paint_static_mesh_lines();
             gvariables_static.LineWidth = 1.0f;
 
+
+
+            constraintTexture_Pin.UnBind();
+            constraintTexture_Roller.UnBind();
+            constraintShader.UnBind();
+
         }
 
 
 
-        public void update_openTK_uniforms(bool set_modelmatrix, bool set_viewmatrix, bool set_transparency,
-            drawing_events graphic_events_control)
+        public void update_openTK_uniforms(drawing_events graphic_events_control)
         {
             if (cnst_set_count == 0)
                 return;
 
+            Matrix4 uMVP = graphic_events_control.projectionMatrix *
+    graphic_events_control.viewMatrix * graphic_events_control.modelMatrix;
 
-            //ndcnst_meshdata.update_openTK_uniforms(graphic_events_control.projectionMatrix,
-            //    graphic_events_control.modelMatrix,
-            //    graphic_events_control.viewMatrix,
-            //    gvariables_static.geom_transparency);
+            float zoomscale = (float)graphic_events_control.zoom_val;
 
+            constraintShader.SetMatrix4("uMVP", uMVP);
+            constraintShader.SetFloat("zoomscale", zoomscale);
 
         }
 

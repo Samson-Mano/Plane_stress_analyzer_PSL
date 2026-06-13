@@ -259,8 +259,8 @@ namespace Plane_stress_analyzer_PSL.src.events_handler
                         {
                             int NodeConstraintSetId = int.Parse(splitValues[0]);
                             int nodeId = int.Parse(splitValues[1]);
-                            int NodeConstraint_isXField = int.Parse(splitValues[2]);
-                            int NodeConstraint_isYField = int.Parse(splitValues[3]);
+                            int NodeConstraintType= int.Parse(splitValues[2]);
+                            double NodeConstraintAngle = double.Parse(splitValues[3]);
 
                             if (!NodeConstraintSetData.ContainsKey(NodeConstraintSetId))
                                 NodeConstraintSetData[NodeConstraintSetId] = new nodecnst_data();
@@ -271,8 +271,8 @@ namespace Plane_stress_analyzer_PSL.src.events_handler
                             // Add the load amplitude when the first node is added (all the nodes have same load values)
                             if (NodeconstraintEntry.constraint_node_ids.Count == 1)
                             {
-                                NodeconstraintEntry.Is_Xfixed = NodeConstraint_isXField == 1 ? true : false; // X Fixed
-                                NodeconstraintEntry.Is_Yfixed = NodeConstraint_isYField == 1 ? true : false;  // Y Fixed
+                                NodeconstraintEntry.constraint_type = NodeConstraintType; // Constraint Type = 0, 1
+                                NodeconstraintEntry.constraint_angle = NodeConstraintAngle;  // Constraint Angle
                             }
                         }
                         catch (Exception ex)
@@ -305,7 +305,7 @@ namespace Plane_stress_analyzer_PSL.src.events_handler
 
                         // Add the node constraint to the list
                         fedata.fe_constraints.add_nodeconstraint(cnst.constraint_node_ids, constraint_node_pts,
-                            cnst.Is_Xfixed, cnst.Is_Yfixed);
+                            cnst.constraint_type, cnst.constraint_angle);
 
                     }
                     // Console.WriteLine($"Constraint data read completed at {stopwatch.Elapsed.TotalSeconds:F2} secs");
@@ -522,8 +522,8 @@ namespace Plane_stress_analyzer_PSL.src.events_handler
                 foreach (var cnst in fedata.fe_constraints.cnstMap.Values)
                 {
                     writer.Write(cnst.cnst_set_id);
-                    writer.Write(cnst.Is_Xfixed);
-                    writer.Write(cnst.Is_Yfixed);
+                    writer.Write(cnst.constraint_type);
+                    writer.Write(cnst.constraint_angle);
                     
                     writer.Write(cnst.constraint_node_ids.Count);
                     foreach (int nid in cnst.constraint_node_ids)
@@ -724,8 +724,8 @@ namespace Plane_stress_analyzer_PSL.src.events_handler
                 {
                     nodecnst_data cnst = new nodecnst_data();
                     cnst.cnst_set_id = reader.ReadInt32();
-                    cnst.Is_Xfixed = reader.ReadBoolean();
-                    cnst.Is_Yfixed = reader.ReadBoolean();
+                    cnst.constraint_type = reader.ReadInt32();
+                    cnst.constraint_angle = reader.ReadDouble();
 
                     int nidCount = reader.ReadInt32();
                     cnst.constraint_node_ids = new List<int>();
@@ -746,7 +746,7 @@ namespace Plane_stress_analyzer_PSL.src.events_handler
 
                     // Add the node constraint to the list
                    fedata.fe_constraints.add_nodeconstraint(cnst.constraint_node_ids, constraint_node_pts,
-                        cnst.Is_Xfixed, cnst.Is_Yfixed);
+                        cnst.constraint_type, cnst.constraint_angle);
 
                 }
 

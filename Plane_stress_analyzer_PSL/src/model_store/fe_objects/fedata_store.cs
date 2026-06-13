@@ -1,4 +1,6 @@
-﻿using Plane_stress_analyzer_PSL.src.events_handler;
+﻿using OpenTK;
+using Plane_stress_analyzer_PSL.src.events_handler;
+using Plane_stress_analyzer_PSL.src.global_variables;
 using Plane_stress_analyzer_PSL.src.model_store.geom_objects;
 using System;
 using System.Collections.Generic;
@@ -41,6 +43,11 @@ namespace Plane_stress_analyzer_PSL.src.model_store.fe_objects
         // Drawing data
         private meshdata_store meshdrawingdata;
         private bool IsMeshDrawingDataSet = false;
+
+
+        public List<int> selected_tri_ids { get; } = new List<int>();
+        public List<int> selected_quad_ids { get; } = new List<int>();
+        public List<int> selected_node_ids { get; } = new List<int>();
 
 
         public fedata_store()
@@ -111,6 +118,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.fe_objects
             meshdrawingdata.paint_mesh();
             meshdrawingdata.paint_mesh_wireframe();
             meshdrawingdata.paint_mesh_points();
+
             meshdrawingdata.paint_selected_mesh_points();
 
         }
@@ -127,6 +135,91 @@ namespace Plane_stress_analyzer_PSL.src.model_store.fe_objects
 
         }
 
+
+        public void select_nodes(Vector2 corner_pt1, Vector2 corner_pt2, bool isRightButton, drawing_events graphic_events_control)
+        {
+            // Select the nodes for load or constraint update
+            List<int> selected_node_ids = new List<int>();
+
+            // Loop through all node in nodeMap
+            foreach (var nd_m in fe_nodes.nodeMap)
+            {
+                node_store nd = nd_m.Value;
+
+                //______________________________
+                Vector4 node_pt = graphic_events_control.projectionMatrix * graphic_events_control.viewMatrix
+                    * graphic_events_control.modelMatrix * new Vector4((float)nd.node_pt_x_coord, 
+                    (float)nd.node_pt_y_coord, 0.0f, 1.0f);
+
+
+                // Check whether the point inside a rectangle
+                if (gvariables_static.isPointSelected(corner_pt1, corner_pt2, new Vector2(node_pt.X, node_pt.Y)) == true)
+                {
+                    selected_node_ids.Add(nd.node_id);
+
+                }
+
+            }
+
+            if (selected_node_ids.Count > 0)
+            {
+                add_selected_nodes(selected_node_ids, isRightButton);
+            }
+
+        }
+
+
+        private void add_selected_nodes(List<int> selected_node_ids, bool IsRemove)
+        {
+            bool is_selection_changed = false;
+
+            if (IsRemove == false)
+            {
+                // Add to the selected node list
+                foreach (int nd_id in selected_node_ids)
+                {
+                    // Check whether the node is already in the list
+                    if (!this.selected_node_ids.Contains(nd_id))
+                    {
+                        // Add to selected nodes
+                        this.selected_node_ids.Add(nd_id);
+
+                        // Selection changed flag
+                        is_selection_changed = true;
+                    }
+
+                }
+            }
+            else
+            {
+                // Remove from the selected node list
+                foreach (int nd_id in selected_node_ids)
+                {
+                    // Remove the node which is found in the list
+                    this.selected_node_ids.Remove(nd_id);
+
+                    // Selection changed flag
+                    is_selection_changed = true;
+                }
+
+            }
+
+
+            if (is_selection_changed == true)
+            {
+                // Add the selected nodes
+                meshdrawingdata.add_selected_points(this.selected_node_ids);
+            }
+            //
+        }
+
+
+        public void clear_selected_nodes()
+        {
+            this.selected_node_ids.Clear();
+            meshdrawingdata.clear_selected_points();
+
+        }
 
 
     }

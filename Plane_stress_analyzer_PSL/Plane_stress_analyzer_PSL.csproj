@@ -148,8 +148,18 @@
     <Compile Include="src\opentk_control\opentk_buffer\VertexBufferLayout.cs" />
     <Compile Include="src\opentk_control\shader_compiler\Shader.cs" />
     <Compile Include="src\opentk_control\shader_compiler\ShaderLibrary.cs" />
+    <Compile Include="src\opentk_control\shader_compiler\Texture.cs" />
     <EmbeddedResource Include="main_frm.resx">
       <DependentUpon>main_frm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="other_windows\constraint_frm.resx">
+      <DependentUpon>constraint_frm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="other_windows\load_frm.resx">
+      <DependentUpon>load_frm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="other_windows\matprop_frm.resx">
+      <DependentUpon>matprop_frm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="other_windows\option_frm.resx">
       <DependentUpon>option_frm.cs</DependentUpon>

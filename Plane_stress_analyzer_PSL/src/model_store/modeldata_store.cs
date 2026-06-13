@@ -77,13 +77,13 @@ namespace Plane_stress_analyzer_PSL.src.model_store
 
             fe_data = new fedata_store();
 
-            if(type == 0)
+            if (type == 0)
             {
                 // Import type is TXT file
                 string fileContent = System.IO.File.ReadAllText(filePath);
                 file_events.import_txt_mesh(fileContent, ref fe_data, ref nodePtsList, ref IsModelSet);
             }
-            else if(type == 1)
+            else if (type == 1)
             {
                 // Import type is BIN file
                 file_events.import_binary_mesh(filePath, ref fe_data, ref nodePtsList, ref IsModelSet);
@@ -132,6 +132,21 @@ namespace Plane_stress_analyzer_PSL.src.model_store
                 return;
 
             fe_data.paint_model();
+
+            if (isMaterialUpdateInProgress == true || isLoadUpdateInProgress == true || isConstraintUpdateInProgress == true)
+            {
+                if (gvariables_static.is_RectangleSelection == true)
+                {
+                    // Paint the selection rectangle
+                    selection_rectangle.draw_selection_rectangle();
+                }
+                else
+                {
+                    // Paint the selection circle
+                    selection_circle.draw_selection_circle();
+                }
+            }
+
         }
 
 
@@ -147,6 +162,8 @@ namespace Plane_stress_analyzer_PSL.src.model_store
 
         public void select_model_objects(Vector2 o_pt, Vector2 c_pt, bool isRightButton)
         {
+            if (!IsModelSet) return;
+
             // Perform the select option
             if (isMaterialUpdateInProgress == true)
             {
@@ -157,14 +174,14 @@ namespace Plane_stress_analyzer_PSL.src.model_store
             if (isLoadUpdateInProgress == true)
             {
                 // Select the points for load update
-                // meshdata.select_mesh_points(o_pt, c_pt, isRightButton, graphic_events_control);
-
+                fe_data.select_nodes(o_pt, c_pt, isRightButton, graphic_events_control);
+                
             }
 
             if (isConstraintUpdateInProgress == true)
             {
                 // Select the points for constraint update
-                // meshdata.select_mesh_points(o_pt, c_pt, isRightButton, graphic_events_control);
+                fe_data.select_nodes(o_pt, c_pt, isRightButton, graphic_events_control);
 
             }
 

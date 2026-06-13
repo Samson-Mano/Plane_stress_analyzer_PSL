@@ -1,5 +1,4 @@
-﻿using OpenTK;
-using Plane_stress_analyzer_PSL.src.global_variables;
+﻿using Plane_stress_analyzer_PSL.src.global_variables;
 using Plane_stress_analyzer_PSL.src.opentk_control.opentk_buffer;
 using Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler;
 using System;
@@ -70,7 +69,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
         private int shrunkpt_id = 0;
 
         private const int FLOATS_PER_VERTEX = 2;
-        private const float SHRINKFACTOR = 0.85f;
+        private const float SHRINKFACTOR = 0.80f;
 
         private List<point_store> shrunk_points = new List<point_store>();
         private Dictionary<int, mat_mesh_store> mat_shrunkmesh_data = new Dictionary<int, mat_mesh_store>();

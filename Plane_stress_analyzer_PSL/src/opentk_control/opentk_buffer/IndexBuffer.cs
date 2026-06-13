@@ -99,6 +99,7 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.opentk_buffer
         public void ClearIndexBuffer()
         {
             _size = 0;
+            _bufferCount = 0;
             Bind();
             GL.BufferSubData(BufferTarget.ElementArrayBuffer, IntPtr.Zero,
                             _capacity, IntPtr.Zero);
