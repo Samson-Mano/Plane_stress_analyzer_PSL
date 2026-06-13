@@ -78,16 +78,20 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
         // Geometry data for OpenGL
         private Dictionary<int, int> pointIDToIndex = new Dictionary<int, int>();
 
-       private Shader meshShader;
+        private Shader meshShader;
 
         // Vertex Buffer object and Vertex Array object 
         private VertexBuffer point_vbo;
         private VertexArray point_vao;
 
-        // Index buffer for the points, lines and triangles, quadrilaterals (EBO)
+        // Index buffer for the points and lines (EBO)
         private IndexBuffer point_ibo;
         private IndexBuffer selected_point_ibo;
         private IndexBuffer wireframe_ibo;
+
+        // Shrunk mesh data
+        private shrunkmeshdata_store shrunk_mesh_data = new shrunkmeshdata_store();
+
 
         private bool buffersInitialized = false;
 
@@ -170,7 +174,17 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
             if (!gvariables_static.is_paint_mesh || !buffersInitialized)
                 return;
 
+
             meshShader.Bind();
+
+            if (gvariables_static.is_paint_shrunk_triangle)
+            {
+                // Paint the shrunk mesh 
+                shrunk_mesh_data.paint_shrunk_mesh(ref meshShader);
+                meshShader.UnBind();
+                return;
+            }
+
             point_vao.Bind();
 
             foreach (mat_mesh_store mat_mesh_vals in mat_mesh_data.Values)
@@ -180,24 +194,24 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
                 Vector4 MeshColor = new Vector4(gvariables_static.ColorUtils.MeshGetRandomColor(mat_mesh_vals.material_id),
                     gvariables_static.geom_transparency);
 
-                
+
                 meshShader.SetVector4("vertexColor", MeshColor);
-             
+
 
                 if (mat_mesh_vals.triangle_ibo.BufferCount > 0)
                 {
                     // Paint the triangle mesh
                     mat_mesh_vals.triangle_ibo.Bind();
-                    GL.DrawElements(PrimitiveType.Triangles, mat_mesh_vals.triangle_ibo.BufferCount, 
+                    GL.DrawElements(PrimitiveType.Triangles, mat_mesh_vals.triangle_ibo.BufferCount,
                         DrawElementsType.UnsignedInt, 0);
                     mat_mesh_vals.triangle_ibo.UnBind();
                 }
 
-                if(mat_mesh_vals.quadrilateral_ibo.BufferCount > 0)
+                if (mat_mesh_vals.quadrilateral_ibo.BufferCount > 0)
                 {
                     // Paint the quadrilateral mesh
                     mat_mesh_vals.quadrilateral_ibo.Bind();
-                    GL.DrawElements(PrimitiveType.Triangles, mat_mesh_vals.quadrilateral_ibo.BufferCount, 
+                    GL.DrawElements(PrimitiveType.Triangles, mat_mesh_vals.quadrilateral_ibo.BufferCount,
                         DrawElementsType.UnsignedInt, 0);
                     mat_mesh_vals.quadrilateral_ibo.UnBind();
                 }
@@ -217,7 +231,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
                 return;
 
 
-            if(wireframe_ibo.BufferCount > 0)
+            if (wireframe_ibo.BufferCount > 0)
             {
                 // Paint the wire frame
                 Vector4 WireframeColor = new Vector4(gvariables_static.ColorUtils.get_WireframeColor(),
@@ -246,7 +260,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
                 return;
 
 
-            if(point_ibo.BufferCount > 0)
+            if (point_ibo.BufferCount > 0)
             {
                 // Paint the mesh points
                 Vector4 PtColor = new Vector4(gvariables_static.ColorUtils.get_PtColor(),
@@ -258,9 +272,9 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
                 point_vao.Bind();
                 point_ibo.Bind();
 
-                // GL.PointSize(1.0f);
-                GL.DrawElements(PrimitiveType.Points,point_ibo.BufferCount, DrawElementsType.UnsignedInt, 0);
-                // GL.PointSize(1.0f);
+                GL.PointSize(2.0f);
+                GL.DrawElements(PrimitiveType.Points, point_ibo.BufferCount, DrawElementsType.UnsignedInt, 0);
+                GL.PointSize(1.0f);
 
                 meshShader.UnBind();
                 point_vao.UnBind();
@@ -273,10 +287,10 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
 
         public void paint_selected_mesh_points()
         {
-            if(selected_point_ibo.BufferCount > 0)
+            if (selected_point_ibo.BufferCount > 0)
             {
                 // Paint the selected points
-                Vector4 selectedPtColor = new Vector4(gvariables_static.ColorUtils.get_SelectionPtColor(), 
+                Vector4 selectedPtColor = new Vector4(gvariables_static.ColorUtils.get_SelectionPtColor(),
                     gvariables_static.geom_transparency);
 
                 meshShader.Bind();
@@ -390,7 +404,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
 
             for (int i = 0; i < points.Count; i++)
             {
-                point_store pt  = points[i];
+                point_store pt = points[i];
                 vertexData.Add(pt.x_coord);
                 vertexData.Add(pt.y_coord);
                 pointIndexData.Add(i);
@@ -498,8 +512,59 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
 
             }
 
+            // Shrunk Mesh buffers
+            generate_shrunk_mesh();
+
             buffersInitialized = true;
         }
+
+
+        private void generate_shrunk_mesh()
+        {
+
+            point_store GetPointById(int pt_id)
+            {
+                int idx = pointIDToIndex[pt_id];
+
+                return points[idx];
+            }
+
+     
+            foreach (var matMesh in mat_mesh_data.Values)
+            {
+                // Generate shrunk vertices for triangles
+                foreach (tri_store tri in matMesh.tris)
+                {
+                    var p1 = GetPointById(tri.pt_id1);
+                    var p2 = GetPointById(tri.pt_id2);
+                    var p3 = GetPointById(tri.pt_id3);
+
+                    shrunk_mesh_data.add_shrunk_triangle(tri.tri_id,
+                        p1.x_coord, p1.y_coord, p2.x_coord, p2.y_coord, p3.x_coord, p3.y_coord,
+                        matMesh.material_id);
+                }
+
+            
+                foreach (quad_store quad in matMesh.quads)
+                {
+                    var p1 = GetPointById(quad.pt_id1);
+                    var p2 = GetPointById(quad.pt_id2);
+                    var p3 = GetPointById(quad.pt_id3);
+                    var p4 = GetPointById(quad.pt_id4);
+
+                    shrunk_mesh_data.add_shrunk_quadrilateral(quad.quad_id,
+                        p1.x_coord, p1.y_coord, p2.x_coord, p2.y_coord,
+                        p3.x_coord, p3.y_coord, p4.x_coord, p4.y_coord,
+                        matMesh.material_id);
+                 
+                }
+            }
+
+            // Initialize the buffer
+            shrunk_mesh_data.create_shrunkmesh_buffer_data();
+
+        }
+
 
 
         public void update_openTK_uniforms(drawing_events graphic_events_control)
@@ -509,6 +574,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
 
             meshShader.SetMatrix4("uMVP", uMVP);
         }
+
 
         public void Dispose()
         {

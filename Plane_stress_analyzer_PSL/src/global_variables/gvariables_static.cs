@@ -63,7 +63,7 @@ namespace Plane_stress_analyzer_PSL.src.global_variables
 
             public static Vector3 get_PtColor()
             {
-                Color color = Color.LightCoral;
+                Color color = Color.Brown;
 
                 return new Vector3(color.R / 255.0f, color.G / 255.0f, color.B / 255.0f);
             }

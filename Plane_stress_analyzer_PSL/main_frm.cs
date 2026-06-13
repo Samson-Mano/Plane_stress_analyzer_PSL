@@ -8,7 +8,6 @@ using Plane_stress_analyzer_PSL.src.global_variables;
 using Plane_stress_analyzer_PSL.src.model_store;
 using Plane_stress_analyzer_PSL.src.model_store.fe_objects;
 using System;
-using System.IO;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -325,9 +324,8 @@ namespace Plane_stress_analyzer_PSL
 
                 try
                 {
-                    string fileContent = File.ReadAllText(filePath);
 
-                    modeldata.importTXTFile(fileContent);
+                    modeldata.importFile(filePath, 0);
 
                     // Do something with the file content, e.g., parse the model
                     // MessageBox.Show("Model file loaded successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -349,16 +347,104 @@ namespace Plane_stress_analyzer_PSL
         private void importModelToolStripMenuItem_Click(object sender, EventArgs e)
         {
 
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                Title = "Import Model File",
+                Filter = "Text Files (*.bin)|*.bin|All Files (*.*)|*.*",
+                // InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
+            };
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                string filePath = openFileDialog.FileName;
+
+                try
+                {
+
+                    modeldata.importFile(filePath, 1);
+
+                    // Do something with the file content, e.g., parse the model
+                    // MessageBox.Show("Model file loaded successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error reading binary file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+
+            glControl_main_panel_SizeChanged(sender, e);
+
+            glControl_main_panel.Refresh();
+            glControl_main_panel.Invalidate();
+
         }
 
         private void exportModelToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            SaveFileDialog saveFileDialog = new SaveFileDialog
+            {
+                Title = "Export Model File",
+                Filter = "Bindary Files (*.bin)|*.bin|All Files (*.*)|*.*",
+                // InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
+            };
 
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                string filePath = saveFileDialog.FileName;
+
+                try
+                {
+                    
+                    modeldata.exportBINFile(filePath);
+
+                    // Do something with the file content, e.g., parse the model
+                    // MessageBox.Show("Model file exported successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error exporting file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+
+            glControl_main_panel_SizeChanged(sender, e);
+
+            glControl_main_panel.Refresh();
+            glControl_main_panel.Invalidate();
         }
 
         private void optionToolStripMenuItem_Click(object sender, EventArgs e)
         {
+             if (modeldata.IsModelSet == false)
+                return;
 
+            // Check if option_Form is null or disposed
+            if (option_Form == null || option_Form.IsDisposed)
+            {
+                option_Form = new option_frm();
+
+                // Make it behave like a tool window
+                option_Form.FormBorderStyle = FormBorderStyle.SizableToolWindow;
+                option_Form.ShowInTaskbar = false;
+                option_Form.TopLevel = true;
+                option_Form.Owner = this;
+
+                // Manually center the form on the parent
+                int x = this.Location.X + (this.Width - option_Form.Width) / 2;
+                int y = this.Location.Y + (this.Height - option_Form.Height) / 2;
+                option_Form.StartPosition = FormStartPosition.Manual;
+                option_Form.Location = new Point(Math.Max(x, 0), Math.Max(y, 0)); // avoid negative positions
+
+            }
+
+            //// Turn on Flag Material update form is open
+            //fedata.meshdata.isMaterialUpdateInProgress = true;
+            //fedata.meshdata.clear_selected_mesh();
+
+            // Show the form
+            option_Form.Show(this);
+            option_Form.BringToFront();
+
+            glControl_main_panel.Invalidate();
         }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
@@ -392,8 +478,16 @@ namespace Plane_stress_analyzer_PSL
 
         #endregion
 
+        #region "Call from Child Forms"
+
+        public void CallFrom_option_frm()
+        {
+
+            glControl_main_panel.Invalidate();
+        }
+        #endregion
 
 
 
-    }
+        }
 }

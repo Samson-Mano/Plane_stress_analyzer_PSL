@@ -39,7 +39,9 @@ namespace Plane_stress_analyzer_PSL.src.model_store
         public bool isMaterialUpdateInProgress = false;
 
 
-        bool IsModelSet = false;
+        public bool IsModelSet = false;
+
+
 
         public modeldata_store()
         {
@@ -68,14 +70,24 @@ namespace Plane_stress_analyzer_PSL.src.model_store
         }
 
 
-        public void importTXTFile(string fileContent)
+        public void importFile(string filePath, int type)
         {
             List<Vector3> nodePtsList = new List<Vector3>();
             IsModelSet = false;
 
             fe_data = new fedata_store();
 
-            file_events.import_txt_mesh(fileContent, ref fe_data, ref nodePtsList, ref IsModelSet);
+            if(type == 0)
+            {
+                // Import type is TXT file
+                string fileContent = System.IO.File.ReadAllText(filePath);
+                file_events.import_txt_mesh(fileContent, ref fe_data, ref nodePtsList, ref IsModelSet);
+            }
+            else if(type == 1)
+            {
+                // Import type is BIN file
+                file_events.import_binary_mesh(filePath, ref fe_data, ref nodePtsList, ref IsModelSet);
+            }
 
 
             if (IsModelSet == false)
@@ -102,6 +114,16 @@ namespace Plane_stress_analyzer_PSL.src.model_store
 
         }
 
+
+        public void exportBINFile(string filePath)
+        {
+            if (!IsModelSet)
+                return;
+
+            // Export the bindary mesh
+            file_events.export_binary_mesh(filePath, fe_data);
+
+        }
 
 
         public void paint_model()

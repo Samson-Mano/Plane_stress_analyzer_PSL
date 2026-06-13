@@ -139,6 +139,7 @@
     <Compile Include="src\model_store\geom_objects\meshdata_store.cs" />
     <Compile Include="src\model_store\geom_objects\selectcircle_store.cs" />
     <Compile Include="src\model_store\geom_objects\selectrectangle_store.cs" />
+    <Compile Include="src\model_store\geom_objects\shrunkmeshdata_store.cs" />
     <Compile Include="src\model_store\modeldata_store.cs" />
     <Compile Include="src\opentk_control\opentk_buffer\fontAtlas.cs" />
     <Compile Include="src\opentk_control\opentk_buffer\IndexBuffer.cs" />
@@ -149,6 +150,9 @@
     <Compile Include="src\opentk_control\shader_compiler\ShaderLibrary.cs" />
     <EmbeddedResource Include="main_frm.resx">
       <DependentUpon>main_frm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="other_windows\option_frm.resx">
+      <DependentUpon>option_frm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
