@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Plane_stress_analyzer_PSL.Resources {
+namespace Resources {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace Plane_stress_analyzer_PSL.Resources {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Plane_stress_analyzer_PSL.Resources.Resource_font", typeof(Resource_font).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Resources.Resource_font", typeof(Resource_font).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -77,26 +77,6 @@ namespace Plane_stress_analyzer_PSL.Resources {
             get {
                 object obj = ResourceManager.GetObject("HyperFont", resourceCulture);
                 return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap pic_pin_support {
-            get {
-                object obj = ResourceManager.GetObject("pic_pin_support", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap pic_roller_support {
-            get {
-                object obj = ResourceManager.GetObject("pic_roller_support", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
             }
         }
     }

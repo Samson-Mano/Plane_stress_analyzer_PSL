@@ -1,4 +1,6 @@
 ﻿using OpenTK;
+using Plane_stress_analyzer_PSL.src.opentk_control.opentk_buffer;
+using src.opentk_control.opentk_buffer;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -6,8 +8,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-
-using Plane_stress_analyzer_PSL.src.opentk_control.opentk_buffer;
 
 
 namespace Plane_stress_analyzer_PSL.src.global_variables
@@ -138,7 +138,7 @@ namespace Plane_stress_analyzer_PSL.src.global_variables
         public static float PointSize = 1.0f;
         public static float LineWidth = 1.0f;
 
-        public static fontAtlas main_font = new fontAtlas();
+        public static GDIFontAtlas main_font = new GDIFontAtlas();
 
 
         public static float geom_transparency = 1.0f;

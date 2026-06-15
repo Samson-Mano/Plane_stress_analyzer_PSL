@@ -1,4 +1,4 @@
-﻿using Plane_stress_analyzer_PSL.Resources;
+﻿using Plane_stress_analyzer_PSL;
 using Plane_stress_analyzer_PSL.src.events_handler;
 using Plane_stress_analyzer_PSL.src.global_variables;
 using Plane_stress_analyzer_PSL.src.opentk_control.opentk_buffer;
@@ -74,11 +74,11 @@ namespace Plane_stress_analyzer_PSL.src.model_store.fe_objects
                 );
 
 
-            System.Drawing.Bitmap pin_support = Resource_font.pic_pin_support;
+            System.Drawing.Bitmap pin_support = Resources.Resource_pics.pic_pin_support;
             constraintTexture_Pin = new Texture();
             constraintTexture_Pin.LoadTexture(pin_support);
 
-            System.Drawing.Bitmap roller_support = Resource_font.pic_roller_support;
+            System.Drawing.Bitmap roller_support = Resources.Resource_pics.pic_roller_support;
             constraintTexture_Roller = new Texture();
             constraintTexture_Roller.LoadTexture(roller_support);
 

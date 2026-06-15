@@ -2,7 +2,7 @@
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
-using Plane_stress_analyzer_PSL.Resources;
+using Plane_stress_analyzer_PSL;
 using Plane_stress_analyzer_PSL.src.events_handler;
 using Plane_stress_analyzer_PSL.src.global_variables;
 using Plane_stress_analyzer_PSL.src.model_store.geom_objects;

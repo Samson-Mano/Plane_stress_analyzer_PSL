@@ -313,6 +313,7 @@ namespace Plane_stress_analyzer_PSL
         #region "File Events"
         private void importTXTFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
+
             OpenFileDialog openFileDialog = new OpenFileDialog
             {
                 Title = "Import Model File",

@@ -113,8 +113,8 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
         {
             // Label buffer
             _labelVAO = new VertexArray();
-            _labelVBO = new VertexBuffer(100);
-            _labelIBO = new IndexBuffer(100);
+            _labelVBO = new VertexBuffer(10);
+            _labelIBO = new IndexBuffer(10);
 
             var labelLayout = new VertexBufferLayout();
             labelLayout.AddFloat(2);  // Character Position

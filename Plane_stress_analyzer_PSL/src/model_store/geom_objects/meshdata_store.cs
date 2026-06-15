@@ -3,7 +3,7 @@ using Plane_stress_analyzer_PSL.src.global_variables;
 using Plane_stress_analyzer_PSL.src.model_store.fe_objects;
 using Plane_stress_analyzer_PSL.src.opentk_control.opentk_buffer;
 using Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler;
-using SharpFont.Cache;
+
 using System;
 using System.Collections.Generic;
 using System.Drawing;
