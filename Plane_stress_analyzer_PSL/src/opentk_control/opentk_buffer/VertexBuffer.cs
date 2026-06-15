@@ -19,10 +19,10 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.opentk_buffer
         private int _capacity;  // Current capacity in bytes
         private int _size;      // Current used size in bytes
         private bool _disposed = false;
+        private List<float> _localBuffer = new List<float>();  // Local copy of all vertex data
 
         public int Size => _size;
         public int Capacity => _capacity;
-
 
 
         public VertexBuffer(int vertexbuffer_count = 10)  // Note: Data count is the number of float count
@@ -39,19 +39,31 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.opentk_buffer
 
         public void AppendVertexBuffer(float[] vertexbuffer_data)
         {
-            int vertexbuffer_size = vertexbuffer_data.Length * sizeof(float);
+            if (vertexbuffer_data == null || vertexbuffer_data.Length == 0)
+                return;
+
+            // Add to local buffer
+            _localBuffer.AddRange(vertexbuffer_data);
+
+            int vertexbuffer_size = _localBuffer.Count * sizeof(float);
 
             Bind();
 
             // Grow buffer if needed
-            if (_size + vertexbuffer_size > _capacity)
+            if (vertexbuffer_size > _capacity)
             {
-                Grow(Math.Max(_capacity * 2, _size + vertexbuffer_size));
+                // Grow the GPU buffer to accommodate new data
+                int newCapacity = Math.Max(_capacity * 2, vertexbuffer_size);
+
+                // Reallocate GPU buffer with new size
+                GL.BufferData(BufferTarget.ArrayBuffer, newCapacity, IntPtr.Zero, BufferUsageHint.DynamicDraw);
+
+                _capacity = newCapacity;
             }
 
-            // Append data at the current size position
-            GL.BufferSubData(BufferTarget.ArrayBuffer, (IntPtr)_size, vertexbuffer_size, vertexbuffer_data);
-            _size += vertexbuffer_size;
+            // Upload ALL data to GPU (this is the key - upload everything, not just new data)
+            GL.BufferSubData(BufferTarget.ArrayBuffer, IntPtr.Zero, vertexbuffer_size, _localBuffer.ToArray());
+            _size = _localBuffer.Count;
 
             UnBind();
         }
@@ -59,7 +71,14 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.opentk_buffer
 
         public void updateVertexBuffer(float[] vertexbuffer_data)
         {
+            if (vertexbuffer_data == null || vertexbuffer_data.Length == 0)
+                return;
+
             int vertexbuffer_size = vertexbuffer_data.Length * sizeof(float);
+
+            // Replace entire local buffer
+            _localBuffer.Clear();
+            _localBuffer.AddRange(vertexbuffer_data);
 
             // Important!! Call only in Dynamic Buffer case
             // Update the vertex data
@@ -69,36 +88,17 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.opentk_buffer
         }
 
 
-
-        private void Grow(int newCapacity)
-        {
-            // Create new buffer with larger capacity
-            int newBufferId = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.ArrayBuffer, newBufferId);
-            GL.BufferData(BufferTarget.ArrayBuffer, newCapacity, IntPtr.Zero, BufferUsageHint.DynamicDraw);
-
-            // Copy existing data
-            GL.BindBuffer(BufferTarget.CopyReadBuffer, _rendererId);
-            GL.BindBuffer(BufferTarget.CopyWriteBuffer, newBufferId);
-            GL.CopyBufferSubData(BufferTarget.CopyReadBuffer, BufferTarget.CopyWriteBuffer,
-                                IntPtr.Zero, IntPtr.Zero, _size);
-
-            // Replace old buffer
-            GL.DeleteBuffer(_rendererId);
-            _rendererId = newBufferId;
-            _capacity = newCapacity;
-
-            UnBind();
-        }
-
         public void ClearVertexBuffer()
         {
+            _localBuffer.Clear();
             _size = 0;
-            // Optional: Reset GPU memory (clear to zeros)
-            Bind();
-            IntPtr zero = IntPtr.Zero;
-            GL.BufferSubData(BufferTarget.ArrayBuffer, IntPtr.Zero, _capacity, ref zero);
-            UnBind();
+
+            //// Optional: Clear GPU memory (not strictly necessary since we'll overwrite)
+            //// But if you want to be thorough:
+            //Bind();
+            //byte[] zeros = new byte[_capacity];
+            //GL.BufferSubData(BufferTarget.ArrayBuffer, IntPtr.Zero, zeros.Length, zeros);
+            //UnBind();
         }
 
         public void Bind() => GL.BindBuffer(BufferTarget.ArrayBuffer, _rendererId);

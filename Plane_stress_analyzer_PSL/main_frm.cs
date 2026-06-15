@@ -66,8 +66,8 @@ namespace Plane_stress_analyzer_PSL
             glControl_main_panel.Dock = DockStyle.Fill;
 
             // Create the main font atlas
-            gvariables_static.main_font.CreateAtlas();
             modeldata.InitializeModelGeom();
+            gvariables_static.main_font.CreateAtlas();
 
         }
 
@@ -88,6 +88,8 @@ namespace Plane_stress_analyzer_PSL
 
 
             fpsStopwatch.Start();
+
+            // gvariables_static.main_font.CreateAtlas();
 
             // Refresh the controller (doesnt do much.. nothing to draw)
             glControl_main_panel.Invalidate();
@@ -584,17 +586,22 @@ namespace Plane_stress_analyzer_PSL
 
         public void CallFrom_load_frm()
         {
+            modeldata.update_openTK_uniforms();
+
             glControl_main_panel.Invalidate();
         }
 
 
         public void CallFrom_constraint_frm()
         {
+            modeldata.update_openTK_uniforms();
+
             glControl_main_panel.Invalidate();
         }
 
         public void CallFrom_option_frm()
         {
+            modeldata.update_openTK_uniforms();
 
             glControl_main_panel.Invalidate();
         }

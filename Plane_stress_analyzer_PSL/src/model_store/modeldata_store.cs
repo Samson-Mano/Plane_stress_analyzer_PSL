@@ -46,7 +46,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store
         public modeldata_store()
         {
             // Initialize the model
-            fe_data = new fedata_store();
+            // fe_data = new fedata_store();
 
             // To control the drawing graphics
             graphic_events_control = new drawing_events(this);
@@ -66,6 +66,8 @@ namespace Plane_stress_analyzer_PSL.src.model_store
             // Set the selection rectangle  & selection circle
             selection_rectangle = new selectrectangle_store();
             selection_circle = new selectcircle_store();
+
+            fe_data = new fedata_store();
 
         }
 

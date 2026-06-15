@@ -299,7 +299,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
                 point_vao.Bind();
                 selected_point_ibo.Bind();
 
-                GL.PointSize(4.0f);
+                GL.PointSize(6.0f);
                 GL.DrawElements(PrimitiveType.Points, selected_point_ibo.BufferCount, DrawElementsType.UnsignedInt, 0);
                 GL.PointSize(1.0f);
 

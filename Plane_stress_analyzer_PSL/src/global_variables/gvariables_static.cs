@@ -119,7 +119,7 @@ namespace Plane_stress_analyzer_PSL.src.global_variables
         public static Color glcontrol_background_color = Color.White;
 
         // Garphics Control variables
-        public static bool is_paint_meshpoints = true;
+        public static bool is_paint_meshpoints = false;
         public static bool is_paint_mesh_boundaries = true;
         public static bool is_paint_mesh = true;
         public static bool is_paint_constraints = true;
@@ -143,15 +143,6 @@ namespace Plane_stress_analyzer_PSL.src.global_variables
 
         public static float geom_transparency = 1.0f;
         public static float rslt_transparency = 1.0f;
-
-
-        // Result type (Real, Imaginary, Magnitude, Phase)
-        public static bool is_paint_ureal = false;
-        public static bool is_paint_uimag = false;
-        public static bool is_paint_umagnitude = false;
-        public static bool is_paint_uphase = false;
-
-        public static bool is_paint_modalresults = false;
 
 
         // Control Modal Animation
@@ -179,7 +170,7 @@ namespace Plane_stress_analyzer_PSL.src.global_variables
 
         public static float get_font_scale(float font_size)
         {
-            return gvariables_static.geom_size * 0.0003f * (font_size / 12.0f);
+            return gvariables_static.geom_size * 0.01f * (font_size / 12.0f);
 
         }
 
@@ -248,21 +239,11 @@ namespace Plane_stress_analyzer_PSL.src.global_variables
             // Translate the point relative to the rotation center
             Vector2 translatedPt = pt - rotateAbout;
 
-            // Normalize the rotation angle (similar to the C++ version)
-            const double PI = 3.14159365;
-            if (rotationAngle > (PI * 0.5))
-            {
-                rotationAngle -= PI;
-            }
-
-            if (rotationAngle < (-1.0 * PI * 0.5))
-            {
-                rotationAngle += PI;
-            }
+            double rotationRadian = (Math.PI / 180.0) * rotationAngle;
 
             // Apply rotation
-            double cosTheta = Math.Cos(rotationAngle);
-            double sinTheta = Math.Sin(rotationAngle);
+            double cosTheta = Math.Cos(rotationRadian);
+            double sinTheta = Math.Sin(rotationRadian);
 
             // Rotate the point
             Vector2 rotatedPt = new Vector2(

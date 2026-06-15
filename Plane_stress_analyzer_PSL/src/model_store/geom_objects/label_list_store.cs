@@ -59,7 +59,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
         }
 
 
-        public void add_label(int label_id, string label, Vector2 label_loc, int color_id)
+        public void add_label(int label_id, string label, Vector2 label_loc, Vector3 label_color)
         {
             // Add the Label to the list
             label_store temp_label = new label_store
@@ -67,7 +67,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
                 label_id = label_id,
                 label = label,
                 label_loc = label_loc,
-                label_color = gvariables_static.ColorUtils.MeshGetRandomColor(color_id),
+                label_color = label_color,
                 label_angle = 0.0, // radian
                 label_above_loc = true,
                 label_char_count = label.Length
@@ -131,41 +131,33 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
         public void update_buffer()
         {
             // Set the buffer for index (6 indices to form a two triangle, quadrilateral )
-            int label_indices_count = 6 * total_char_count; // 6 index per character
-            int[] label_indices = new int[label_indices_count];
-
-            int label_i_index = 0;
+            List<int> label_indices = new List<int>();
 
             // Set the label index buffers
             foreach (var lb in labelMap)
             {
-                get_label_index_buffer(lb.Value, ref label_indices, ref label_i_index);
+                get_label_index_buffer(lb.Value, ref label_indices);
             }
 
             // Update the index buffer
             _labelIBO.ClearIndexBuffer();
-            _labelIBO.AppendIndexBuffer(label_indices);
+            _labelIBO.AppendIndexBuffer(label_indices.ToArray());
 
 
             // Define the vertex buffer size for a character
-            // 4 vertex to form a quadrilateral ( 2 char position, 2 text location, 2 texture coord, 3 color)
-            int label_vertex_count = 4 * 9 * total_char_count;
-            float[] label_vertices = new float[label_vertex_count];
-
-            int label_v_index = 0;
+           List<float> label_vertices = new List<float>();
 
             // Set the label vertex buffers
             foreach (var lb in labelMap)
             {
                 // Add vertex buffers
-                get_label_vertex_buffer(lb.Value, ref label_vertices, ref label_v_index);
+                get_label_vertex_buffer(lb.Value, ref label_vertices);
             }
 
-            int label_vertex_size = label_vertex_count * sizeof(float); // Size of the label vertex buffer
 
             // Update the vertex buffer
             _labelVBO.ClearVertexBuffer();
-            _labelVBO.AppendVertexBuffer(label_vertices);
+            _labelVBO.AppendVertexBuffer(label_vertices.ToArray());
             
         }
 
@@ -178,26 +170,26 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
             label_count = 0;
             total_char_count = 0;
 
+            // Clear the buffers
+            _labelIBO.ClearIndexBuffer();
+            _labelVBO.ClearVertexBuffer();
+
         }
 
 
         public void update_openTK_uniforms(drawing_events graphic_events_control)
         {
             // Update the openGl uniform matrices
+            Matrix4 uMVP = graphic_events_control.projectionMatrix *
+    graphic_events_control.viewMatrix * graphic_events_control.modelMatrix;
 
-                // Set the model matrix
-                _labelshader.SetMatrix4("modelMatrix", graphic_events_control.modelMatrix);
+            _labelshader.SetMatrix4("uMVP", uMVP);
 
-                // Set the projection matrix
-                _labelshader.SetMatrix4("projectionMatrix", graphic_events_control.projectionMatrix);
+            float zoomscale = (float)graphic_events_control.zoom_val;
+            _labelshader.SetFloat("zoomscale", zoomscale);
 
-  
-                // Set the view matrix
-                _labelshader.SetMatrix4("viewMatrix", graphic_events_control.viewMatrix);
-
-  
-                // Set the transparency float
-                _labelshader.SetFloat("vertexTransparency", gvariables_static.geom_transparency);
+            // Set the transparency float
+            _labelshader.SetFloat("vertexTransparency", gvariables_static.geom_transparency);
 
         }
 
@@ -216,7 +208,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
             GL.BindTexture(TextureTarget.Texture2D, gvariables_static.main_font.TextureID);
 
             // Draw the elements
-            GL.DrawElements(PrimitiveType.Triangles, 6 * total_char_count, DrawElementsType.UnsignedInt, IntPtr.Zero);
+            GL.DrawElements(PrimitiveType.Triangles, _labelIBO.BufferCount, DrawElementsType.UnsignedInt, IntPtr.Zero);
 
             // Unbind the texture
             GL.BindTexture(TextureTarget.Texture2D, 0);
@@ -229,7 +221,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
         }
 
 
-        private void get_label_vertex_buffer(label_store lb, ref float[] label_vertices, ref int label_v_index)
+        private void get_label_vertex_buffer(label_store lb, ref List<float> label_vertices)
         {
 
             float font_scale = gvariables_static.get_font_scale(font_size);
@@ -289,24 +281,21 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
                 rotated_pt = gvariables_static.RotatePoint(loc, new Vector2(xpos, ypos + h), lb.label_angle);
 
                 // Character location
-                label_vertices[label_v_index + 0] = rotated_pt.X;
-                label_vertices[label_v_index + 1] = rotated_pt.Y;
+                label_vertices.Add(rotated_pt.X);
+                label_vertices.Add(rotated_pt.Y);
 
                 // character origin
-                label_vertices[label_v_index + 2] = loc.X;
-                label_vertices[label_v_index + 3] = loc.Y;
+                label_vertices.Add(loc.X);
+                label_vertices.Add(loc.Y);
 
                 // Texture Glyph coordinate
-                label_vertices[label_v_index + 4] = ch_data.TopLeft.X + margin;
-                label_vertices[label_v_index + 5] = ch_data.TopLeft.Y;
+                label_vertices.Add(ch_data.TopLeft.X + margin);
+                label_vertices.Add(ch_data.TopLeft.Y);
 
                 // Text color
-                label_vertices[label_v_index + 6] = lb.label_color.X;
-                label_vertices[label_v_index + 7] = lb.label_color.Y;
-                label_vertices[label_v_index + 8] = lb.label_color.Z;
-
-                // Iterate
-                label_v_index = label_v_index + 9;
+                label_vertices.Add(lb.label_color.X);
+                label_vertices.Add(lb.label_color.Y);
+                label_vertices.Add(lb.label_color.Z);
 
                 //__________________________________________________________________________________________
 
@@ -315,24 +304,21 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
                 rotated_pt = gvariables_static.RotatePoint(loc, new Vector2(xpos, ypos), lb.label_angle);
 
                 // Character location
-                label_vertices[label_v_index + 0] = rotated_pt.X;
-                label_vertices[label_v_index + 1] = rotated_pt.Y;
+                label_vertices.Add(rotated_pt.X);
+                label_vertices.Add(rotated_pt.Y);
 
                 // character origin
-                label_vertices[label_v_index + 2] = loc.X;
-                label_vertices[label_v_index + 3] = loc.Y;
+                label_vertices.Add(loc.X);
+                label_vertices.Add(loc.Y);
 
                 // Texture Glyph coordinate
-                label_vertices[label_v_index + 4] = ch_data.TopLeft.X + margin;
-                label_vertices[label_v_index + 5] = ch_data.BottomRight.Y;
+                label_vertices.Add(ch_data.TopLeft.X + margin);
+                label_vertices.Add(ch_data.BottomRight.Y);
 
                 // Text color
-                label_vertices[label_v_index + 6] = lb.label_color.X;
-                label_vertices[label_v_index + 7] = lb.label_color.Y;
-                label_vertices[label_v_index + 8] = lb.label_color.Z;
-
-                // Iterate
-                label_v_index = label_v_index + 9;
+                label_vertices.Add(lb.label_color.X);
+                label_vertices.Add(lb.label_color.Y);
+                label_vertices.Add(lb.label_color.Z);
 
                 //__________________________________________________________________________________________
 
@@ -341,24 +327,21 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
                 rotated_pt = gvariables_static.RotatePoint(loc, new Vector2(xpos + w, ypos), lb.label_angle);
 
                 // Character location
-                label_vertices[label_v_index + 0] = rotated_pt.X;
-                label_vertices[label_v_index + 1] = rotated_pt.Y;
+                label_vertices.Add(rotated_pt.X);
+                label_vertices.Add(rotated_pt.Y);
 
                 // character origin
-                label_vertices[label_v_index + 2] = loc.X;
-                label_vertices[label_v_index + 3] = loc.Y;
+                label_vertices.Add(loc.X);
+                label_vertices.Add(loc.Y);
 
                 // Texture Glyph coordinate
-                label_vertices[label_v_index + 4] = ch_data.BottomRight.X - margin;
-                label_vertices[label_v_index + 5] = ch_data.BottomRight.Y;
+                label_vertices.Add(ch_data.BottomRight.X - margin);
+                label_vertices.Add(ch_data.BottomRight.Y);
 
                 // Text color
-                label_vertices[label_v_index + 6] = lb.label_color.X;
-                label_vertices[label_v_index + 7] = lb.label_color.Y;
-                label_vertices[label_v_index + 8] = lb.label_color.Z;
-
-                // Iterate
-                label_v_index = label_v_index + 9;
+                label_vertices.Add(lb.label_color.X);
+                label_vertices.Add(lb.label_color.Y);
+                label_vertices.Add(lb.label_color.Z);
 
                 //__________________________________________________________________________________________
 
@@ -367,24 +350,21 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
                 rotated_pt = gvariables_static.RotatePoint(loc, new Vector2(xpos + w, ypos + h), lb.label_angle);
 
                 // Character location
-                label_vertices[label_v_index + 0] = rotated_pt.X;
-                label_vertices[label_v_index + 1] = rotated_pt.Y;
+                label_vertices.Add(rotated_pt.X);
+                label_vertices.Add(rotated_pt.Y);
 
                 // character origin
-                label_vertices[label_v_index + 2] = loc.X;
-                label_vertices[label_v_index + 3] = loc.Y;
+                label_vertices.Add(loc.X);
+                label_vertices.Add(loc.Y);
 
                 // Texture Glyph coordinate
-                label_vertices[label_v_index + 4] = ch_data.BottomRight.X - margin;
-                label_vertices[label_v_index + 5] = ch_data.TopLeft.Y;
+                label_vertices.Add(ch_data.BottomRight.X - margin);
+                label_vertices.Add(ch_data.TopLeft.Y);
 
                 // Text color
-                label_vertices[label_v_index + 6] = lb.label_color.X;
-                label_vertices[label_v_index + 7] = lb.label_color.Y;
-                label_vertices[label_v_index + 8] = lb.label_color.Z;
-
-                // Iterate
-                label_v_index = label_v_index + 9;
+                label_vertices.Add(lb.label_color.X);
+                label_vertices.Add(lb.label_color.Y);
+                label_vertices.Add(lb.label_color.Z);
 
                 //__________________________________________________________________________________________
                 x += ch_data.Advance * font_scale;
@@ -394,26 +374,25 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
         }
 
 
-        private void get_label_index_buffer(label_store lb, ref int[] label_indices, ref int label_i_index)
+        private void get_label_index_buffer(label_store lb, ref List<int> label_indices)
         {
+            int t_id = 0;
 
             for (int i = 0; i < lb.label_char_count; ++i)
             {
                 // Set the index buffers
-                int t_id = ((label_i_index / 6) * 4);
-
                 // Triangle 0,1,2
-                label_indices[label_i_index + 0] = t_id + 0;
-                label_indices[label_i_index + 1] = t_id + 1;
-                label_indices[label_i_index + 2] = t_id + 2;
+                label_indices.Add(t_id + 0);
+                label_indices.Add(t_id + 1);
+                label_indices.Add(t_id + 2);
 
                 // Triangle 2,3,0
-                label_indices[label_i_index + 3] = t_id + 2;
-                label_indices[label_i_index + 4] = t_id + 3;
-                label_indices[label_i_index + 5] = t_id + 0;
+                label_indices.Add(t_id + 2);
+                label_indices.Add(t_id + 3);
+                label_indices.Add(t_id + 0);
 
                 // Increment
-                label_i_index = label_i_index + 6;
+                t_id = t_id + 4;
             }
 
         }

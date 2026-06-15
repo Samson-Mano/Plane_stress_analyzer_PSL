@@ -22,6 +22,7 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.opentk_buffer
         private int _size;     // Current size of indices in bytes
         private bool _disposed;
         private int _bufferCount;
+        private List<int> _localBuffer = new List<int>();  // Local copy of all index data
 
         public int Size => _size;
         public int Capacity => _capacity;

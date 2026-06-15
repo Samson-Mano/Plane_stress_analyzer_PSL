@@ -14,6 +14,7 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
             MeshShader,
             TextShader,
             ConstraintShader,
+            LoadShader,
             SelectionShader
         }
 
@@ -30,14 +31,14 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
             uniform mat4 uMVP;           // Model-View-Projection matrix
             uniform vec4 vertexColor;
                     
-            layout(location = 0) in vec3 aPosition;
+            layout(location = 0) in vec2 aPosition;
                     
 
             out vec4 vColor;
                     
             void main()
             {
-                gl_Position = uMVP * vec4(aPosition, 1.0);
+                gl_Position = uMVP * vec4(aPosition, 0.0, 1.0);
                 vColor = vertexColor;
             }
 
@@ -83,9 +84,9 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
             #version 330 core
 
             uniform mat4 uMVP;           // Model-View-Projection matrix
-            uniform float zoomscale;
+            uniform float zoomscale = 1.0f;
 
-            uniform float vertexTransparency; // Transparency of the mesh
+            uniform float vertexTransparency = 1.0f; // Transparency of the mesh
 
             layout(location = 0) in vec2 position;
             layout(location = 1) in vec2 origin;
@@ -156,7 +157,7 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
             #version 330 core
 
             uniform mat4 uMVP;           // Model-View-Projection matrix
-            uniform float zoomscale;
+            uniform float zoomscale = 1.0f;
 
             uniform vec4 vertexColor;
 
@@ -168,16 +169,16 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
 
             flat out uint v_textureType;
             out vec2 v_textureCoord;
-            out vec3 v_textureColor;
+            out vec4 v_textureColor;
 
             void main()
             {
 
 	            // apply Translation to the final position 
-	            vec4 finalPosition =  uMVP * vec4(position,0.0f,1.0f);
+	            vec4 finalPosition = uMVP * vec4(position, 0.0f, 1.0f);
 
 	            // apply Translation to the text origin
-	            vec4 finalTextorigin =  uMVP * vec4(origin,0.0f,1.0f);
+	            vec4 finalTextorigin = uMVP * vec4(origin, 0.0f, 1.0f);
     
 
 	            // Remove the zoom scale
@@ -204,13 +205,13 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
             return @"
 
             #version 330 core
-            uniform float transparency;
+            // uniform float transparency;
             uniform sampler2D u_TexturePin;    // Pin support texture
             uniform sampler2D u_TextureRoller; // Roller support texture
 
             flat in uint v_textureType;  // 0 = Pin, 1 = Roller
             in vec2 v_textureCoord;
-            in vec3 v_textureColor;
+            in vec4 v_textureColor;
 
             out vec4 f_Color; // fragment's final color (out to the fragment shader)
 
@@ -219,12 +220,12 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
                 vec4 texColor;
         
                 // Select which texture to sample based on v_textureType
-                if (v_textureType == 0)
+                if (v_textureType == 0u)
                     texColor = texture(u_TexturePin, v_textureCoord);
                 else
                     texColor = texture(u_TextureRoller, v_textureCoord);
         
-                f_Color = vec4(v_textureColor, transparency) * texColor;
+                f_Color = v_textureColor * texColor;
             }
 
                     ";
@@ -235,6 +236,70 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
 
         #endregion
 
+
+        #region "Load Shader"
+
+        public static string load_vert_shader()
+        {
+            return @"
+
+            #version 330 core
+
+            uniform mat4 uMVP;
+            uniform vec4 vertexColor;
+            uniform float zoomscale = 1.0f;
+    
+            layout(location = 0) in vec2 aPosition;
+            layout(location = 1) in vec2 aOrigin;
+    
+            out vec4 vColor;
+    
+            void main()
+            {
+                // Transform to clip space
+                vec4 clipPos = uMVP * vec4(aPosition, 0.0, 1.0);
+                vec4 clipOrigin = uMVP * vec4(aOrigin, 0.0, 1.0);
+        
+                // Calculate NDC coordinates
+                vec3 ndcPos = clipPos.xyz / clipPos.w;
+                vec3 ndcOrigin = clipOrigin.xyz / clipOrigin.w;
+        
+                // Scale offset in NDC space
+                vec2 scaledOffset = (ndcPos.xy - ndcOrigin.xy) / zoomscale;
+        
+                // Final position (back to clip space)
+                gl_Position = vec4(ndcOrigin.xy + scaledOffset, 0.0, 1.0);
+        
+                vColor = vertexColor;
+            }
+
+                    ";
+
+        }
+
+
+        public static string load_frag_shader()
+        {
+            return @"
+
+            #version 330 core
+
+            in vec4 vColor;
+            out vec4 fColor;
+    
+            void main()
+            {
+                // Simple color output without lighting
+                fColor = vColor;
+            }
+
+                    ";
+
+        }
+
+
+
+        #endregion
 
 
         #region "Selection Shader"
@@ -300,6 +365,8 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
                     return selrect_vert_shader();
                 case ShaderType.ConstraintShader: 
                     return constraint_vert_shader();
+                case ShaderType.LoadShader:
+                    return load_vert_shader();
                 case ShaderType.TextShader:
                     return text_vert_shader();
                 default:
@@ -319,6 +386,8 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
                     return selrect_frag_shader();
                 case ShaderType.ConstraintShader:
                     return constraint_frag_shader();
+                case ShaderType.LoadShader:
+                    return load_frag_shader();
                 case ShaderType.TextShader:
                     return text_frag_shader();
                 default:

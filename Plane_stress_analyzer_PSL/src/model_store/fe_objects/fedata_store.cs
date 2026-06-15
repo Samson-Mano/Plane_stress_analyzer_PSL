@@ -121,6 +121,12 @@ namespace Plane_stress_analyzer_PSL.src.model_store.fe_objects
 
             meshdrawingdata.paint_selected_mesh_points();
 
+            // Paint the constraints
+            fe_constraints.paint_node_constraint();
+
+            // Paint the loads
+            fe_loads.paint_node_load();
+
         }
 
 
@@ -131,7 +137,8 @@ namespace Plane_stress_analyzer_PSL.src.model_store.fe_objects
                 return;
 
             meshdrawingdata.update_openTK_uniforms(graphic_events_control);
-
+            fe_constraints.update_openTK_uniforms(graphic_events_control);
+            fe_loads.update_openTK_uniforms(graphic_events_control);
 
         }
 
