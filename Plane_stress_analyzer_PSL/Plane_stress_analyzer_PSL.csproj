@@ -198,9 +198,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="freetype6.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="logo_ico_png.ico" />
     <None Include="Resources\FreeSans.ttf" />
     <None Include="Resources\gaussian_pic.png" />

@@ -1,5 +1,6 @@
 ﻿using Plane_stress_analyzer_PSL.src.global_variables;
 using Plane_stress_analyzer_PSL.src.model_store;
+using Plane_stress_analyzer_PSL.src.model_store.fe_objects;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -24,10 +25,277 @@ namespace Plane_stress_analyzer_PSL.other_windows
         }
 
 
+
+        public void update_material_data()
+        {
+            // Get the fe materials
+            List<material_data> fe_materials = this.modeldata.fe_data.fe_materials.Values.ToList();
+
+            // Clear existing rows 
+            dataGridView_MaterialList.Rows.Clear();
+
+            // Add rows manually
+            foreach (material_data mat in fe_materials)
+            {
+                dataGridView_MaterialList.Rows.Add(
+                    mat.material_id.ToString(),
+                    mat.material_name,
+                    mat.youngs_modulus.ToString("G"),
+                    mat.material_density.ToString("G"),
+                    mat.poissons_ratio.ToString("G")
+                );
+            }
+
+        }
+
+
+        private void dataGridView_MaterialList_SelectionChanged(object sender, EventArgs e)
+        {
+            if (dataGridView_MaterialList.SelectedRows.Count > 0)
+            {
+                DataGridViewRow selectedRow = dataGridView_MaterialList.SelectedRows[0];
+
+
+                // Check if the selected row is the first row (index 0)
+                if (selectedRow.Index == 0)
+                {
+                    // First row update and delete not allowed
+                    button_update.Enabled = false;
+                    button_delete.Enabled = false;
+
+                }
+                else
+                {
+                    // Enable the update and delete for all other rows
+                    button_update.Enabled = true;
+                    button_delete.Enabled = true;
+
+                }
+
+                textBox_materialname.Text = selectedRow.Cells["Column2_materialname"].Value?.ToString();
+                textBox_youngsmodulus.Text = selectedRow.Cells["Column3_youngsmodulus"].Value?.ToString();
+                textBox_density.Text = selectedRow.Cells["Column4_density"].Value?.ToString();
+                textBox_poissonsratio.Text = selectedRow.Cells["Column5_poissonsratio"].Value?.ToString();
+
+            }
+
+        }
+
+
         private void matprop_frm_Load(object sender, EventArgs e)
         {
             // Initialize selection state from global variable
             SetSelectionMode(gvariables_static.is_RectangleSelection);
+        }
+
+
+        private void button_create_Click(object sender, EventArgs e)
+        {
+
+            // Generate a unique material ID
+            int material_id = gvariables_static.get_unique_id(modeldata.fe_data.materialids);
+
+            // Read and validate input from text boxes
+            string material_name = textBox_materialname.Text.Trim();
+            if (string.IsNullOrWhiteSpace(material_name))
+            {
+                MessageBox.Show("Material name cannot be empty.");
+                return;
+            }
+
+            // Test the data
+            if (!double.TryParse(textBox_youngsmodulus.Text, out double youngsmodulus) ||
+                !double.TryParse(textBox_density.Text, out double density) ||
+                !double.TryParse(textBox_poissonsratio.Text, out double poissonsratio))
+            {
+                MessageBox.Show("Please enter valid numeric values for youngs modulus, density, and poissons ratio.");
+                return;
+            }
+
+            // Add a new row to the DataGridView
+            dataGridView_MaterialList.Rows.Add(
+                material_id,
+                material_name,
+                youngsmodulus.ToString("G"),
+                density.ToString("G"),
+                poissonsratio.ToString("G")
+            );
+
+            // Create and store the material object
+            var newMaterial = new material_data
+            {
+                material_id = material_id,
+                material_name = material_name,
+                youngs_modulus = youngsmodulus,
+                material_density = density,
+                poissons_ratio = poissonsratio
+            };
+
+            modeldata.fe_data.fe_materials[material_id] = newMaterial;
+            modeldata.fe_data.materialids.Add(material_id);
+
+            // modeldata.fe_data.updateMaterialIDLabels();
+
+            // Call the main form for refresh
+            if (this.Owner is main_frm mainForm)
+            {
+                mainForm.CallFrom_matprop_frm();
+            }
+
+        }
+
+        private void button_update_Click(object sender, EventArgs e)
+        {
+            // Update the material data
+            if (dataGridView_MaterialList.SelectedRows.Count > 0)
+            {
+                DataGridViewRow selectedRow = dataGridView_MaterialList.SelectedRows[0];
+
+                // Safely Retrieve the material ID
+                string idString = selectedRow.Cells["Column1_materialid"].Value?.ToString();
+
+                if (!int.TryParse(idString, out int material_id))
+                {
+                    // MessageBox.Show("Invalid material ID.");
+                    return;
+                }
+
+
+                // Read and validate input from text boxes
+                string material_name = textBox_materialname.Text.Trim();
+                if (string.IsNullOrWhiteSpace(material_name))
+                {
+                    MessageBox.Show("Material name cannot be empty.");
+                    return;
+                }
+
+                // Test the data
+                if (!double.TryParse(textBox_youngsmodulus.Text, out double youngsmodulus) ||
+                    !double.TryParse(textBox_density.Text, out double density) ||
+                    !double.TryParse(textBox_poissonsratio.Text, out double poissonsratio))
+                {
+                    MessageBox.Show("Please enter valid numeric values for youngs modulus, density, and poissons ratio.");
+                    return;
+                }
+
+                // update the material data in the dictionary
+                modeldata.fe_data.fe_materials[material_id].material_name = material_name;
+                modeldata.fe_data.fe_materials[material_id].youngs_modulus = youngsmodulus;
+                modeldata.fe_data.fe_materials[material_id].material_density = density;
+                modeldata.fe_data.fe_materials[material_id].poissons_ratio = poissonsratio;
+
+             
+                // Update the DataGridView row
+                selectedRow.Cells["Column2_materialname"].Value = material_name;
+                selectedRow.Cells["Column3_youngsmodulus"].Value = youngsmodulus.ToString("G");
+                selectedRow.Cells["Column4_density"].Value = density.ToString("G");
+                selectedRow.Cells["Column5_poissonsratio"].Value = poissonsratio.ToString("G");
+
+                // fe_data.updateMaterialIDLabels();
+
+                // Call the main form for refresh
+                if (this.Owner is main_frm mainForm)
+                {
+                    mainForm.CallFrom_matprop_frm();
+                }
+
+            }
+
+        }
+
+        private void button_delete_Click(object sender, EventArgs e)
+        {
+            // Delete the material
+            if (dataGridView_MaterialList.SelectedRows.Count > 0)
+            {
+                DataGridViewRow selectedRow = dataGridView_MaterialList.SelectedRows[0];
+
+                // Safely Retrieve the material ID
+                string idString = selectedRow.Cells["Column1_materialid"].Value?.ToString();
+
+                if (!int.TryParse(idString, out int material_id))
+                {
+                    // MessageBox.Show("Invalid material ID.");
+                    return;
+                }
+
+                // Call the main form
+                if (this.Owner is main_frm mainForm)
+                {
+                    mainForm.CallFrom_matprop_frm();
+                }
+
+
+                // Remove from the dictionary
+                modeldata.fe_data.fe_materials.Remove(material_id);
+                modeldata.fe_data.materialids.Remove(material_id);
+
+
+                // remove the row from the data grid view
+                dataGridView_MaterialList.Rows.Remove(selectedRow);
+
+
+                // Update the material labels
+                // fe_data.updateMaterialIDLabels();
+
+                // Call the main form for refresh
+                if (this.Owner is main_frm mainForm1)
+                {
+                    mainForm1.CallFrom_matprop_frm();
+                }
+
+            }
+
+        }
+
+        private void button_assignmaterial_Click(object sender, EventArgs e)
+        {
+
+            if (dataGridView_MaterialList.SelectedRows.Count > 0)
+            {
+                DataGridViewRow selectedRow = dataGridView_MaterialList.SelectedRows[0];
+                // Safely Retrieve the material ID
+                string idString = selectedRow.Cells["Column1_materialid"].Value?.ToString();
+
+                if (!int.TryParse(idString, out int material_id))
+                {
+                    // MessageBox.Show("Invalid material ID.");
+                    return;
+                }
+
+                // Call the main form
+                if (this.Owner is main_frm mainForm)
+                {
+                    mainForm.CallFrom_matprop_frm();
+                }
+
+                update_selected_element_list();
+            }
+
+        }
+
+
+
+        public void update_selected_element_list()
+        {
+            // Clear the text box
+            textBox_selectedelements.Clear();
+
+            List<int> all_selected_ids = new List<int>();
+
+           // all_selected_ids.AddRange(fe_data.meshdata.selected_tri_ids);
+           // all_selected_ids.AddRange(fe_data.meshdata.selected_quad_ids);
+
+            textBox_selectedelements.Text = string.Join(", ", all_selected_ids);
+
+            //foreach (int id in all_selected_ids)
+            //{
+            //    textBox_selectedelements.Text += $"{id} ,";
+
+            //}
+
+            textBox_selectedelements.Invalidate();
+
         }
 
         private void rectangleSelectionToolStripMenuItem_Click(object sender, EventArgs e) => SetSelectionMode(true);
@@ -48,6 +316,16 @@ namespace Plane_stress_analyzer_PSL.other_windows
 
         }
 
+        private void matprop_frm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            // Control the flag
+            modeldata.isMaterialUpdateInProgress = false;
 
+            // Call the main form
+            if (this.Owner is main_frm mainForm)
+            {
+                mainForm.CallFrom_matprop_frm();
+            }
+        }
     }
 }

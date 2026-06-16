@@ -63,7 +63,7 @@
             // circleSelectionToolStripMenuItem
             // 
             this.circleSelectionToolStripMenuItem.Name = "circleSelectionToolStripMenuItem";
-            this.circleSelectionToolStripMenuItem.Size = new System.Drawing.Size(100, 20);
+            this.circleSelectionToolStripMenuItem.Size = new System.Drawing.Size(125, 24);
             this.circleSelectionToolStripMenuItem.Text = "Circle Selection";
             this.circleSelectionToolStripMenuItem.Click += new System.EventHandler(this.circleSelectionToolStripMenuItem_Click);
             // 
@@ -75,7 +75,7 @@
             this.circleSelectionToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(859, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(859, 28);
             this.menuStrip1.TabIndex = 7;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -84,7 +84,7 @@
             this.rectangleSelectionToolStripMenuItem.Checked = true;
             this.rectangleSelectionToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.rectangleSelectionToolStripMenuItem.Name = "rectangleSelectionToolStripMenuItem";
-            this.rectangleSelectionToolStripMenuItem.Size = new System.Drawing.Size(122, 20);
+            this.rectangleSelectionToolStripMenuItem.Size = new System.Drawing.Size(154, 24);
             this.rectangleSelectionToolStripMenuItem.Text = "Rectangle Selection";
             this.rectangleSelectionToolStripMenuItem.Click += new System.EventHandler(this.rectangleSelectionToolStripMenuItem_Click);
             // 
@@ -96,6 +96,7 @@
             this.button_assignmaterial.TabIndex = 3;
             this.button_assignmaterial.Text = "Assign Material";
             this.button_assignmaterial.UseVisualStyleBackColor = true;
+            this.button_assignmaterial.Click += new System.EventHandler(this.button_assignmaterial_Click);
             // 
             // textBox_selectedelements
             // 
@@ -111,7 +112,7 @@
             this.label5.AutoSize = true;
             this.label5.Location = new System.Drawing.Point(6, 33);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(140, 16);
+            this.label5.Size = new System.Drawing.Size(183, 20);
             this.label5.TabIndex = 1;
             this.label5.Text = "Selected Elements: ";
             // 
@@ -135,6 +136,7 @@
             this.button_delete.TabIndex = 10;
             this.button_delete.Text = "Delete";
             this.button_delete.UseVisualStyleBackColor = true;
+            this.button_delete.Click += new System.EventHandler(this.button_delete_Click);
             // 
             // button_update
             // 
@@ -144,6 +146,7 @@
             this.button_update.TabIndex = 9;
             this.button_update.Text = "Update";
             this.button_update.UseVisualStyleBackColor = true;
+            this.button_update.Click += new System.EventHandler(this.button_update_Click);
             // 
             // button_create
             // 
@@ -153,36 +156,35 @@
             this.button_create.TabIndex = 8;
             this.button_create.Text = "Create";
             this.button_create.UseVisualStyleBackColor = true;
+            this.button_create.Click += new System.EventHandler(this.button_create_Click);
             // 
             // textBox_poissonsratio
             // 
-            this.textBox_poissonsratio.Enabled = false;
             this.textBox_poissonsratio.Location = new System.Drawing.Point(176, 118);
             this.textBox_poissonsratio.Name = "textBox_poissonsratio";
-            this.textBox_poissonsratio.Size = new System.Drawing.Size(130, 23);
+            this.textBox_poissonsratio.Size = new System.Drawing.Size(130, 27);
             this.textBox_poissonsratio.TabIndex = 7;
             // 
             // textBox_density
             // 
             this.textBox_density.Location = new System.Drawing.Point(176, 89);
             this.textBox_density.Name = "textBox_density";
-            this.textBox_density.Size = new System.Drawing.Size(130, 23);
+            this.textBox_density.Size = new System.Drawing.Size(130, 27);
             this.textBox_density.TabIndex = 6;
             // 
             // textBox_youngsmodulus
             // 
             this.textBox_youngsmodulus.Location = new System.Drawing.Point(176, 60);
             this.textBox_youngsmodulus.Name = "textBox_youngsmodulus";
-            this.textBox_youngsmodulus.Size = new System.Drawing.Size(130, 23);
+            this.textBox_youngsmodulus.Size = new System.Drawing.Size(130, 27);
             this.textBox_youngsmodulus.TabIndex = 5;
             // 
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Enabled = false;
             this.label4.Location = new System.Drawing.Point(33, 121);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(137, 16);
+            this.label4.Size = new System.Drawing.Size(178, 20);
             this.label4.TabIndex = 4;
             this.label4.Text = "Poissons Ratio (ν): ";
             // 
@@ -191,7 +193,7 @@
             this.label3.AutoSize = true;
             this.label3.Location = new System.Drawing.Point(78, 92);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(92, 16);
+            this.label3.Size = new System.Drawing.Size(121, 20);
             this.label3.TabIndex = 3;
             this.label3.Text = "Density (μ): ";
             // 
@@ -200,7 +202,7 @@
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(22, 63);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(148, 16);
+            this.label2.Size = new System.Drawing.Size(194, 20);
             this.label2.TabIndex = 2;
             this.label2.Text = "Youngs Modulus (E): ";
             // 
@@ -208,7 +210,7 @@
             // 
             this.textBox_materialname.Location = new System.Drawing.Point(176, 31);
             this.textBox_materialname.Name = "textBox_materialname";
-            this.textBox_materialname.Size = new System.Drawing.Size(130, 23);
+            this.textBox_materialname.Size = new System.Drawing.Size(130, 27);
             this.textBox_materialname.TabIndex = 1;
             // 
             // label1
@@ -216,7 +218,7 @@
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(59, 34);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(111, 16);
+            this.label1.Size = new System.Drawing.Size(147, 20);
             this.label1.TabIndex = 0;
             this.label1.Text = "Material Name: ";
             // 
@@ -262,6 +264,7 @@
             this.dataGridView_MaterialList.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dataGridView_MaterialList.Size = new System.Drawing.Size(834, 199);
             this.dataGridView_MaterialList.TabIndex = 4;
+            this.dataGridView_MaterialList.SelectionChanged += new System.EventHandler(this.dataGridView_MaterialList_SelectionChanged);
             // 
             // Column1_materialid
             // 
@@ -309,7 +312,7 @@
             // 
             // matprop_frm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 18F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(859, 471);
             this.Controls.Add(this.menuStrip1);
@@ -318,11 +321,12 @@
             this.Controls.Add(this.dataGridView_MaterialList);
             this.Font = new System.Drawing.Font("Verdana", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.MinimumSize = new System.Drawing.Size(875, 510);
             this.Name = "matprop_frm";
             this.Opacity = 0.85D;
             this.Text = "Material Properties";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.matprop_frm_FormClosing);
             this.Load += new System.EventHandler(this.matprop_frm_Load);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();

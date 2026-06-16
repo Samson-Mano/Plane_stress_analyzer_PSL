@@ -33,21 +33,23 @@ namespace src.opentk_control.opentk_buffer
         public int TextureHeight { get; private set; } = 0;
         public Dictionary<char, Character> Glyphs { get; private set; } = new Dictionary<char, Character>();
 
-        public void CreateAtlas(string fontFamilyName, int fontSize, Color textColor)
+        public void CreateAtlas(string fontFamilyName)
         {
 
-            // Background color of the APP
-            Color backgroundColor = gvariables_static.glcontrol_background_color;
+            // Background color
+            Color backgroundColor = Color.Transparent;
 
             // Define the characters we need (printable ASCII 32-126)
             List<char> chars = new List<char>();
-            for (char c = (char)32; c <= (char)126; c++)
+            for (char c = (char)0; c <= (char)126; c++)
             {
                 chars.Add(c);
             }
 
+            const int font_size = 64;
+
             // First pass: Measure all characters to determine atlas size
-            using (Font font = new Font(fontFamilyName, fontSize, FontStyle.Regular, GraphicsUnit.Pixel))
+            using (Font font = new Font(fontFamilyName, font_size, FontStyle.Regular, GraphicsUnit.Pixel))
             using (Bitmap tempBmp = new Bitmap(1, 1))
             using (Graphics g = Graphics.FromImage(tempBmp))
             {
@@ -90,7 +92,7 @@ namespace src.opentk_control.opentk_buffer
                     foreach (var metric in metrics)
                     {
                         // Render the character to the atlas
-                        using (Brush textBrush = new SolidBrush(textColor))
+                        using (Brush textBrush = new SolidBrush(Color.White))
                         {
                             gAtlas.DrawString(metric.Char.ToString(), font, textBrush, xOffset, yOffset);
                         }

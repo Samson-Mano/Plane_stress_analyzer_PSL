@@ -67,7 +67,7 @@ namespace Plane_stress_analyzer_PSL
 
             // Create the main font atlas
             modeldata.InitializeModelGeom();
-            gvariables_static.main_font.CreateAtlas();
+            gvariables_static.main_font.CreateAtlas("Calibri");
 
         }
 
@@ -88,8 +88,6 @@ namespace Plane_stress_analyzer_PSL
 
 
             fpsStopwatch.Start();
-
-            // gvariables_static.main_font.CreateAtlas();
 
             // Refresh the controller (doesnt do much.. nothing to draw)
             glControl_main_panel.Invalidate();
@@ -219,7 +217,7 @@ namespace Plane_stress_analyzer_PSL
             // Update the Load Form data
             if (modeldata.isLoadUpdateInProgress == true)
             {
-                // load_Form.update_selected_node_list();
+                load_Form.update_selected_node_list();
 
             }
 
@@ -569,8 +567,8 @@ namespace Plane_stress_analyzer_PSL
             // fedata.meshdata.clear_selected_mesh();
 
             // Show the form
-            // matprop_Form.update_material_data();
-            // matprop_Form.update_selected_element_list();
+            matprop_Form.update_material_data();
+            matprop_Form.update_selected_element_list();
             matprop_Form.Show(this);
             matprop_Form.BringToFront();
 
@@ -584,6 +582,14 @@ namespace Plane_stress_analyzer_PSL
         #endregion
 
         #region "Call from Child Forms"
+
+        public void CallFrom_matprop_frm()
+        {
+            modeldata.update_openTK_uniforms();
+
+            glControl_main_panel.Invalidate();
+        }
+
 
         public void CallFrom_load_frm()
         {

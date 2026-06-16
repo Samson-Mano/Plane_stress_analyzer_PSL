@@ -295,21 +295,25 @@ namespace Plane_stress_analyzer_PSL.src.model_store.fe_objects
                 // Add labels
                 int mid_index = load_data.load_node_pts.Count / 2;
                 string label_string1 = $"Load Set {load_data.load_set_id}";
-                string label_string2 = $"Load amplitude = {load_data.load_amplitude}";
+                // string label_string2 = $"Amplitude = {load_data.load_amplitude}";
 
-                float label_ht = gvariables_static.get_text_height(12.0f) * 1.25f;
+                // float label_ht = gvariables_static.get_text_height(12.0f) * 0.0125f;
 
-                Vector2 label_loc1 = new Vector2(load_data.load_node_pts[mid_index].X + tailpt.X,
-                        load_data.load_node_pts[mid_index].Y + tailpt.Y);
-                Vector2 label_loc2 = new Vector2(load_data.load_node_pts[mid_index].X + tailpt.X,
-                        load_data.load_node_pts[mid_index].Y + tailpt.Y - label_ht);
+                Vector2 label_loc1 = new Vector2(load_data.load_node_pts[mid_index].X,
+                        load_data.load_node_pts[mid_index].Y);
+                //Vector2 label_loc2 = new Vector2(load_data.load_node_pts[mid_index].X,
+                //        load_data.load_node_pts[mid_index].Y - label_ht);
 
-                load_label.add_label((label_id * 2) + 0, label_string1, label_loc1, gvariables_static.ColorUtils.get_LoadColor());
-                load_label.add_label((label_id * 2) + 1, label_string2, label_loc2, gvariables_static.ColorUtils.get_LoadColor());
+                load_label.add_label(label_id + 0, label_string1, label_loc1, gvariables_static.ColorUtils.get_LoadColor());
+                // load_label.add_label(label_id + 1, label_string2, label_loc2, gvariables_static.ColorUtils.get_LoadColor());
 
-                label_id = label_id + 2;
+                // label_id = label_id + 2;
+                label_id++;
 
             }
+
+            // Update the label buffer
+            load_label.update_buffer();
 
 
             // Clear and update buffers

@@ -6,6 +6,7 @@ using Plane_stress_analyzer_PSL.src.events_handler;
 using Plane_stress_analyzer_PSL.src.global_variables;
 using Plane_stress_analyzer_PSL.src.opentk_control.opentk_buffer;
 using Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler;
+using src.opentk_control.opentk_buffer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,7 +37,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
         public Dictionary<int, label_store> labelMap { get; } = new Dictionary<int, label_store>();
         public int label_count = 0;
         public int total_char_count = 0;
-        public float font_size = 12.0f;
+        public float font_size = 14.0f;
 
         private VertexArray _labelVAO;
         private VertexBuffer _labelVBO;
@@ -79,7 +80,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
             // Add to the total character count
             total_char_count = total_char_count + label.Length;
 
-            update_buffer();
+            // update_buffer();
         }
 
 
@@ -94,7 +95,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
             labelMap.Remove(label_id);
             label_count--;
 
-            update_buffer();
+            // update_buffer();
 
         }
 
@@ -134,9 +135,10 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
             List<int> label_indices = new List<int>();
 
             // Set the label index buffers
+            int t_id = 0;
             foreach (var lb in labelMap)
             {
-                get_label_index_buffer(lb.Value, ref label_indices);
+                get_label_index_buffer(lb.Value, ref label_indices, ref t_id);
             }
 
             // Update the index buffer
@@ -224,7 +226,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
         private void get_label_vertex_buffer(label_store lb, ref List<float> label_vertices)
         {
 
-            float font_scale = gvariables_static.get_font_scale(font_size);
+            float font_scale = gvariables_static.get_font_scale(font_size) * 0.025f;
 
             // Find the label total width and total height of the label
             float total_label_width = 0.0f;
@@ -374,9 +376,8 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
         }
 
 
-        private void get_label_index_buffer(label_store lb, ref List<int> label_indices)
+        private void get_label_index_buffer(label_store lb, ref List<int> label_indices, ref int t_id)
         {
-            int t_id = 0;
 
             for (int i = 0; i < lb.label_char_count; ++i)
             {
