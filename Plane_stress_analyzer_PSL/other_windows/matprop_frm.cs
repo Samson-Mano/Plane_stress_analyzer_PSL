@@ -37,13 +37,28 @@ namespace Plane_stress_analyzer_PSL.other_windows
             // Add rows manually
             foreach (material_data mat in fe_materials)
             {
-                dataGridView_MaterialList.Rows.Add(
+                int rowIndex = dataGridView_MaterialList.Rows.Add(
                     mat.material_id.ToString(),
                     mat.material_name,
                     mat.youngs_modulus.ToString("G"),
                     mat.material_density.ToString("G"),
                     mat.poissons_ratio.ToString("G")
                 );
+
+                // Get the newly added row
+                DataGridViewRow row = dataGridView_MaterialList.Rows[rowIndex];
+
+                // Set the color for the material color column (Column6_materialcolor)
+                Color materialColor = gvariables_static.ColorUtils.GetRandomColor(mat.material_id);
+
+                // row.DefaultCellStyle.BackColor = materialColor;
+                // row.DefaultCellStyle.ForeColor = Color.Black; // Text color
+
+                row.Cells["Column6_materialcolor"].Style.BackColor = materialColor;
+                row.Cells["Column6_materialcolor"].Style.SelectionBackColor = materialColor;
+
+                // Optional: Store the material_id in the row's Tag for later use
+               // row.Tag = mat.material_id;
             }
 
         }
@@ -113,13 +128,29 @@ namespace Plane_stress_analyzer_PSL.other_windows
             }
 
             // Add a new row to the DataGridView
-            dataGridView_MaterialList.Rows.Add(
+            int rowIndex = dataGridView_MaterialList.Rows.Add(
                 material_id,
                 material_name,
                 youngsmodulus.ToString("G"),
                 density.ToString("G"),
                 poissonsratio.ToString("G")
             );
+
+            // Get the newly added row
+            DataGridViewRow row = dataGridView_MaterialList.Rows[rowIndex];
+
+            // Set the color for the material color column (Column6_materialcolor)
+            Color materialColor = gvariables_static.ColorUtils.GetRandomColor(material_id);
+
+            //// Option A: Set entire row color
+            // row.DefaultCellStyle.BackColor = materialColor;
+            // row.DefaultCellStyle.ForeColor = Color.Black; // Text color
+
+
+            row.Cells["Column6_materialcolor"].Style.BackColor = materialColor;
+            row.Cells["Column6_materialcolor"].Style.SelectionBackColor = materialColor;
+
+
 
             // Create and store the material object
             var newMaterial = new material_data
@@ -190,6 +221,22 @@ namespace Plane_stress_analyzer_PSL.other_windows
                 selectedRow.Cells["Column3_youngsmodulus"].Value = youngsmodulus.ToString("G");
                 selectedRow.Cells["Column4_density"].Value = density.ToString("G");
                 selectedRow.Cells["Column5_poissonsratio"].Value = poissonsratio.ToString("G");
+
+                // Set the row background color
+                Color rowColor = gvariables_static.ColorUtils.GetRandomColor(material_id);
+
+                //// Option A: Set entire row color
+                // selectedRow.DefaultCellStyle.BackColor = rowColor;
+                // selectedRow.DefaultCellStyle.ForeColor = Color.Black; // Text color
+
+                //// Option B: Set only the material color cell
+                //selectedRow.Cells["Column6_materialcolor"].Style.BackColor = rowColor;
+                //selectedRow.Cells["Column6_materialcolor"].Style.ForeColor = Color.Black;
+
+                // Option C: If you want to show the color as a colored box in the cell
+                selectedRow.Cells["Column6_materialcolor"].Style.BackColor = rowColor;
+                selectedRow.Cells["Column6_materialcolor"].Style.SelectionBackColor = rowColor;
+
 
                 // fe_data.updateMaterialIDLabels();
 
@@ -283,16 +330,10 @@ namespace Plane_stress_analyzer_PSL.other_windows
 
             List<int> all_selected_ids = new List<int>();
 
-           // all_selected_ids.AddRange(fe_data.meshdata.selected_tri_ids);
-           // all_selected_ids.AddRange(fe_data.meshdata.selected_quad_ids);
+           all_selected_ids.AddRange(modeldata.fe_data.selected_tri_ids);
+           all_selected_ids.AddRange(modeldata.fe_data.selected_quad_ids);
 
             textBox_selectedelements.Text = string.Join(", ", all_selected_ids);
-
-            //foreach (int id in all_selected_ids)
-            //{
-            //    textBox_selectedelements.Text += $"{id} ,";
-
-            //}
 
             textBox_selectedelements.Invalidate();
 
@@ -320,6 +361,7 @@ namespace Plane_stress_analyzer_PSL.other_windows
         {
             // Control the flag
             modeldata.isMaterialUpdateInProgress = false;
+            modeldata.fe_data.clear_selected_mesh();
 
             // Call the main form
             if (this.Owner is main_frm mainForm)

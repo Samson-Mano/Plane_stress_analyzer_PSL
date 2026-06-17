@@ -98,7 +98,7 @@ namespace Plane_stress_analyzer_PSL.other_windows
 
 
             // Add the load
-            modeldata.fe_data.fe_loads.add_loads(modeldata.fe_data.selected_node_ids,
+            modeldata.fe_data.fe_loads.add_loads(modeldata.fe_data.selected_node_ids.ToList(),
                 load_node_pts, load_ampl, load_angle);
 
 
@@ -219,7 +219,14 @@ namespace Plane_stress_analyzer_PSL.other_windows
         private void load_frm_FormClosing(object sender, FormClosingEventArgs e)
         {
             // Control the flag
+            modeldata.fe_data.clear_selected_nodes();
             modeldata.isLoadUpdateInProgress = false;
+
+            // Call the main form
+            if (this.Owner is main_frm mainForm)
+            {
+                mainForm.CallFrom_load_frm();
+            }
 
         }
 

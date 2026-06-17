@@ -45,9 +45,9 @@ namespace Plane_stress_analyzer_PSL.src.model_store.fe_objects
         private bool IsMeshDrawingDataSet = false;
 
 
-        public List<int> selected_tri_ids { get; } = new List<int>();
-        public List<int> selected_quad_ids { get; } = new List<int>();
-        public List<int> selected_node_ids { get; } = new List<int>();
+        public HashSet<int> selected_tri_ids { get; } = new HashSet<int>();
+        public HashSet<int> selected_quad_ids { get; } = new HashSet<int>();
+        public HashSet<int> selected_node_ids { get; } = new HashSet<int>();
 
 
         public fedata_store()
@@ -121,6 +121,8 @@ namespace Plane_stress_analyzer_PSL.src.model_store.fe_objects
 
             meshdrawingdata.paint_selected_mesh_points();
 
+            meshdrawingdata.paint_selected_mesh();
+
             // Paint the constraints
             fe_constraints.paint_node_constraint();
 
@@ -149,10 +151,9 @@ namespace Plane_stress_analyzer_PSL.src.model_store.fe_objects
             List<int> selected_node_ids = new List<int>();
 
             // Loop through all node in nodeMap
-            foreach (var nd_m in fe_nodes.nodeMap)
+            foreach (node_store nd in fe_nodes.nodeMap.Values)
             {
-                node_store nd = nd_m.Value;
-
+                
                 //______________________________
                 Vector4 node_pt = graphic_events_control.projectionMatrix * graphic_events_control.viewMatrix
                     * graphic_events_control.modelMatrix * new Vector4((float)nd.node_pt_x_coord, 
@@ -183,39 +184,25 @@ namespace Plane_stress_analyzer_PSL.src.model_store.fe_objects
             if (IsRemove == false)
             {
                 // Add to the selected node list
-                foreach (int nd_id in selected_node_ids)
-                {
-                    // Check whether the node is already in the list
-                    if (!this.selected_node_ids.Contains(nd_id))
-                    {
-                        // Add to selected nodes
-                        this.selected_node_ids.Add(nd_id);
-
-                        // Selection changed flag
-                        is_selection_changed = true;
-                    }
-
-                }
+                // Add all nodes at once
+                int initialCount = this.selected_node_ids.Count;
+                this.selected_node_ids.UnionWith(selected_node_ids);
+                is_selection_changed = this.selected_node_ids.Count != initialCount;
             }
             else
             {
                 // Remove from the selected node list
-                foreach (int nd_id in selected_node_ids)
-                {
-                    // Remove the node which is found in the list
-                    this.selected_node_ids.Remove(nd_id);
-
-                    // Selection changed flag
-                    is_selection_changed = true;
-                }
-
+                // Remove all nodes at once
+                int initialCount = this.selected_node_ids.Count;
+                this.selected_node_ids.ExceptWith(selected_node_ids);
+                is_selection_changed = this.selected_node_ids.Count != initialCount;
             }
 
 
             if (is_selection_changed == true)
             {
                 // Add the selected nodes
-                meshdrawingdata.add_selected_points(this.selected_node_ids);
+                meshdrawingdata.add_selected_points(this.selected_node_ids.ToList());
             }
             //
         }
@@ -227,6 +214,181 @@ namespace Plane_stress_analyzer_PSL.src.model_store.fe_objects
             meshdrawingdata.clear_selected_points();
 
         }
+
+
+
+        public void select_mesh(Vector2 corner_pt1, Vector2 corner_pt2, bool isRightButton, drawing_events graphic_events_control)
+        {
+            // Select the mesh for material properties update
+            List<int> selected_tri_ids = new List<int>();
+            List<int> selected_quad_ids = new List<int>();
+
+            // Pre-compute MVP matrix
+            Matrix4 mvp = graphic_events_control.projectionMatrix *
+                          graphic_events_control.viewMatrix *
+                          graphic_events_control.modelMatrix;
+
+            // Select tri element for mesh
+            foreach (elementtri_store tri in fe_tris.elementtriMap.Values)
+            {
+                Vector4 node_pt1_s = mvp *
+                    new Vector4((float)fe_nodes.nodeMap[tri.nodeid1].node_pt_x_coord,
+                    (float)fe_nodes.nodeMap[tri.nodeid1].node_pt_y_coord, 0.0f, 1.0f);
+
+                Vector4 node_pt2_s = mvp *
+                    new Vector4((float)fe_nodes.nodeMap[tri.nodeid2].node_pt_x_coord,
+                    (float)fe_nodes.nodeMap[tri.nodeid2].node_pt_y_coord, 0.0f, 1.0f);
+
+                Vector4 node_pt3_s = mvp *
+                    new Vector4((float)fe_nodes.nodeMap[tri.nodeid3].node_pt_x_coord,
+                    (float)fe_nodes.nodeMap[tri.nodeid3].node_pt_y_coord, 0.0f, 1.0f);
+
+                Vector2 node_pt1 = new Vector2(node_pt1_s.X, node_pt1_s.Y);
+                Vector2 node_pt2 = new Vector2(node_pt2_s.X, node_pt2_s.Y);
+                Vector2 node_pt3 = new Vector2(node_pt3_s.X, node_pt3_s.Y);
+
+                //Vector2 edge1_midpt = (node_pt1 + node_pt2) * 0.5f;
+                //Vector2 edge2_midpt = (node_pt2 + node_pt3) * 0.5f;
+                //Vector2 edge3_midpt = (node_pt3 + node_pt1) * 0.5f;
+
+                //Vector2 tri_midpt = (node_pt1 + node_pt2 + node_pt3) * (1.0f / 3.0f);
+
+                //if(gvariables_static.isPointSelected(corner_pt1,corner_pt2,node_pt1) == true ||
+                //    gvariables_static.isPointSelected(corner_pt1, corner_pt2, node_pt2) == true ||
+                //    gvariables_static.isPointSelected(corner_pt1, corner_pt2, node_pt3) == true ||
+                //    gvariables_static.isPointSelected(corner_pt1, corner_pt2, edge1_midpt) == true ||
+                //    gvariables_static.isPointSelected(corner_pt1, corner_pt2, edge2_midpt) == true ||
+                //    gvariables_static.isPointSelected(corner_pt1, corner_pt2, edge3_midpt) == true ||
+                //    gvariables_static.isPointSelected(corner_pt1, corner_pt2, tri_midpt) == true)
+                //{
+                //    selected_tri_ids.Add(tri.tri_id);
+                //}
+
+
+                if (gvariables_static.isEdgeSelected(corner_pt1, corner_pt2,node_pt1,node_pt2) == true ||
+                    gvariables_static.isEdgeSelected(corner_pt1, corner_pt2,node_pt2, node_pt3) == true ||
+                    gvariables_static.isEdgeSelected(corner_pt1, corner_pt2,node_pt3, node_pt1) == true)
+                {
+                    selected_tri_ids.Add(tri.tri_id);
+                }
+
+
+
+
+            }
+
+
+            // Select quad element for mesh
+            foreach (elementquad_store quad in fe_quads.elementquadMap.Values)
+            {
+                Vector4 node_pt1_s = mvp *
+                    new Vector4((float)fe_nodes.nodeMap[quad.nodeid1].node_pt_x_coord,
+                    (float)fe_nodes.nodeMap[quad.nodeid1].node_pt_y_coord, 0.0f, 1.0f);
+
+                Vector4 node_pt2_s = mvp *
+                    new Vector4((float)fe_nodes.nodeMap[quad.nodeid2].node_pt_x_coord,
+                    (float)fe_nodes.nodeMap[quad.nodeid2].node_pt_y_coord, 0.0f, 1.0f);
+
+                Vector4 node_pt3_s = mvp *
+                    new Vector4((float)fe_nodes.nodeMap[quad.nodeid3].node_pt_x_coord,
+                    (float)fe_nodes.nodeMap[quad.nodeid3].node_pt_y_coord, 0.0f, 1.0f);
+
+                Vector4 node_pt4_s = mvp *
+                    new Vector4((float)fe_nodes.nodeMap[quad.nodeid4].node_pt_x_coord,
+                    (float)fe_nodes.nodeMap[quad.nodeid4].node_pt_y_coord, 0.0f, 1.0f);
+
+                Vector2 node_pt1 = new Vector2(node_pt1_s.X, node_pt1_s.Y);
+                Vector2 node_pt2 = new Vector2(node_pt2_s.X, node_pt2_s.Y);
+                Vector2 node_pt3 = new Vector2(node_pt3_s.X, node_pt3_s.Y);
+                Vector2 node_pt4 = new Vector2(node_pt3_s.X, node_pt3_s.Y);
+
+                //Vector2 edge1_midpt = (node_pt1 + node_pt2) * 0.5f;
+                //Vector2 edge2_midpt = (node_pt2 + node_pt3) * 0.5f;
+                //Vector2 edge3_midpt = (node_pt3 + node_pt4) * 0.5f;
+                //Vector2 edge4_midpt = (node_pt4 + node_pt1) * 0.5f;
+
+                //Vector2 quad_midpt = (node_pt1 + node_pt2 + node_pt3 + node_pt4) * (1.0f / 4.0f);
+
+                //if (gvariables_static.isPointSelected(corner_pt1, corner_pt2, node_pt1) == true ||
+                //    gvariables_static.isPointSelected(corner_pt1, corner_pt2, node_pt2) == true ||
+                //    gvariables_static.isPointSelected(corner_pt1, corner_pt2, node_pt3) == true ||
+                //    gvariables_static.isPointSelected(corner_pt1, corner_pt2, node_pt4) == true ||
+                //    gvariables_static.isPointSelected(corner_pt1, corner_pt2, edge1_midpt) == true ||
+                //    gvariables_static.isPointSelected(corner_pt1, corner_pt2, edge2_midpt) == true ||
+                //    gvariables_static.isPointSelected(corner_pt1, corner_pt2, edge3_midpt) == true ||
+                //    gvariables_static.isPointSelected(corner_pt1, corner_pt2, edge4_midpt) == true ||
+                //    gvariables_static.isPointSelected(corner_pt1, corner_pt2, quad_midpt) == true)
+                //{
+                //    selected_quad_ids.Add(quad.quad_id);
+                //}
+
+
+                if (gvariables_static.isEdgeSelected(corner_pt1, corner_pt2,node_pt1, node_pt2) == true ||
+                        gvariables_static.isEdgeSelected(corner_pt1, corner_pt2, node_pt2, node_pt3) == true ||
+                        gvariables_static.isEdgeSelected(corner_pt1, corner_pt2, node_pt3, node_pt4) == true ||
+                        gvariables_static.isEdgeSelected(corner_pt1, corner_pt2, node_pt4, node_pt1) == true)
+                {
+                    selected_quad_ids.Add(quad.quad_id);
+                }
+
+            }
+
+
+            if((selected_tri_ids.Count + selected_quad_ids.Count) > 0)
+            {
+                add_selected_mesh(selected_tri_ids, selected_quad_ids, isRightButton);
+            }
+
+        }
+
+
+        private void add_selected_mesh(List<int> selected_tri_ids, List<int> selected_quad_ids, bool IsRemove)
+        {
+            bool is_selection_changed = false;
+
+            if (IsRemove == false)
+            {
+                // Add to the selected tri or selected quad list
+                // Add all tri and all quad at once
+                int initialCount = this.selected_tri_ids.Count + this.selected_quad_ids.Count;
+                this.selected_tri_ids.UnionWith(selected_tri_ids);
+                this.selected_quad_ids.UnionWith(selected_quad_ids);
+
+                is_selection_changed = (this.selected_tri_ids.Count + this.selected_quad_ids.Count) != initialCount;
+
+            }
+            else
+            {
+                // Remove from the selected node list
+                // Remove all tri and all quad at once
+                int initialCount = this.selected_tri_ids.Count + this.selected_quad_ids.Count;
+                this.selected_tri_ids.ExceptWith(selected_tri_ids);
+                this.selected_quad_ids.ExceptWith(selected_quad_ids);
+
+                is_selection_changed = (this.selected_tri_ids.Count + this.selected_quad_ids.Count) != initialCount;
+
+            }
+
+
+            if (is_selection_changed == true)
+            {
+                // Add the selected meshes
+                meshdrawingdata.add_selected_mesh(this.selected_tri_ids.ToList(), this.selected_quad_ids.ToList());
+            }
+            //
+        }
+
+
+        public void clear_selected_mesh()
+        {
+            this.selected_tri_ids.Clear();
+            this.selected_quad_ids.Clear();
+
+            meshdrawingdata.clear_selected_mesh();
+
+        }
+
+
 
 
     }

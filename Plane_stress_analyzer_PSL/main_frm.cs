@@ -210,7 +210,7 @@ namespace Plane_stress_analyzer_PSL
             // Update the Material Property Form data
             if (modeldata.isMaterialUpdateInProgress == true)
             {
-               // matprop_Form.update_selected_element_list();
+               matprop_Form.update_selected_element_list();
 
             }
 
@@ -564,7 +564,7 @@ namespace Plane_stress_analyzer_PSL
 
             // Turn on Flag Material update form is open
             modeldata.isMaterialUpdateInProgress = true;
-            // fedata.meshdata.clear_selected_mesh();
+            modeldata.fe_data.clear_selected_mesh();
 
             // Show the form
             matprop_Form.update_material_data();

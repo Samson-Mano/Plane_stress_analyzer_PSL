@@ -90,7 +90,7 @@ namespace Plane_stress_analyzer_PSL.other_windows
 
 
             // Add the constraint
-            modeldata.fe_data.fe_constraints.add_nodeconstraint(modeldata.fe_data.selected_node_ids,
+            modeldata.fe_data.fe_constraints.add_nodeconstraint(modeldata.fe_data.selected_node_ids.ToList(),
                 constraint_node_pts, comboBox_constrainttype.SelectedIndex, constraint_angle);
 
 
@@ -220,6 +220,13 @@ namespace Plane_stress_analyzer_PSL.other_windows
         {
             // Control the flag
             modeldata.isConstraintUpdateInProgress = false;
+            modeldata.fe_data.clear_selected_nodes();
+
+            // Call the main form
+            if (this.Owner is main_frm mainForm)
+            {
+                mainForm.CallFrom_constraint_frm();
+            }
 
         }
     }

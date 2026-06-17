@@ -169,7 +169,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store
             // Perform the select option
             if (isMaterialUpdateInProgress == true)
             {
-                // meshdata.select_mesh_elements(o_pt, c_pt, isRightButton, graphic_events_control);
+                fe_data.select_mesh(o_pt, c_pt, isRightButton, graphic_events_control);
 
             }
 

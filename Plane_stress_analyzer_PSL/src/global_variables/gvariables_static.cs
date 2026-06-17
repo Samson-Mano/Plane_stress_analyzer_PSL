@@ -55,7 +55,7 @@ namespace Plane_stress_analyzer_PSL.src.global_variables
             /// <summary>
             /// Returns a deterministic pseudo-random color based on the given ID.
             /// </summary>
-            private static Color GetRandomColor(int colorId)
+            public static Color GetRandomColor(int colorId)
             {
                 return ShuffledColors[Math.Abs(colorId) % ShuffledColors.Count];
             }
@@ -373,6 +373,180 @@ namespace Plane_stress_analyzer_PSL.src.global_variables
             return Vector2.Distance(pt, center) < radius;
 
         }
+
+
+        public static bool isEdgeSelected(Vector2 rectCpt1, Vector2 rectCpt2, 
+            Vector2 EdgeStartpt, Vector2 EdgeEndPt)
+        {
+
+            if (is_RectangleSelection == true)
+            {
+                return isEdgeIntersectRectangle(rectCpt1, rectCpt2, EdgeStartpt, EdgeEndPt);
+            }
+            else
+            {
+                return isEdgeIntersectCircle(rectCpt1, rectCpt2, EdgeStartpt, EdgeEndPt);
+            }
+
+        }
+
+
+        public static bool isEdgeIntersectRectangle(Vector2 rectCpt1, Vector2 rectCpt2,
+            Vector2 EdgeStartpt, Vector2 EdgeEndPt)
+        {
+            // Get rectangle bounds
+            float minX = Math.Min(rectCpt1.X, rectCpt2.X);
+            float maxX = Math.Max(rectCpt1.X, rectCpt2.X);
+            float minY = Math.Min(rectCpt1.Y, rectCpt2.Y);
+            float maxY = Math.Max(rectCpt1.Y, rectCpt2.Y);
+
+            // Check if either endpoint is inside the rectangle
+            if (isPointInsideRectangle(rectCpt1, rectCpt2, EdgeStartpt) ||
+                isPointInsideRectangle(rectCpt1, rectCpt2, EdgeEndPt))
+            {
+                return true;
+            }
+
+            // Check if the line segment intersects any of the rectangle's edges
+            // Rectangle edges: left, right, bottom, top
+            Vector2 rectEdgesStart = new Vector2(minX, minY);
+            Vector2 rectEdgesEnd = new Vector2(maxX, minY);   // Bottom edge
+            if (DoLinesIntersect(EdgeStartpt, EdgeEndPt, rectEdgesStart, rectEdgesEnd))
+                return true;
+
+            rectEdgesStart = new Vector2(maxX, minY);
+            rectEdgesEnd = new Vector2(maxX, maxY);           // Right edge
+            if (DoLinesIntersect(EdgeStartpt, EdgeEndPt, rectEdgesStart, rectEdgesEnd))
+                return true;
+
+            rectEdgesStart = new Vector2(maxX, maxY);
+            rectEdgesEnd = new Vector2(minX, maxY);           // Top edge
+            if (DoLinesIntersect(EdgeStartpt, EdgeEndPt, rectEdgesStart, rectEdgesEnd))
+                return true;
+
+            rectEdgesStart = new Vector2(minX, maxY);
+            rectEdgesEnd = new Vector2(minX, minY);           // Left edge
+            if (DoLinesIntersect(EdgeStartpt, EdgeEndPt, rectEdgesStart, rectEdgesEnd))
+                return true;
+
+            return false;
+
+        }
+
+
+        public static bool isEdgeIntersectCircle(Vector2 rectCpt1, Vector2 rectCpt2,
+            Vector2 EdgeStartpt, Vector2 EdgeEndPt)
+        {
+            // Calculate center and radius
+            Vector2 center = new Vector2((rectCpt1.X + rectCpt2.X) * 0.5f, (rectCpt1.Y + rectCpt2.Y) * 0.5f);
+            float radius = Vector2.Distance(rectCpt1, rectCpt2) * 0.5f;
+
+            // Check if either endpoint is inside the circle
+            if (isPointInsideCircle(rectCpt1, rectCpt2, EdgeStartpt) ||
+                isPointInsideCircle(rectCpt1, rectCpt2, EdgeEndPt))
+            {
+                return true;
+            }
+
+            // Check if the line segment intersects the circle
+            return DoLineSegmentIntersectCircle(EdgeStartpt, EdgeEndPt, center, radius);
+
+        }
+
+
+        // Helper method to check if a line segment intersects a circle
+        private static bool DoLineSegmentIntersectCircle(Vector2 start, Vector2 end, Vector2 center, float radius)
+        {
+            // Vector from start to end
+            Vector2 d = end - start;
+
+            // Vector from start to circle center
+            Vector2 f = start - center;
+
+            // Quadratic equation coefficients: a*t^2 + b*t + c = 0
+            float a = Vector2.Dot(d, d);
+            float b = 2 * Vector2.Dot(f, d);
+            float c = Vector2.Dot(f, f) - radius * radius;
+
+            float discriminant = b * b - 4 * a * c;
+
+            if (discriminant < 0)
+            {
+                // No intersection with the infinite line
+                return false;
+            }
+
+            // Find the closest point on the line segment to the circle center
+            float t = -b / (2 * a);
+
+            if (t < 0)
+            {
+                // Closest point is before the start of the segment
+                return Vector2.Distance(start, center) <= radius;
+            }
+            else if (t > 1)
+            {
+                // Closest point is after the end of the segment
+                return Vector2.Distance(end, center) <= radius;
+            }
+            else
+            {
+                // Closest point is on the segment
+                Vector2 closestPoint = start + t * d;
+                return Vector2.Distance(closestPoint, center) <= radius;
+            }
+        }
+
+
+        // Helper method to check if two line segments intersect
+        private static bool DoLinesIntersect(Vector2 p1, Vector2 p2, Vector2 p3, Vector2 p4)
+        {
+            // Calculate the direction vectors
+            Vector2 d1 = p2 - p1;
+            Vector2 d2 = p4 - p3;
+
+            // Calculate the cross products
+            float cross1 = d1.X * d2.Y - d1.Y * d2.X;
+            float cross2 = (p3 - p1).X * d2.Y - (p3 - p1).Y * d2.X;
+
+            if (Math.Abs(cross1) < float.Epsilon)
+            {
+                // Lines are parallel - check if they're collinear and overlapping
+                if (Math.Abs(cross2) < float.Epsilon)
+                {
+                    // Check if the segments overlap
+                    float t1 = 0, t2 = 0;
+                    if (Math.Abs(d1.X) > float.Epsilon)
+                    {
+                        t1 = (p3.X - p1.X) / d1.X;
+                        t2 = (p4.X - p1.X) / d1.X;
+                    }
+                    else if (Math.Abs(d1.Y) > float.Epsilon)
+                    {
+                        t1 = (p3.Y - p1.Y) / d1.Y;
+                        t2 = (p4.Y - p1.Y) / d1.Y;
+                    }
+                    else
+                    {
+                        return false; // Degenerate line
+                    }
+
+                    // Check if segments overlap
+                    float minT = Math.Min(t1, t2);
+                    float maxT = Math.Max(t1, t2);
+                    return minT <= 1 && maxT >= 0;
+                }
+                return false;
+            }
+
+            // Check if the intersection point is within both segments
+            float t = cross2 / cross1;
+            float u = ((p3 - p1).X * d1.Y - (p3 - p1).Y * d1.X) / cross1;
+
+            return t >= 0 && t <= 1 && u >= 0 && u <= 1;
+        }
+
+
 
 
         public static double EaseInOut(double t)

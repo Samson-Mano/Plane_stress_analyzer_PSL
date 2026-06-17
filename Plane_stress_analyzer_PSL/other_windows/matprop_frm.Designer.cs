@@ -54,6 +54,7 @@
             this.Column3_youngsmodulus = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column4_density = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column5_poissonsratio = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column6_materialcolor = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.menuStrip1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -254,7 +255,8 @@
             this.Column2_materialname,
             this.Column3_youngsmodulus,
             this.Column4_density,
-            this.Column5_poissonsratio});
+            this.Column5_poissonsratio,
+            this.Column6_materialcolor});
             this.dataGridView_MaterialList.Location = new System.Drawing.Point(12, 42);
             this.dataGridView_MaterialList.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.dataGridView_MaterialList.MultiSelect = false;
@@ -268,20 +270,21 @@
             // 
             // Column1_materialid
             // 
+            this.Column1_materialid.FillWeight = 80F;
             this.Column1_materialid.HeaderText = "Material ID";
             this.Column1_materialid.MinimumWidth = 8;
             this.Column1_materialid.Name = "Column1_materialid";
             this.Column1_materialid.ReadOnly = true;
-            this.Column1_materialid.Width = 125;
+            this.Column1_materialid.Width = 80;
             // 
             // Column2_materialname
             // 
-            this.Column2_materialname.FillWeight = 160F;
+            this.Column2_materialname.FillWeight = 120F;
             this.Column2_materialname.HeaderText = "Material Name";
             this.Column2_materialname.MinimumWidth = 8;
             this.Column2_materialname.Name = "Column2_materialname";
             this.Column2_materialname.ReadOnly = true;
-            this.Column2_materialname.Width = 160;
+            this.Column2_materialname.Width = 120;
             // 
             // Column3_youngsmodulus
             // 
@@ -294,12 +297,12 @@
             // 
             // Column4_density
             // 
-            this.Column4_density.FillWeight = 170F;
+            this.Column4_density.FillWeight = 160F;
             this.Column4_density.HeaderText = "Density (μ) ";
             this.Column4_density.MinimumWidth = 8;
             this.Column4_density.Name = "Column4_density";
             this.Column4_density.ReadOnly = true;
-            this.Column4_density.Width = 170;
+            this.Column4_density.Width = 160;
             // 
             // Column5_poissonsratio
             // 
@@ -309,6 +312,15 @@
             this.Column5_poissonsratio.Name = "Column5_poissonsratio";
             this.Column5_poissonsratio.ReadOnly = true;
             this.Column5_poissonsratio.Width = 130;
+            // 
+            // Column6_materialcolor
+            // 
+            this.Column6_materialcolor.FillWeight = 70F;
+            this.Column6_materialcolor.HeaderText = "Color";
+            this.Column6_materialcolor.MinimumWidth = 6;
+            this.Column6_materialcolor.Name = "Column6_materialcolor";
+            this.Column6_materialcolor.ReadOnly = true;
+            this.Column6_materialcolor.Width = 70;
             // 
             // matprop_frm
             // 
@@ -367,5 +379,6 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn Column3_youngsmodulus;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column4_density;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column5_poissonsratio;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Column6_materialcolor;
     }
 }

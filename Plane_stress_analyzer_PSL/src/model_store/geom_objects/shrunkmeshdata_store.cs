@@ -35,6 +35,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
             public int pt_id1;
             public int pt_id2;
             public int pt_id3;
+            public int mat_id;
         }
 
         private struct quad_store
@@ -44,6 +45,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
             public int pt_id2;
             public int pt_id3;
             public int pt_id4;
+            public int mat_id;
         }
 
         private class mat_mesh_store
@@ -55,8 +57,11 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
             public IndexBuffer shrunk_triangle_ibo;
             public IndexBuffer shrunk_quadrilateral_ibo;
 
-            public List<tri_store> shrunk_tris = new List<tri_store>();
-            public List<quad_store> shrunk_quads = new List<quad_store>();
+            public List<int> shrunk_tri_ids = new List<int>();
+            public List<int> shrunk_quad_ids = new List<int>();
+
+            //public List<tri_store> shrunk_tris = new List<tri_store>();
+            //public List<quad_store> shrunk_quads = new List<quad_store>();
 
         }
 
@@ -66,16 +71,25 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
         private VertexBuffer shrunk_point_vbo; // Pre-shrunk vertices
         private VertexArray shrunk_point_vao;
 
+        public IndexBuffer selected_triangle_ibo;
+        public IndexBuffer selected_quadrilateral_ibo;
+
         private int shrunkpt_id = 0;
 
         private const int FLOATS_PER_VERTEX = 2;
         private const float SHRINKFACTOR = 0.80f;
 
         private List<point_store> shrunk_points = new List<point_store>();
+        private Dictionary<int, tri_store> shrunk_tris = new Dictionary<int, tri_store>();
+        private Dictionary<int, quad_store> shrunk_quads = new Dictionary<int, quad_store>();
+
+
         private Dictionary<int, mat_mesh_store> mat_shrunkmesh_data = new Dictionary<int, mat_mesh_store>();
 
         private bool shrunk_buffersInitialized = false;
 
+        // Selected mesh flag
+        bool isMeshSelected = false;
 
         public shrunkmeshdata_store()
         {
@@ -94,7 +108,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
         }
 
 
-        public void add_shrunk_triangle(int tri_id, float pt1_xcoord, float pt1_ycoord, 
+        public void add_shrunk_triangle(int tri_id, float pt1_xcoord, float pt1_ycoord,
             float pt2_xcoord, float pt2_ycoord, float pt3_xcoord, float pt3_ycoord, int mat_id)
         {
 
@@ -103,7 +117,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
             float cy = (pt1_ycoord + pt2_ycoord + pt3_ycoord) / 3.0f;
 
             // Create 3 new points
-            add_shrunk_point(shrunkpt_id + 0, cx + (pt1_xcoord - cx) * SHRINKFACTOR, 
+            add_shrunk_point(shrunkpt_id + 0, cx + (pt1_xcoord - cx) * SHRINKFACTOR,
                 cy + (pt1_ycoord - cy) * SHRINKFACTOR);
             add_shrunk_point(shrunkpt_id + 1, cx + (pt2_xcoord - cx) * SHRINKFACTOR,
                 cy + (pt2_ycoord - cy) * SHRINKFACTOR);
@@ -117,13 +131,16 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
                 mat_shrunkmesh_data[mat_id] = matMesh;
             }
 
-            matMesh.shrunk_tris.Add(new tri_store()
+            shrunk_tris.Add(tri_id, new tri_store()
             {
                 tri_id = tri_id,
                 pt_id1 = shrunkpt_id + 0,
                 pt_id2 = shrunkpt_id + 1,
-                pt_id3 = shrunkpt_id + 2
+                pt_id3 = shrunkpt_id + 2,
+                mat_id = mat_id
             });
+
+            matMesh.shrunk_tri_ids.Add(tri_id);
 
             shrunkpt_id += 3;
 
@@ -131,7 +148,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
 
 
         public void add_shrunk_quadrilateral(int quad_id, float pt1_xcoord, float pt1_ycoord,
-            float pt2_xcoord, float pt2_ycoord, float pt3_xcoord, float pt3_ycoord, 
+            float pt2_xcoord, float pt2_ycoord, float pt3_xcoord, float pt3_ycoord,
             float pt4_xcoord, float pt4_ycoord, int mat_id)
         {
             // Calculate centroid
@@ -155,14 +172,17 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
                 mat_shrunkmesh_data[mat_id] = matMesh;
             }
 
-            matMesh.shrunk_quads.Add(new quad_store()
+            shrunk_quads.Add(quad_id, new quad_store()
             {
                 quad_id = quad_id,
                 pt_id1 = shrunkpt_id + 0,
                 pt_id2 = shrunkpt_id + 1,
                 pt_id3 = shrunkpt_id + 2,
-                pt_id4 = shrunkpt_id + 3
+                pt_id4 = shrunkpt_id + 3,
+                mat_id = mat_id
             });
+
+            matMesh.shrunk_quad_ids.Add(quad_id);
 
             shrunkpt_id += 4;
 
@@ -199,7 +219,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
 
             VertexBufferLayout pointLayout = new VertexBufferLayout();
             pointLayout.AddFloat(FLOATS_PER_VERTEX);
-            
+
             shrunk_point_vao.Add_vertexBuffer(shrunk_point_vbo, pointLayout);
             shrunk_point_vbo.AppendVertexBuffer(shrunk_vertexData.ToArray());
 
@@ -212,8 +232,10 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
                 List<int> shrunk_triangleIndexData = new List<int>();
 
 
-                foreach (tri_store tri in matMesh.shrunk_tris)
+                foreach (int tri_id in matMesh.shrunk_tri_ids)
                 {
+                    tri_store tri = shrunk_tris[tri_id];
+
                     int pt_idx1 = pointIDToIndex[tri.pt_id1];
                     int pt_idx2 = pointIDToIndex[tri.pt_id2];
                     int pt_idx3 = pointIDToIndex[tri.pt_id3];
@@ -233,8 +255,10 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
 
                 List<int> shrunk_quadrilateralIndexData = new List<int>();
 
-                foreach (quad_store quad in matMesh.shrunk_quads)
+                foreach (int quad_id in matMesh.shrunk_quad_ids)
                 {
+                    quad_store quad = shrunk_quads[quad_id];
+
                     int pt_idx1 = pointIDToIndex[quad.pt_id1];
                     int pt_idx2 = pointIDToIndex[quad.pt_id2];
                     int pt_idx3 = pointIDToIndex[quad.pt_id3];
@@ -261,6 +285,10 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
                 }
 
             }
+
+            //  Initialize selected mesh IBO
+            selected_triangle_ibo = new IndexBuffer(10);
+            selected_quadrilateral_ibo = new IndexBuffer(10);
 
             shrunk_buffersInitialized = true;
 
@@ -308,6 +336,121 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
             }
 
             shrunk_point_vao.UnBind();
+
+        }
+
+
+        public void add_selected_mesh(List<int> selected_tri_ids, List<int> selected_quad_ids)
+        {
+            // Add the selected mesh
+            List<int> selected_triangleIndexData = new List<int>();
+
+            foreach (int tri_id in selected_tri_ids)
+            {
+                tri_store tri = shrunk_tris[tri_id];
+
+                int pt_idx1 = pointIDToIndex[tri.pt_id1];
+                int pt_idx2 = pointIDToIndex[tri.pt_id2];
+                int pt_idx3 = pointIDToIndex[tri.pt_id3];
+
+
+                selected_triangleIndexData.Add(pt_idx1);
+                selected_triangleIndexData.Add(pt_idx2);
+                selected_triangleIndexData.Add(pt_idx3);
+
+            }
+
+            selected_triangle_ibo.ClearIndexBuffer();
+            if (selected_triangleIndexData.Count > 0)
+            {
+                selected_triangle_ibo.AppendIndexBuffer(selected_triangleIndexData.ToArray());
+            }
+
+            List<int> selected_quadrilateralIndexData = new List<int>();
+
+            foreach (int quad_id in selected_quad_ids)
+            {
+                quad_store quad = shrunk_quads[quad_id];
+
+                int pt_idx1 = pointIDToIndex[quad.pt_id1];
+                int pt_idx2 = pointIDToIndex[quad.pt_id2];
+                int pt_idx3 = pointIDToIndex[quad.pt_id3];
+                int pt_idx4 = pointIDToIndex[quad.pt_id4];
+
+
+                // Make two triangles from the quad (pt1, pt2, pt3) and (pt1, pt3, pt4)
+                // Triangle 1 (nd1, nd2, nd3)
+                selected_quadrilateralIndexData.Add(pt_idx1);
+                selected_quadrilateralIndexData.Add(pt_idx2);
+                selected_quadrilateralIndexData.Add(pt_idx3);
+
+                // Triangle 2 (nd1, nd3, nd4)
+                selected_quadrilateralIndexData.Add(pt_idx1);
+                selected_quadrilateralIndexData.Add(pt_idx3);
+                selected_quadrilateralIndexData.Add(pt_idx4);
+
+            }
+
+            selected_quadrilateral_ibo.ClearIndexBuffer();
+            if (selected_quadrilateralIndexData.Count > 0)
+            {
+                selected_quadrilateral_ibo.AppendIndexBuffer(selected_quadrilateralIndexData.ToArray());
+            }
+
+
+            isMeshSelected = false;
+            if(selected_triangle_ibo.BufferCount > 0 || selected_quadrilateral_ibo.BufferCount > 0)
+                isMeshSelected =true;
+
+        }
+
+        public void clear_selected_mesh()
+        {
+            selected_triangle_ibo.ClearIndexBuffer();
+            selected_quadrilateral_ibo.ClearIndexBuffer();
+
+            // Clear the selected mesh
+            isMeshSelected = false;
+        }
+
+
+        public void paint_selected_mesh(ref Shader meshShader)
+        {
+            if (!shrunk_buffersInitialized && !isMeshSelected)
+                return;
+
+            shrunk_point_vao.Bind();
+
+
+            // Get the Color for the mesh (based on material ID)
+            Vector4 MeshColor = new Vector4(gvariables_static.ColorUtils.get_SelectionPtColor(),
+                gvariables_static.geom_transparency);
+
+
+            meshShader.SetVector4("vertexColor", MeshColor);
+
+
+            if (selected_triangle_ibo.BufferCount > 0)
+            {
+                // Paint the selected triangle mesh
+                selected_triangle_ibo.Bind();
+                GL.DrawElements(PrimitiveType.Triangles, selected_triangle_ibo.BufferCount,
+                    DrawElementsType.UnsignedInt, 0);
+                selected_triangle_ibo.UnBind();
+            }
+
+
+            if (selected_quadrilateral_ibo.BufferCount > 0)
+            {
+                // Paint the selected quadrilateral mesh
+                selected_quadrilateral_ibo.Bind();
+                GL.DrawElements(PrimitiveType.Triangles, selected_quadrilateral_ibo.BufferCount,
+                    DrawElementsType.UnsignedInt, 0);
+                selected_quadrilateral_ibo.UnBind();
+            }
+
+            shrunk_point_vao.UnBind();
+
 
         }
 
