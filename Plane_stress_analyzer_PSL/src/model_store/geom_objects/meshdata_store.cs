@@ -1,22 +1,21 @@
-﻿using Plane_stress_analyzer_PSL.src.events_handler;
+﻿// OpenTK library
+using OpenTK;
+using OpenTK.Graphics;
+using OpenTK.Graphics.OpenGL4;
+using Plane_stress_analyzer_PSL.src.events_handler;
 using Plane_stress_analyzer_PSL.src.global_variables;
 using Plane_stress_analyzer_PSL.src.model_store.fe_objects;
 using Plane_stress_analyzer_PSL.src.opentk_control.opentk_buffer;
 using Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler;
-
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using static System.Windows.Forms.LinkLabel;
-
-// OpenTK library
-using OpenTK;
-using OpenTK.Graphics;
-using OpenTK.Graphics.OpenGL4;
 
 
 
@@ -67,8 +66,8 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
             public IndexBuffer triangle_ibo;
             public IndexBuffer quadrilateral_ibo;
 
-            public List<int> tri_ids = new List<int>();
-            public List<int> quad_ids = new List<int>();
+            public HashSet<int> tri_ids = new HashSet<int>();
+            public HashSet<int> quad_ids = new HashSet<int>();
 
         }
 
@@ -76,7 +75,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
 
         private List<point_store> points = new List<point_store>();
         private List<line_store> wireframe_lines = new List<line_store>();
-        private Dictionary<int,tri_store> tris = new Dictionary<int, tri_store>();
+        private Dictionary<int, tri_store> tris = new Dictionary<int, tri_store>();
         private Dictionary<int, quad_store> quads = new Dictionary<int, quad_store>();
 
         private Dictionary<int, mat_mesh_store> mat_mesh_data = new Dictionary<int, mat_mesh_store>();
@@ -124,7 +123,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
                 mat_mesh_data[mat_id] = matMesh;
             }
 
-            tris.Add(tri_id,new tri_store()
+            tris.Add(tri_id, new tri_store()
             {
                 tri_id = tri_id,
                 pt_id1 = pt_id1,
@@ -160,15 +159,135 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
         }
 
 
-        public void update_tri_materialid(int tri_id, int mat_id)
+        public void update_material(HashSet<int> selected_tri_ids, HashSet<int> selected_quad_ids, int mat_id)
         {
+            if (!mat_mesh_data.TryGetValue(mat_id, out var matMesh))
+            {
+                matMesh = new mat_mesh_store() { material_id = mat_id };
+                mat_mesh_data[mat_id] = matMesh;
+            }
+
+            // Update the material 
+            matMesh.tri_ids.UnionWith(selected_tri_ids);
+            matMesh.quad_ids.UnionWith(selected_quad_ids);
+
+            foreach (mat_mesh_store matMesh_ot in mat_mesh_data.Values)
+            {
+                // Reset other mesh
+                if (matMesh_ot.material_id == mat_id)
+                    continue;
+
+
+                // Remove the tri ids & quad ids
+                matMesh_ot.tri_ids.ExceptWith(selected_tri_ids);
+                matMesh_ot.quad_ids.ExceptWith(selected_quad_ids);
+
+            }
+
+            reset_matmesh_buffer();
+
+            // Update for shrunk mesh
+            shrunk_mesh_data.shrunk_update_material(selected_tri_ids, selected_quad_ids, mat_id);
 
         }
 
-        public void update_quad_materialid(int quad_id, int mat_id)
+
+        public void deletematerial(int mat_id)
         {
+            if (!mat_mesh_data.ContainsKey(mat_id))
+                return;
+
+
+            List<int> materialchanged_element_tris = mat_mesh_data[mat_id].tri_ids.ToList();
+            List<int> materialchanged_element_quads = mat_mesh_data[mat_id].quad_ids.ToList();
+
+            // Delete the mat mesh associated with this material id
+            mat_mesh_data.Remove(mat_id);
+
+            // Assign default material to the element tris and quads
+            mat_mesh_data[0].tri_ids.UnionWith(materialchanged_element_tris);
+            mat_mesh_data[0].quad_ids.UnionWith(materialchanged_element_quads);
+
+            reset_matmesh_buffer();
+
+            // Update for shrunk mesh
+            shrunk_mesh_data.shrunk_deletematerial(mat_id);
 
         }
+
+
+        private void reset_matmesh_buffer()
+        {
+            
+            //_______________________________________________________________
+            // Reset triangle and quadrilateral index data after material update for openGL
+
+            foreach (mat_mesh_store matMesh in mat_mesh_data.Values)
+            {
+                List<int> triangleIndexData = new List<int>();
+
+                foreach (int tri_id in matMesh.tri_ids)
+                {
+                    tri_store tri = tris[tri_id];
+
+                    int pt_idx1 = pointIDToIndex[tri.pt_id1];
+                    int pt_idx2 = pointIDToIndex[tri.pt_id2];
+                    int pt_idx3 = pointIDToIndex[tri.pt_id3];
+
+
+                    triangleIndexData.Add(pt_idx1);
+                    triangleIndexData.Add(pt_idx2);
+                    triangleIndexData.Add(pt_idx3);
+
+                }
+
+                if (matMesh.triangle_ibo == null)
+                    matMesh.triangle_ibo = new IndexBuffer(10);
+
+                matMesh.triangle_ibo.ClearIndexBuffer();
+                if (triangleIndexData.Count > 0)
+                {
+                    matMesh.triangle_ibo.AppendIndexBuffer(triangleIndexData.ToArray());
+                }
+
+                List<int> quadrilateralIndexData = new List<int>();
+
+                foreach (int quad_id in matMesh.quad_ids)
+                {
+                    quad_store quad = quads[quad_id];
+
+                    int pt_idx1 = pointIDToIndex[quad.pt_id1];
+                    int pt_idx2 = pointIDToIndex[quad.pt_id2];
+                    int pt_idx3 = pointIDToIndex[quad.pt_id3];
+                    int pt_idx4 = pointIDToIndex[quad.pt_id4];
+
+
+                    // Make two triangles from the quad (pt1, pt2, pt3) and (pt1, pt3, pt4)
+                    // Triangle 1 (nd1, nd2, nd3)
+                    quadrilateralIndexData.Add(pt_idx1);
+                    quadrilateralIndexData.Add(pt_idx2);
+                    quadrilateralIndexData.Add(pt_idx3);
+
+                    // Triangle 2 (nd1, nd3, nd4)
+                    quadrilateralIndexData.Add(pt_idx1);
+                    quadrilateralIndexData.Add(pt_idx3);
+                    quadrilateralIndexData.Add(pt_idx4);
+
+                }
+
+                if (matMesh.quadrilateral_ibo == null)
+                    matMesh.quadrilateral_ibo = new IndexBuffer(10);
+
+                matMesh.quadrilateral_ibo.ClearIndexBuffer();
+                if (quadrilateralIndexData.Count > 0)
+                {
+                    matMesh.quadrilateral_ibo.AppendIndexBuffer(quadrilateralIndexData.ToArray());
+                }
+
+            }
+
+        }
+
 
 
         private void InitializeShader()

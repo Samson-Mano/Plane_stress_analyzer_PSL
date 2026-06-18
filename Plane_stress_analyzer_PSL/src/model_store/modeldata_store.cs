@@ -192,8 +192,5 @@ namespace Plane_stress_analyzer_PSL.src.model_store
 
 
 
-
-
-
     }
 }

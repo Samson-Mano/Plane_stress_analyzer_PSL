@@ -57,11 +57,8 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
             public IndexBuffer shrunk_triangle_ibo;
             public IndexBuffer shrunk_quadrilateral_ibo;
 
-            public List<int> shrunk_tri_ids = new List<int>();
-            public List<int> shrunk_quad_ids = new List<int>();
-
-            //public List<tri_store> shrunk_tris = new List<tri_store>();
-            //public List<quad_store> shrunk_quads = new List<quad_store>();
+            public HashSet<int> shrunk_tri_ids = new HashSet<int>();
+            public HashSet<int> shrunk_quad_ids = new HashSet<int>();
 
         }
 
@@ -294,6 +291,124 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
 
         }
 
+        public void shrunk_update_material(HashSet<int> selected_tri_ids, HashSet<int> selected_quad_ids, int mat_id)
+        {
+            if (!mat_shrunkmesh_data.TryGetValue(mat_id, out var matMesh))
+            {
+                matMesh = new mat_mesh_store() { material_id = mat_id };
+                mat_shrunkmesh_data[mat_id] = matMesh;
+            }
+
+            // Update the material 
+            matMesh.shrunk_tri_ids.UnionWith(selected_tri_ids);
+            matMesh.shrunk_quad_ids.UnionWith(selected_quad_ids);
+
+            foreach (mat_mesh_store matMesh_ot in mat_shrunkmesh_data.Values)
+            {
+                // Reset other mesh
+                if (matMesh_ot.material_id == mat_id)
+                    continue;   
+
+
+                // Remove the tri ids & quad ids
+                matMesh_ot.shrunk_tri_ids.ExceptWith(selected_tri_ids);
+                matMesh_ot.shrunk_quad_ids.ExceptWith(selected_quad_ids);
+
+            }
+
+            reset_shrunk_matmesh_buffer();
+        }
+
+
+        public void shrunk_deletematerial(int mat_id)
+        {
+            List<int> materialchanged_element_tris = mat_shrunkmesh_data[mat_id].shrunk_tri_ids.ToList();
+            List<int> materialchanged_element_quads = mat_shrunkmesh_data[mat_id].shrunk_quad_ids.ToList();
+
+            // Delete the mat mesh associated with this material id
+            mat_shrunkmesh_data.Remove(mat_id);
+
+            // Assign default material to the element tris and quads
+            mat_shrunkmesh_data[0].shrunk_tri_ids.UnionWith(materialchanged_element_tris);
+            mat_shrunkmesh_data[0].shrunk_quad_ids.UnionWith(materialchanged_element_quads);
+
+            reset_shrunk_matmesh_buffer();
+        }
+
+        private void reset_shrunk_matmesh_buffer()
+        {
+            //_______________________________________________________________
+            // prepare shrunk triangle and shrunk quadrilateral index data for openGL
+
+            foreach (mat_mesh_store matMesh in mat_shrunkmesh_data.Values)
+            {
+                List<int> shrunk_triangleIndexData = new List<int>();
+
+
+                foreach (int tri_id in matMesh.shrunk_tri_ids)
+                {
+                    tri_store tri = shrunk_tris[tri_id];
+
+                    int pt_idx1 = pointIDToIndex[tri.pt_id1];
+                    int pt_idx2 = pointIDToIndex[tri.pt_id2];
+                    int pt_idx3 = pointIDToIndex[tri.pt_id3];
+
+
+                    shrunk_triangleIndexData.Add(pt_idx1);
+                    shrunk_triangleIndexData.Add(pt_idx2);
+                    shrunk_triangleIndexData.Add(pt_idx3);
+
+                }
+
+                if (matMesh.shrunk_triangle_ibo == null)
+                    matMesh.shrunk_triangle_ibo = new IndexBuffer(10);
+
+
+                matMesh.shrunk_triangle_ibo.ClearIndexBuffer();
+                if (shrunk_triangleIndexData.Count > 0)
+                {
+                    matMesh.shrunk_triangle_ibo.AppendIndexBuffer(shrunk_triangleIndexData.ToArray());
+                }
+
+                List<int> shrunk_quadrilateralIndexData = new List<int>();
+
+                foreach (int quad_id in matMesh.shrunk_quad_ids)
+                {
+                    quad_store quad = shrunk_quads[quad_id];
+
+                    int pt_idx1 = pointIDToIndex[quad.pt_id1];
+                    int pt_idx2 = pointIDToIndex[quad.pt_id2];
+                    int pt_idx3 = pointIDToIndex[quad.pt_id3];
+                    int pt_idx4 = pointIDToIndex[quad.pt_id4];
+
+
+                    // Make two triangles from the quad (pt1, pt2, pt3) and (pt1, pt3, pt4)
+                    // Triangle 1 (nd1, nd2, nd3)
+                    shrunk_quadrilateralIndexData.Add(pt_idx1);
+                    shrunk_quadrilateralIndexData.Add(pt_idx2);
+                    shrunk_quadrilateralIndexData.Add(pt_idx3);
+
+                    // Triangle 2 (nd1, nd3, nd4)
+                    shrunk_quadrilateralIndexData.Add(pt_idx1);
+                    shrunk_quadrilateralIndexData.Add(pt_idx3);
+                    shrunk_quadrilateralIndexData.Add(pt_idx4);
+
+                }
+
+                if (matMesh.shrunk_quadrilateral_ibo == null)
+                    matMesh.shrunk_quadrilateral_ibo = new IndexBuffer(10);
+
+
+                matMesh.shrunk_quadrilateral_ibo.ClearIndexBuffer();
+                if (shrunk_quadrilateralIndexData.Count > 0)
+                {
+                    matMesh.shrunk_quadrilateral_ibo.AppendIndexBuffer(shrunk_quadrilateralIndexData.ToArray());
+                }
+
+            }
+
+
+        }
 
         public void paint_shrunk_mesh(ref Shader meshShader)
         {

@@ -163,6 +163,9 @@
     <EmbeddedResource Include="other_windows\option_frm.resx">
       <DependentUpon>option_frm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="other_windows\solver_frm.resx">
+      <DependentUpon>solver_frm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>

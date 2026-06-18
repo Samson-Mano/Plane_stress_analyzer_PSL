@@ -277,13 +277,12 @@ namespace Plane_stress_analyzer_PSL.other_windows
                 modeldata.fe_data.fe_materials.Remove(material_id);
                 modeldata.fe_data.materialids.Remove(material_id);
 
-
                 // remove the row from the data grid view
                 dataGridView_MaterialList.Rows.Remove(selectedRow);
 
-
-                // Update the material labels
-                // fe_data.updateMaterialIDLabels();
+                // Update the material
+                modeldata.fe_data.execute_delete_material(material_id);
+                modeldata.fe_data.clear_selected_mesh();
 
                 // Call the main form for refresh
                 if (this.Owner is main_frm mainForm1)
@@ -309,6 +308,10 @@ namespace Plane_stress_analyzer_PSL.other_windows
                     // MessageBox.Show("Invalid material ID.");
                     return;
                 }
+
+                // Update the material ID 
+                modeldata.fe_data.updateMaterial(material_id);
+                modeldata.fe_data.clear_selected_mesh();
 
                 // Call the main form
                 if (this.Owner is main_frm mainForm)
