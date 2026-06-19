@@ -576,6 +576,52 @@ namespace Plane_stress_analyzer_PSL
 
         }
 
+
+        private void finiteElementSolverToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (modeldata.IsModelSet == false)
+                return;
+
+            // Check if solver_Form is null or disposed
+            if (solver_Form == null || solver_Form.IsDisposed)
+            {
+                solver_Form = new solver_frm(ref modeldata);
+
+                // Make it behave like a tool window
+                solver_Form.FormBorderStyle = FormBorderStyle.SizableToolWindow;
+                solver_Form.ShowInTaskbar = false;
+                solver_Form.TopLevel = true;
+                solver_Form.Owner = this;
+
+                // Manually center the form on the parent
+                int x = this.Location.X + (this.Width - solver_Form.Width) / 2;
+                int y = this.Location.Y + (this.Height - solver_Form.Height) / 2;
+                solver_Form.StartPosition = FormStartPosition.Manual;
+                solver_Form.Location = new Point(Math.Max(x, 0), Math.Max(y, 0)); // avoid negative positions
+
+            }
+
+            // Turn on Flag Nodal Constraint update form is open
+            // modeldata.isConstraintUpdateInProgress = true;
+            // modeldata.fe_data.clear_selected_nodes();
+
+            // Show the form
+            // constraint_Form.update_dataGridView();
+            // constraint_Form.update_selected_node_list();
+            solver_Form.Show(this);
+            solver_Form.BringToFront();
+
+            glControl_main_panel.Invalidate();
+
+        }
+
+
+        private void resultOptionToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+
+        }
+
         #endregion
 
 
@@ -612,9 +658,9 @@ namespace Plane_stress_analyzer_PSL
 
             glControl_main_panel.Invalidate();
         }
+
+
         #endregion
 
-
-
-        }
+    }
 }

@@ -44,6 +44,9 @@
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel_zoom_value = new System.Windows.Forms.ToolStripStatusLabel();
             this.glControl_main_panel = new OpenTK.GLControl();
+            this.finiteElementSolverToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.resultOptionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -77,35 +80,35 @@
             // importTXTFileToolStripMenuItem
             // 
             this.importTXTFileToolStripMenuItem.Name = "importTXTFileToolStripMenuItem";
-            this.importTXTFileToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.importTXTFileToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
             this.importTXTFileToolStripMenuItem.Text = "Import TXT File";
             this.importTXTFileToolStripMenuItem.Click += new System.EventHandler(this.importTXTFileToolStripMenuItem_Click);
             // 
             // importModelToolStripMenuItem
             // 
             this.importModelToolStripMenuItem.Name = "importModelToolStripMenuItem";
-            this.importModelToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.importModelToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
             this.importModelToolStripMenuItem.Text = "Import Model";
             this.importModelToolStripMenuItem.Click += new System.EventHandler(this.importModelToolStripMenuItem_Click);
             // 
             // exportModelToolStripMenuItem
             // 
             this.exportModelToolStripMenuItem.Name = "exportModelToolStripMenuItem";
-            this.exportModelToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.exportModelToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
             this.exportModelToolStripMenuItem.Text = "Export Model";
             this.exportModelToolStripMenuItem.Click += new System.EventHandler(this.exportModelToolStripMenuItem_Click);
             // 
             // optionToolStripMenuItem
             // 
             this.optionToolStripMenuItem.Name = "optionToolStripMenuItem";
-            this.optionToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.optionToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
             this.optionToolStripMenuItem.Text = "Option";
             this.optionToolStripMenuItem.Click += new System.EventHandler(this.optionToolStripMenuItem_Click);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
             this.exitToolStripMenuItem.Text = "Exit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
@@ -122,26 +125,30 @@
             // addLoadsToolStripMenuItem
             // 
             this.addLoadsToolStripMenuItem.Name = "addLoadsToolStripMenuItem";
-            this.addLoadsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.addLoadsToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
             this.addLoadsToolStripMenuItem.Text = "Add Loads";
             this.addLoadsToolStripMenuItem.Click += new System.EventHandler(this.addLoadsToolStripMenuItem_Click);
             // 
             // addConstraintsToolStripMenuItem
             // 
             this.addConstraintsToolStripMenuItem.Name = "addConstraintsToolStripMenuItem";
-            this.addConstraintsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.addConstraintsToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
             this.addConstraintsToolStripMenuItem.Text = "Add Constraints";
             this.addConstraintsToolStripMenuItem.Click += new System.EventHandler(this.addConstraintsToolStripMenuItem_Click);
             // 
             // materialPropertiesToolStripMenuItem
             // 
             this.materialPropertiesToolStripMenuItem.Name = "materialPropertiesToolStripMenuItem";
-            this.materialPropertiesToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.materialPropertiesToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
             this.materialPropertiesToolStripMenuItem.Text = "Material Properties";
             this.materialPropertiesToolStripMenuItem.Click += new System.EventHandler(this.materialPropertiesToolStripMenuItem_Click);
             // 
             // solveToolStripMenuItem
             // 
+            this.solveToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.finiteElementSolverToolStripMenuItem,
+            this.toolStripSeparator1,
+            this.resultOptionToolStripMenuItem});
             this.solveToolStripMenuItem.Name = "solveToolStripMenuItem";
             this.solveToolStripMenuItem.Size = new System.Drawing.Size(47, 20);
             this.solveToolStripMenuItem.Text = "Solve";
@@ -167,7 +174,7 @@
             // 
             this.glControl_main_panel.BackColor = System.Drawing.Color.Black;
             this.glControl_main_panel.Location = new System.Drawing.Point(163, 143);
-            this.glControl_main_panel.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.glControl_main_panel.Margin = new System.Windows.Forms.Padding(4);
             this.glControl_main_panel.Name = "glControl_main_panel";
             this.glControl_main_panel.Size = new System.Drawing.Size(258, 150);
             this.glControl_main_panel.TabIndex = 2;
@@ -182,6 +189,25 @@
             this.glControl_main_panel.MouseMove += new System.Windows.Forms.MouseEventHandler(this.glControl_main_panel_MouseMove);
             this.glControl_main_panel.MouseUp += new System.Windows.Forms.MouseEventHandler(this.glControl_main_panel_MouseUp);
             this.glControl_main_panel.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.glControl_main_panel_MouseWheel);
+            // 
+            // finiteElementSolverToolStripMenuItem
+            // 
+            this.finiteElementSolverToolStripMenuItem.Name = "finiteElementSolverToolStripMenuItem";
+            this.finiteElementSolverToolStripMenuItem.Size = new System.Drawing.Size(184, 22);
+            this.finiteElementSolverToolStripMenuItem.Text = "Finite Element Solver";
+            this.finiteElementSolverToolStripMenuItem.Click += new System.EventHandler(this.finiteElementSolverToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(181, 6);
+            // 
+            // resultOptionToolStripMenuItem
+            // 
+            this.resultOptionToolStripMenuItem.Name = "resultOptionToolStripMenuItem";
+            this.resultOptionToolStripMenuItem.Size = new System.Drawing.Size(184, 22);
+            this.resultOptionToolStripMenuItem.Text = "Result Option";
+            this.resultOptionToolStripMenuItem.Click += new System.EventHandler(this.resultOptionToolStripMenuItem_Click);
             // 
             // main_frm
             // 
@@ -222,6 +248,9 @@
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel_zoom_value;
         private OpenTK.GLControl glControl_main_panel;
+        private System.Windows.Forms.ToolStripMenuItem finiteElementSolverToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripMenuItem resultOptionToolStripMenuItem;
     }
 }
 
