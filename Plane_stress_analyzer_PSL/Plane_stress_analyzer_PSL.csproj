@@ -148,6 +148,7 @@
     <Compile Include="src\opentk_control\shader_compiler\Shader.cs" />
     <Compile Include="src\opentk_control\shader_compiler\ShaderLibrary.cs" />
     <Compile Include="src\opentk_control\shader_compiler\Texture.cs" />
+    <Compile Include="src\solver\stress2DSolverInterop.cs" />
     <EmbeddedResource Include="main_frm.resx">
       <DependentUpon>main_frm.cs</DependentUpon>
     </EmbeddedResource>
@@ -209,7 +210,6 @@
     <Folder Include="Example_model\" />
     <Folder Include="lib\" />
     <Folder Include="src\model_store\rslt_objects\" />
-    <Folder Include="src\solver\" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">

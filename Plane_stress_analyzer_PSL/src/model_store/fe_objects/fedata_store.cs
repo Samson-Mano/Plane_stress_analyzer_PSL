@@ -40,6 +40,8 @@ namespace Plane_stress_analyzer_PSL.src.model_store.fe_objects
         public List<int> materialids;
         // public label_list_store materiallabels;
 
+        public int number_of_edges = 0;
+
         // Drawing data
         private meshdata_store meshdrawingdata;
         private bool IsMeshDrawingDataSet = false;

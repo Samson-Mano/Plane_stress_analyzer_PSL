@@ -37,6 +37,8 @@
             this.label2 = new System.Windows.Forms.Label();
             this.comboBox_polynomialrefinement = new System.Windows.Forms.ComboBox();
             this.button_solve = new System.Windows.Forms.Button();
+            this.label3 = new System.Windows.Forms.Label();
+            this.comboBox_formulation = new System.Windows.Forms.ComboBox();
             this.SuspendLayout();
             // 
             // richTextBox_AnalysisUpdate
@@ -124,11 +126,34 @@
             this.button_solve.UseVisualStyleBackColor = true;
             this.button_solve.Click += new System.EventHandler(this.button_solve_Click);
             // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(15, 381);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(151, 17);
+            this.label3.TabIndex = 23;
+            this.label3.Text = "Solver Formulation: ";
+            // 
+            // comboBox_formulation
+            // 
+            this.comboBox_formulation.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBox_formulation.FormattingEnabled = true;
+            this.comboBox_formulation.Items.AddRange(new object[] {
+            "Plane Stress Formulation",
+            "Plane Strain Formulation"});
+            this.comboBox_formulation.Location = new System.Drawing.Point(172, 378);
+            this.comboBox_formulation.Name = "comboBox_formulation";
+            this.comboBox_formulation.Size = new System.Drawing.Size(273, 25);
+            this.comboBox_formulation.TabIndex = 24;
+            // 
             // solver_frm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(564, 511);
+            this.Controls.Add(this.comboBox_formulation);
+            this.Controls.Add(this.label3);
             this.Controls.Add(this.button_solve);
             this.Controls.Add(this.comboBox_polynomialrefinement);
             this.Controls.Add(this.label2);
@@ -159,5 +184,7 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ComboBox comboBox_polynomialrefinement;
         private System.Windows.Forms.Button button_solve;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.ComboBox comboBox_formulation;
     }
 }
