@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="stress2D_solverCPP/stress2D_solverCPP.vcxproj" Id="6c2862fb-39c3-4ef6-9c8f-9a30a4441926" />
+</Solution>

@@ -1,0 +1,67 @@
+#pragma once
+#include <Eigen/Dense>
+#include <unordered_map>
+#include "../system_store/stress_system_store.h"
+
+class h_refinement_store
+{
+public:
+	h_refinement_store();
+	~h_refinement_store() = default;
+
+
+	void add_node(const int& node_id,
+		const double& x_coord,
+		const double& y_coord);
+
+	void add_edge(const int& edge_id,
+		const int& startnodeid,
+		const int& endnodeid);
+
+	void add_trielement(const int& tri_id,
+		const int& nodeid1,
+		const int& nodeid2,
+		const int& nodeid3,
+		const int& materialid);
+
+	void add_quadelement(const int& quad_id,
+		const int& nodeid1,
+		const int& nodeid2,
+		const int& nodeid3,
+		const int& nodeid4,
+		const int& materialid);
+
+
+	void add_material(const int& materialid,
+		const double& youngsmodulus,
+		const double& matdensity,
+		const double& poissonsratio);
+
+	void add_nodeconstraint(const int& node_id,
+		const int& constrainttype,  // 0 = Pinned, 1 = Roller
+		const double& constraintangle);
+
+	void add_nodeload(const int& node_id,
+		const double& loadamplitude,
+		const double& loadangle);
+
+
+
+private:
+
+	std::unordered_map<int, node_store> node_list;
+	std::unordered_map<int, edge_store> edge_list;
+	std::unordered_map<int, trielement_store> trielement_list;
+	std::unordered_map<int, quadelement_store> quadelement_list;
+	std::unordered_map<int, material_store> material_list;
+
+	std::unordered_map<int, std::vector<int>> node_edge_map;
+
+	void set_edge_faceid(const int& startnodeid, const int& endnodeid, const int& face_id);
+
+
+	int get_edge_id(const int& startnodeid, const int& endnodeid);
+
+
+};
+

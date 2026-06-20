@@ -57,6 +57,8 @@ namespace Plane_stress_analyzer_PSL.other_windows
                     return;
                 }
 
+                calculate_solver_model_size();
+
                 // Calculate the total size of the refined model
                 AppendStatus($"Total number of nodes = {this.refined_nodecount} \n");
                 AppendStatus($"Total triangle element count = {this.refined_tricount} \n");
@@ -117,7 +119,7 @@ namespace Plane_stress_analyzer_PSL.other_windows
                 AppendStatus("✓ DLL loaded successfully!\n");
 
                 // Step 3: Run the solver
-                AppendStatus("\nStarting modal analysis...\n");
+                AppendStatus("\nStarting stress analysis...\n");
                 await RunSolverAsync();
             }
             catch (Exception ex)
@@ -210,7 +212,7 @@ namespace Plane_stress_analyzer_PSL.other_windows
 
         
                 // Write input file
-                double[] solver_settings = new double[2];
+                double[] solver_settings = new double[4];
                 solver_settings[0] = comboBox_solvertype.SelectedIndex; // 0 = Elimination method, 1 = Lagrange method
                 solver_settings[1] = comboBox_HRefinement.SelectedIndex; // 0, 1, 2
                 solver_settings[2] = comboBox_polynomialrefinement.SelectedIndex; // 0, 1, 2, 3
@@ -411,26 +413,38 @@ namespace Plane_stress_analyzer_PSL.other_windows
         private bool CheckAllDependencies()
         {
             string targetDir = AppDomain.CurrentDomain.BaseDirectory;
-            string[] requiredDlls = new string[]
-            {
-        "modalspectral_solverCPP.dll",
-        "libarpack.dll",
-        "libgcc_s_seh-1.dll",
-        "libgfortran-5.dll",
-        "liblapack.dll",
-        "libquadmath-0.dll",
-        "libwinpthread-1.dll",
-        "openblas.dll"
-            };
+
+        //    string[] requiredDlls = new string[]
+        //    {
+        //"modalspectral_solverCPP.dll",
+        //"libarpack.dll",
+        //"libgcc_s_seh-1.dll",
+        //"libgfortran-5.dll",
+        //"liblapack.dll",
+        //"libquadmath-0.dll",
+        //"libwinpthread-1.dll",
+        //"openblas.dll"
+        //    };
+
 
             bool allExist = true;
-            foreach (string dll in requiredDlls)
-            {
-                string fullPath = Path.Combine(targetDir, dll);
-                bool exists = File.Exists(fullPath);
-                AppendStatus($"  {(exists ? "✓" : "✗")} {dll}: {(exists ? "Found" : "MISSING")}\n");
-                if (!exists) allExist = false;
-            }
+            string fullPath = "";
+            bool exists = false;
+
+            //foreach (string dll in requiredDlls)
+            //{
+            //    fullPath = Path.Combine(targetDir, dll);
+            //    exists = File.Exists(fullPath);
+            //    AppendStatus($"  {(exists ? "✓" : "✗")} {dll}: {(exists ? "Found" : "MISSING")}\n");
+            //    if (!exists) allExist = false;
+            //}
+
+            string requiredDLL = "stress2D_solverCPP.dll";
+            fullPath = Path.Combine(targetDir, requiredDLL);
+            exists = File.Exists(fullPath);
+            AppendStatus($"  {(exists ? "✓" : "✗")} {requiredDLL}: {(exists ? "Found" : "MISSING")}\n");
+            if (!exists) allExist = false;
+
 
             return allExist;
         }

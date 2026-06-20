@@ -21,7 +21,7 @@ namespace src.solver
 
 
         // Import the DLL function (updated to accept callback)
-        [DllImport("stressanalysis2D_solverCPP.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("stress2D_solverCPP.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void solve_2DstressanalysisCPP(
             [MarshalAs(UnmanagedType.LPStr)] string inputPath,
             [MarshalAs(UnmanagedType.LPStr)] string outputPath,
@@ -30,8 +30,6 @@ namespace src.solver
             ref bool isAnalysisSuccess,
             CallbackDelegate callback
         );
-
-        // solve_modalspectralanalysisCPP
 
 
         // Kernel32 functions for explicit DLL loading
@@ -330,8 +328,8 @@ namespace src.solver
                 catch { }
             }
 
-            // DLL load status
-            info.AppendLine($"\nDLL Load Status: {(_isDllLoaded ? "Loaded" : "Not loaded")}");
+            // // DLL load status
+            // info.AppendLine($"\nDLL Load Status: {(_isDllLoaded ? "Loaded" : "Not loaded")}");
             if (!string.IsNullOrEmpty(_lastError))
             {
                 info.AppendLine($"Last Error: {_lastError}");
@@ -348,9 +346,9 @@ namespace src.solver
             // Try multiple possible locations
             string[] possiblePaths = new string[]
             {
-            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "stressanalysis2D_solverCPP.dll"),
-            Path.Combine(Environment.CurrentDirectory, "stressanalysis2D_solverCPP.dll"),
-            Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "stressanalysis2D_solverCPP.dll")
+            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "stress2D_solverCPP.dll"),
+            Path.Combine(Environment.CurrentDirectory, "stress2D_solverCPP.dll"),
+            Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "stress2D_solverCPP.dll")
             };
 
             foreach (string path in possiblePaths)

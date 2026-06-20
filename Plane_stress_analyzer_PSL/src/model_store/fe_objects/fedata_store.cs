@@ -98,6 +98,8 @@ namespace Plane_stress_analyzer_PSL.src.model_store.fe_objects
             // Create the mesh boundaries
             meshdrawingdata.create_wireframe();
 
+            number_of_edges = meshdrawingdata.get_wireframe_line_count;
+
             // Create the mesh buffer
             meshdrawingdata.create_buffer_data();
 

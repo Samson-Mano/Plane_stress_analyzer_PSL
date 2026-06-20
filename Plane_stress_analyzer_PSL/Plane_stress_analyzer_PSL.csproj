@@ -197,12 +197,68 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <None Include="Resources\HyperFont.ttf" />
+    <None Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\stress2D_solverCPP.vcxproj" />
+    <None Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Debug\main.obj" />
+    <None Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Debug\solve_2DstressanalysisCPP.obj" />
+    <None Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Debug\stress2D.6c2862fb.tlog\CL.command.1.tlog" />
+    <None Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Debug\stress2D.6c2862fb.tlog\Cl.items.tlog" />
+    <None Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Debug\stress2D.6c2862fb.tlog\CL.read.1.tlog" />
+    <None Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Debug\stress2D.6c2862fb.tlog\CL.write.1.tlog" />
+    <None Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Debug\stress2D.6c2862fb.tlog\link.command.1.tlog" />
+    <None Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Debug\stress2D.6c2862fb.tlog\link.read.1.tlog" />
+    <None Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Debug\stress2D.6c2862fb.tlog\link.secondary.1.tlog" />
+    <None Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Debug\stress2D.6c2862fb.tlog\link.write.1.tlog" />
+    <None Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Debug\stress2D.6c2862fb.tlog\stress2D_solverCPP.lastbuildstate" />
+    <None Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Debug\stress2D_solverCPP.exe.recipe" />
+    <None Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Debug\stress2D_solverCPP.ilk" />
+    <None Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Debug\stress2D_solverCPP.log" />
+    <None Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Debug\stress_system_store.obj" />
+    <None Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Debug\vc145.idb" />
+    <None Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Debug\vcpkg.applocal.log" />
+    <None Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Release\main.obj" />
+    <None Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Release\solve_2DstressanalysisCPP.obj" />
+    <None Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Release\stress2D.6c2862fb.tlog\CL.command.1.tlog" />
+    <None Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Release\stress2D.6c2862fb.tlog\Cl.items.tlog" />
+    <None Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Release\stress2D.6c2862fb.tlog\CL.read.1.tlog" />
+    <None Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Release\stress2D.6c2862fb.tlog\CL.write.1.tlog" />
+    <None Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Release\stress2D.6c2862fb.tlog\link.command.1.tlog" />
+    <None Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Release\stress2D.6c2862fb.tlog\link.read.1.tlog" />
+    <None Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Release\stress2D.6c2862fb.tlog\link.secondary.1.tlog" />
+    <None Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Release\stress2D.6c2862fb.tlog\link.write.1.tlog" />
+    <None Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Release\stress2D.6c2862fb.tlog\stress2D_solverCPP.lastbuildstate" />
+    <None Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Release\stress2D_solverCPP.Build.CppClean.log" />
+    <None Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Release\stress2D_solverCPP.dll.recipe" />
+    <None Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Release\stress2D_solverCPP.iobj" />
+    <None Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Release\stress2D_solverCPP.ipdb" />
+    <None Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Release\stress2D_solverCPP.log" />
+    <None Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Release\stress_system_store.obj" />
+    <None Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Release\vcpkg.applocal.log" />
+    <None Include="src\solver\stress2D_solverCPP\x64\Debug\stress2D_solverCPP.exp" />
+    <None Include="src\solver\stress2D_solverCPP\x64\Debug\stress2D_solverCPP.lib" />
+    <None Include="src\solver\stress2D_solverCPP\x64\Release\stress2D_solverCPP.exp" />
+    <None Include="src\solver\stress2D_solverCPP\x64\Release\stress2D_solverCPP.lib" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="logo_ico_png.ico" />
+    <Content Include="src\solver\stress2D_solverCPP\stress2D_solverCPP.slnx" />
+    <Content Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\main.cpp" />
+    <Content Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\solve_2DstressanalysisCPP.cpp" />
+    <Content Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\stress2D_solverCPP.vcxproj.filters" />
+    <Content Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\stress2D_solverCPP.vcxproj.user" />
+    <Content Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\system_store\stress_system_store.cpp" />
+    <Content Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\system_store\stress_system_store.h" />
+    <Content Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Debug\vc145.pdb" />
+    <Content Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Release\stress2D_solverCPP.vcxproj.FileListAbsolute.txt" />
+    <Content Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Release\vc145.pdb" />
+    <Content Include="src\solver\stress2D_solverCPP\x64\Debug\stress2D_solverCPP.exe" />
+    <Content Include="src\solver\stress2D_solverCPP\x64\Debug\stress2D_solverCPP.pdb" />
+    <Content Include="src\solver\stress2D_solverCPP\x64\Release\stress2D_solverCPP.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="src\solver\stress2D_solverCPP\x64\Release\stress2D_solverCPP.pdb" />
     <None Include="Resources\FreeSans.ttf" />
     <None Include="Resources\gaussian_pic.png" />
   </ItemGroup>
@@ -210,6 +266,10 @@
     <Folder Include="Example_model\" />
     <Folder Include="lib\" />
     <Folder Include="src\model_store\rslt_objects\" />
+    <Folder Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Debug\microsoft\STL\" />
+    <Folder Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Debug\stress2D.6c2862fb_MD.tlog\" />
+    <Folder Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Release\microsoft\STL\" />
+    <Folder Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Release\stress2D.6c2862fb_MD.tlog\" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">
@@ -224,4 +284,8 @@
     </BootstrapperPackage>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>xcopy "$(ProjectDir)src\solver\stress2D_solverCPP\x64\Release\stress2D_solverCPP.dll" "$(TargetDir)" /Y /I
+rmdir /S /Q "$(TargetDir)src"</PostBuildEvent>
+  </PropertyGroup>
 </Project>

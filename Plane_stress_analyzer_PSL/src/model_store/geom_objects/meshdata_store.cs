@@ -78,6 +78,8 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
         private Dictionary<int, tri_store> tris = new Dictionary<int, tri_store>();
         private Dictionary<int, quad_store> quads = new Dictionary<int, quad_store>();
 
+        public int get_wireframe_line_count { get { return wireframe_lines.Count; } }
+
         private Dictionary<int, mat_mesh_store> mat_mesh_data = new Dictionary<int, mat_mesh_store>();
 
         // Geometry data for OpenGL
