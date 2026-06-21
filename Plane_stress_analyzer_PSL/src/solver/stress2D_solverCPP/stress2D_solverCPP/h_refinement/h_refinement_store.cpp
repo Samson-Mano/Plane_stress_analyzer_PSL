@@ -171,7 +171,140 @@ void h_refinement_store::add_nodeload(const int& node_id,
 
 }
 
+void h_refinement_store::renumber_model()
+{
+	
+	//_________________________________________________________________
+	// Use reserve to avoid rehashing (performance optimization)
+	std::unordered_map<int, node_store> temp_node_list;
+	std::unordered_map<int, edge_store> temp_edge_list;
+	std::unordered_map<int, trielement_store> temp_trielement_list;
+	std::unordered_map<int, quadelement_store> temp_quadelement_list;
 
+	 // Reserve space to prevent rehashing
+	 temp_node_list.reserve(node_list.size());
+	 temp_edge_list.reserve(edge_list.size());
+	 temp_trielement_list.reserve(trielement_list.size());
+	 temp_quadelement_list.reserve(quadelement_list.size());
+
+	// Create the node map
+	std::unordered_map<int, int> nodeid_map;
+	nodeid_map.reserve(node_list.size());
+
+	int nd_id_t = 0;
+	for (const auto& nd : node_list)
+	{
+		// Node addition with move semantics
+		node_store temp_node;
+		temp_node.node_id = nd_id_t;
+		temp_node.x_coord = nd.second.x_coord;
+		temp_node.y_coord = nd.second.y_coord;
+
+		temp_node_list.emplace(nd_id_t, std::move(temp_node));
+		nodeid_map.emplace(nd.second.node_id, nd_id_t);
+		nd_id_t++;
+	}
+
+	// Create the element id map
+	std::unordered_map<int, int> elemid_map;
+	elemid_map.reserve(trielement_list.size() + quadelement_list.size());
+
+	int elem_id_t = 0;
+
+	// Process triangles
+	for (const auto& tri : trielement_list)
+	{
+		trielement_store temp_trielement;
+		temp_trielement.tri_id = elem_id_t;
+		temp_trielement.nodeid1 = nodeid_map[tri.second.nodeid1];
+		temp_trielement.nodeid2 = nodeid_map[tri.second.nodeid2];
+		temp_trielement.nodeid3 = nodeid_map[tri.second.nodeid3];
+		temp_trielement.materialid = tri.second.materialid;
+
+		temp_trielement_list.emplace(elem_id_t, std::move(temp_trielement));
+		elemid_map.emplace(tri.second.tri_id, elem_id_t);
+		elem_id_t++;
+	}
+
+	// Process quads
+	for (const auto& quad : quadelement_list)
+	{
+		quadelement_store temp_quadelement;
+		temp_quadelement.quad_id = elem_id_t;
+		temp_quadelement.nodeid1 = nodeid_map[quad.second.nodeid1];
+		temp_quadelement.nodeid2 = nodeid_map[quad.second.nodeid2];
+		temp_quadelement.nodeid3 = nodeid_map[quad.second.nodeid3];
+		temp_quadelement.nodeid4 = nodeid_map[quad.second.nodeid4];
+		temp_quadelement.materialid = quad.second.materialid;
+
+		temp_quadelement_list.emplace(elem_id_t, std::move(temp_quadelement));
+		elemid_map.emplace(quad.second.quad_id, elem_id_t);
+		elem_id_t++;
+	}
+
+	// Create the edge id map
+	std::unordered_map<int, int> edgeid_map;
+	edgeid_map.reserve(edge_list.size());
+
+	int edge_id_t = 0;
+	for (const auto& edge : edge_list)
+	{
+		edge_store temp_edge;
+		temp_edge.edge_id = edge_id_t;
+		temp_edge.startnodeid = nodeid_map[edge.second.startnodeid];
+		temp_edge.endnodeid = nodeid_map[edge.second.endnodeid];
+
+		// Handle face IDs 
+		temp_edge.leftfaceid = -1;
+		temp_edge.rightfaceid = -1;
+
+		//auto left_it = elemid_map.find(edge.second.leftfaceid);
+		//if (left_it != elemid_map.end())
+		//{
+		//	temp_edge.leftfaceid = left_it->second;
+		//}
+
+		//auto right_it = elemid_map.find(edge.second.rightfaceid);
+		//if (right_it != elemid_map.end())
+		//{
+		//	temp_edge.rightfaceid = right_it->second;
+		//}
+
+		if (edge.second.leftfaceid != -1)
+		{
+			temp_edge.leftfaceid = elemid_map[edge.second.leftfaceid];
+		}
+
+		if (edge.second.rightfaceid != -1)
+		{
+			temp_edge.rightfaceid = elemid_map[edge.second.rightfaceid];
+		}
+
+		temp_edge_list.emplace(edge_id_t, std::move(temp_edge));
+		edgeid_map.emplace(edge.second.edge_id, edge_id_t);
+		edge_id_t++;
+	}
+
+
+	// Move to original (more efficient than clear + insert)
+	node_list = std::move(temp_node_list);
+	edge_list = std::move(temp_edge_list);
+	trielement_list = std::move(temp_trielement_list);
+	quadelement_list = std::move(temp_quadelement_list);
+
+}
+
+
+
+
+void h_refinement_store::perform_refinement(int h_refinement)
+{
+	// Renumber the nodes and elements
+	renumber_model();
+
+
+
+}
 
 
 

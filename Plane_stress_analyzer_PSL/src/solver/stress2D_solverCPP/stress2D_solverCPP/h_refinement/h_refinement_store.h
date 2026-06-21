@@ -46,6 +46,8 @@ public:
 		const double& loadangle);
 
 
+	void perform_refinement(int h_refinement);
+
 
 private:
 
@@ -61,6 +63,9 @@ private:
 
 
 	int get_edge_id(const int& startnodeid, const int& endnodeid);
+
+
+	void renumber_model();
 
 
 };
