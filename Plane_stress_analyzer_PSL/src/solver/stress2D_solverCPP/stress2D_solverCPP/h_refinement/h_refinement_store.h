@@ -61,12 +61,13 @@ private:
 
 	void set_edge_faceid(const int& startnodeid, const int& endnodeid, const int& face_id);
 
-
 	int get_edge_id(const int& startnodeid, const int& endnodeid);
-
 
 	void renumber_model();
 
+	void refine_element();
+
+	void refine_elements1();
 
 };
 

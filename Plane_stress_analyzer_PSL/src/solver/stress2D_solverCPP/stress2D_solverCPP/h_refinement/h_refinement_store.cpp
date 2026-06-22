@@ -243,8 +243,10 @@ void h_refinement_store::renumber_model()
 	}
 
 	// Create the edge id map
-	std::unordered_map<int, int> edgeid_map;
-	edgeid_map.reserve(edge_list.size());
+	// std::unordered_map<int, int> edgeid_map;
+	// edgeid_map.reserve(edge_list.size());
+
+	std::unordered_map<int, std::vector<int>> temp_node_edge_map;
 
 	int edge_id_t = 0;
 	for (const auto& edge : edge_list)
@@ -281,7 +283,13 @@ void h_refinement_store::renumber_model()
 		}
 
 		temp_edge_list.emplace(edge_id_t, std::move(temp_edge));
-		edgeid_map.emplace(edge.second.edge_id, edge_id_t);
+
+
+		// Add edge to node-to-edge map for both start and end nodes
+		temp_node_edge_map[temp_edge.startnodeid].push_back(edge_id_t);
+		temp_node_edge_map[temp_edge.endnodeid].push_back(edge_id_t);
+
+		// edgeid_map.emplace(edge.second.edge_id, edge_id_t);
 		edge_id_t++;
 	}
 
@@ -292,8 +300,326 @@ void h_refinement_store::renumber_model()
 	trielement_list = std::move(temp_trielement_list);
 	quadelement_list = std::move(temp_quadelement_list);
 
+	node_edge_map = std::move(temp_node_edge_map);
+
 }
 
+
+void h_refinement_store :: refine_element()
+{
+	std::unordered_map<int, int> edge_to_node_ids;
+	edge_to_node_ids.reserve(edge_list.size());  // Reserve space for performance
+
+	// Get the current node count (will be updated as we add nodes)
+	int node_id = static_cast<int>(node_list.size());
+
+	// Lambda to create mid-node (captures by reference)
+	auto create_midnode = [&](int startnodeid, int endnodeid) -> int
+		{
+			// Get the nodes
+			auto start_it = node_list.find(startnodeid);
+			auto end_it = node_list.find(endnodeid);
+
+			if (start_it == node_list.end() || end_it == node_list.end())
+			{
+				// Handle error: node not found
+				return -1;
+			}
+
+			const node_store& start_node = start_it->second;
+			const node_store& end_node = end_it->second;
+
+			// Create the mid point
+			double midpt_xcoord = (start_node.x_coord + end_node.x_coord) * 0.5;
+			double midpt_ycoord = (start_node.y_coord + end_node.y_coord) * 0.5;
+
+			node_store temp_node;
+			temp_node.node_id = node_id;
+			temp_node.x_coord = midpt_xcoord;
+			temp_node.y_coord = midpt_ycoord;
+
+			// Insert the new node to the original list
+			node_list.emplace(node_id, std::move(temp_node));
+
+			return node_id++;
+		};
+
+	// Create refined element lists
+	std::unordered_map<int, trielement_store> refined_trielement_list;
+	std::unordered_map<int, quadelement_store> refined_quadelement_list;
+
+	refined_trielement_list.reserve(trielement_list.size() * 4);
+	refined_quadelement_list.reserve(quadelement_list.size() * 4);
+
+	int elem_id = 0;
+
+	// Lambda to create triangle element (captures by reference)
+	auto create_trielement = [&](int nd1, int nd2, int nd3, int matid) -> void
+		{
+			trielement_store tri;
+			tri.tri_id = elem_id;
+			tri.nodeid1 = nd1;
+			tri.nodeid2 = nd2;
+			tri.nodeid3 = nd3;
+			tri.materialid = matid;
+
+			refined_trielement_list.emplace(elem_id, std::move(tri));
+			elem_id++;
+		};
+
+	// Process triangles
+	for (const auto& tri : trielement_list)
+	{
+		const trielement_store& trielement = tri.second;
+
+		// Get the three node ids
+		int nd1 = trielement.nodeid1;
+		int nd2 = trielement.nodeid2;
+		int nd3 = trielement.nodeid3;
+
+		// Get the edge ids
+		int edge1_id = get_edge_id(nd1, nd2);
+		int edge2_id = get_edge_id(nd2, nd3);
+		int edge3_id = get_edge_id(nd3, nd1);
+
+		int mid_node1 = -1;
+		int mid_node2 = -1;
+		int mid_node3 = -1;
+
+		// Create three mid nodes (with edge sharing)
+		auto edge1_it = edge_to_node_ids.find(edge1_id);
+		if (edge1_it != edge_to_node_ids.end())
+		{
+			mid_node1 = edge1_it->second;
+		}
+		else
+		{
+			mid_node1 = create_midnode(nd1, nd2);
+			edge_to_node_ids.emplace(edge1_id, mid_node1);
+		}
+
+		auto edge2_it = edge_to_node_ids.find(edge2_id);
+		if (edge2_it != edge_to_node_ids.end())
+		{
+			mid_node2 = edge2_it->second;
+		}
+		else
+		{
+			mid_node2 = create_midnode(nd2, nd3);
+			edge_to_node_ids.emplace(edge2_id, mid_node2);
+		}
+
+		auto edge3_it = edge_to_node_ids.find(edge3_id);
+		if (edge3_it != edge_to_node_ids.end())
+		{
+			mid_node3 = edge3_it->second;
+		}
+		else
+		{
+			mid_node3 = create_midnode(nd3, nd1);
+			edge_to_node_ids.emplace(edge3_id, mid_node3);
+		}
+
+		// Create 4 triangle elements
+		// Corner triangles
+		create_trielement(nd1, mid_node1, mid_node3, trielement.materialid);
+		create_trielement(nd2, mid_node2, mid_node1, trielement.materialid);
+		create_trielement(nd3, mid_node3, mid_node2, trielement.materialid);
+		// Center triangle
+		create_trielement(mid_node1, mid_node2, mid_node3, trielement.materialid);
+	}
+
+	// Process quads (if you have them)
+	auto create_quadelement = [&](int nd1, int nd2, int nd3, int nd4, int matid) -> void
+		{
+			quadelement_store quad;
+			quad.quad_id = elem_id;
+			quad.nodeid1 = nd1;
+			quad.nodeid2 = nd2;
+			quad.nodeid3 = nd3;
+			quad.nodeid4 = nd4;
+			quad.materialid = matid;
+
+			refined_quadelement_list.emplace(elem_id, std::move(quad));
+			elem_id++;
+		};
+
+	for (const auto& quad : quadelement_list)
+	{
+		const quadelement_store& quadelement = quad.second;
+
+		int nd1 = quadelement.nodeid1;
+		int nd2 = quadelement.nodeid2;
+		int nd3 = quadelement.nodeid3;
+		int nd4 = quadelement.nodeid4;
+
+		// Get edge ids
+		int edge1_id = get_edge_id(nd1, nd2);
+		int edge2_id = get_edge_id(nd2, nd3);
+		int edge3_id = get_edge_id(nd3, nd4);
+		int edge4_id = get_edge_id(nd4, nd1);
+
+		// Create mid nodes (4 edges)
+		int mid_node1 = -1, mid_node2 = -1, mid_node3 = -1, mid_node4 = -1;
+
+		// Edge 1 (nd1-nd2)
+		auto it = edge_to_node_ids.find(edge1_id);
+		if (it != edge_to_node_ids.end())
+			mid_node1 = it->second;
+		else
+		{
+			mid_node1 = create_midnode(nd1, nd2);
+			edge_to_node_ids.emplace(edge1_id, mid_node1);
+		}
+
+		// Edge 2 (nd2-nd3)
+		it = edge_to_node_ids.find(edge2_id);
+		if (it != edge_to_node_ids.end())
+			mid_node2 = it->second;
+		else
+		{
+			mid_node2 = create_midnode(nd2, nd3);
+			edge_to_node_ids.emplace(edge2_id, mid_node2);
+		}
+
+		// Edge 3 (nd3-nd4)
+		it = edge_to_node_ids.find(edge3_id);
+		if (it != edge_to_node_ids.end())
+			mid_node3 = it->second;
+		else
+		{
+			mid_node3 = create_midnode(nd3, nd4);
+			edge_to_node_ids.emplace(edge3_id, mid_node3);
+		}
+
+		// Edge 4 (nd4-nd1)
+		it = edge_to_node_ids.find(edge4_id);
+		if (it != edge_to_node_ids.end())
+			mid_node4 = it->second;
+		else
+		{
+			mid_node4 = create_midnode(nd4, nd1);
+			edge_to_node_ids.emplace(edge4_id, mid_node4);
+		}
+
+		// Create center node
+		// Get the coordinates of the four corners
+		auto n1_it = node_list.find(nd1);
+		auto n2_it = node_list.find(nd2);
+		auto n3_it = node_list.find(nd3);
+		auto n4_it = node_list.find(nd4);
+
+		if (n1_it != node_list.end() && n2_it != node_list.end() &&
+			n3_it != node_list.end() && n4_it != node_list.end())
+		{
+			double center_x = (n1_it->second.x_coord + n2_it->second.x_coord +
+				n3_it->second.x_coord + n4_it->second.x_coord) * 0.25;
+			double center_y = (n1_it->second.y_coord + n2_it->second.y_coord +
+				n3_it->second.y_coord + n4_it->second.y_coord) * 0.25;
+
+			node_store center_node;
+			center_node.node_id = node_id;
+			center_node.x_coord = center_x;
+			center_node.y_coord = center_y;
+
+			node_list.emplace(node_id, std::move(center_node));
+			int center_node_id = node_id++;
+
+			// Create 4 quad elements
+			create_quadelement(nd1, mid_node1, center_node_id, mid_node4, quadelement.materialid);
+			create_quadelement(mid_node1, nd2, mid_node2, center_node_id, quadelement.materialid);
+			create_quadelement(center_node_id, mid_node2, nd3, mid_node3, quadelement.materialid);
+			create_quadelement(mid_node4, center_node_id, mid_node3, nd4, quadelement.materialid);
+		}
+	}
+
+	// Replace old element lists with refined ones
+	trielement_list = std::move(refined_trielement_list);
+	quadelement_list = std::move(refined_quadelement_list);
+
+}
+
+
+void h_refinement_store::refine_elements1()
+{
+	// Refine the elements
+	// Subdivide element at edge mid point
+
+	// Temp edge list
+	std::unordered_map<int, edge_store> temp_edge_list;
+
+	std::unordered_map<int, std::vector<int>> temp_node_edge_map;
+
+	int node_id = static_cast<int>(node_list.size());
+	int edge_id = 0;
+
+	// Create nodes at the mid point of edges
+	for (const auto& edge : edge_list)
+	{
+		node_store start_node = node_list[edge.second.startnodeid];
+		node_store end_node = node_list[edge.second.endnodeid];
+
+		// Create the mid point
+		double midpt_xcoord = (start_node.x_coord + end_node.x_coord) * 0.5;
+		double midpt_ycoord = (start_node.y_coord + end_node.y_coord) * 0.5;
+
+		node_store temp_node;
+		temp_node.node_id = node_id;
+		temp_node.x_coord = midpt_xcoord;
+		temp_node.y_coord = midpt_ycoord;
+
+		// Insert the new node to the original list
+		node_list.insert({ node_id, temp_node });
+
+		//_______________________________________________________________________
+		// Create edge 1
+		edge_store temp_edge1;
+		temp_edge1.edge_id = edge_id;
+		temp_edge1.startnodeid = edge.second.startnodeid;
+		temp_edge1.endnodeid = node_id;
+
+		// Handle face IDs 
+		temp_edge1.leftfaceid = edge.second.leftfaceid;
+		temp_edge1.rightfaceid = edge.second.rightfaceid;
+
+		// Insert the new edge, edge 1
+		temp_edge_list.insert({ edge_id, temp_edge1 });
+
+		// Add edge to node-to-edge map for both start and end nodes
+		temp_node_edge_map[edge.second.startnodeid].push_back(edge_id);
+		temp_node_edge_map[node_id].push_back(edge_id);
+
+		edge_id++;
+
+		//_______________________________________________________________________
+		// Create edge 2
+		edge_store temp_edge2;
+		temp_edge2.edge_id = edge_id;
+		temp_edge2.startnodeid = node_id;
+		temp_edge2.endnodeid = edge.second.endnodeid;
+
+		// Handle face IDs 
+		temp_edge2.leftfaceid = edge.second.leftfaceid;
+		temp_edge2.rightfaceid = edge.second.rightfaceid;
+
+		// Insert the new edge, edge 2 
+		temp_edge_list.insert({ edge_id, temp_edge2 });
+
+		// Add edge to node-to-edge map for both start and end nodes
+		temp_node_edge_map[node_id].push_back(edge_id);
+		temp_node_edge_map[edge.second.endnodeid].push_back(edge_id);
+
+		edge_id++;
+
+		// Increment the node id
+		node_id++;
+	}
+
+	// Move to original (more efficient than clear + insert)
+	edge_list = std::move(temp_edge_list);
+	node_edge_map = std::move(temp_node_edge_map);
+
+}
 
 
 
@@ -302,7 +628,18 @@ void h_refinement_store::perform_refinement(int h_refinement)
 	// Renumber the nodes and elements
 	renumber_model();
 
+	if (h_refinement == 1)
+	{
+		// 1 element to 4 elements
+		refine_elements();
+	}
+	else if (h_refinement == 2)
+	{
+		// 1 element to 16 elements
+		refine_elements();
 
+		refine_elements();
+	}
 
 }
 
