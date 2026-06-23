@@ -1,6 +1,8 @@
 #pragma once
 #include <Eigen/Dense>
 #include <unordered_map>
+#include <unordered_set>
+
 #include "../system_store/stress_system_store.h"
 
 class h_refinement_store
@@ -37,13 +39,17 @@ public:
 		const double& matdensity,
 		const double& poissonsratio);
 
-	void add_nodeconstraint(const int& node_id,
-		const int& constrainttype,  // 0 = Pinned, 1 = Roller
-		const double& constraintangle);
 
-	void add_nodeload(const int& node_id,
+	void add_nodeconstraint(const int& constraint_set_id,
+		const int& constrainttype,  // 0 = Pinned, 1 = Roller
+		const double& constraintangle,
+		std::vector<int>& node_ids);
+
+
+	void add_nodeload(const int& load_set_id,
 		const double& loadamplitude,
-		const double& loadangle);
+		const double& loadangle,
+		std::vector<int>& node_ids);
 
 
 	void perform_refinement(int h_refinement);
@@ -57,6 +63,9 @@ private:
 	std::unordered_map<int, quadelement_store> quadelement_list;
 	std::unordered_map<int, material_store> material_list;
 
+	std::unordered_map<int, constraint_store> constraint_list;
+	std::unordered_map<int, load_store> load_list;
+
 	std::unordered_map<int, std::vector<int>> node_edge_map;
 
 	void set_edge_faceid(const int& startnodeid, const int& endnodeid, const int& face_id);
@@ -65,9 +74,17 @@ private:
 
 	void renumber_model();
 
-	void refine_element();
+	void refine_elements();
 
-	void refine_elements1();
+	void extend_constraints_to_midnodes(const std::unordered_map<int, int>& edge_to_node_ids);
+
+	void extend_loads_to_midnodes(const std::unordered_map<int, int>& edge_to_node_ids);
+
+	void recreate_edges();
+
+	
+
+	// void refine_elements1();
 
 };
 

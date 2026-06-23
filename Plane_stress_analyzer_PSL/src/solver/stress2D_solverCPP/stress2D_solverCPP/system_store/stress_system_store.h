@@ -57,6 +57,27 @@ struct material_store
 };
 
 
+struct constraint_store
+{
+	int constraint_set_id = 0;
+	int constrainttype = -1;
+	double constraintangle = 0.0;
+	std::vector<int> node_ids;
+
+};
+
+
+struct load_store
+{
+	int load_set_id = 0;
+	double loadamplitude = 0.0;
+	double loadangle = 0.0;
+	std::vector<int> node_ids;
+
+};
+
+
+
 class stress_system_store
 {
 public:
@@ -70,7 +91,12 @@ public:
 	std::unordered_map<int, edge_store> edge_list;
 	std::unordered_map<int, trielement_store> trielement_list;
 	std::unordered_map<int, quadelement_store> quadelement_list;
+	
 	std::unordered_map<int, material_store> material_list;
+
+	std::unordered_map<int, constraint_store> constraint_list;
+	std::unordered_map<int, load_store> load_list;
+
 
 	stress_system_store();
 	~stress_system_store() = default;

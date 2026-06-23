@@ -156,20 +156,43 @@ void h_refinement_store::add_material(const int& materialid,
 }
 
 
-void h_refinement_store::add_nodeconstraint(const int& node_id, 
-	const int& constrainttype, const double& constraintangle)
+void h_refinement_store::add_nodeconstraint(const int& constraint_set_id,
+	const int& constrainttype,  // 0 = Pinned, 1 = Roller
+	const double& constraintangle, std::vector<int>& node_ids)
 {
+	// Constraint addition
+	constraint_store temp_constraint;
+	temp_constraint.constraint_set_id = constraint_set_id;
+	temp_constraint.constrainttype = constrainttype;
+	temp_constraint.constraintangle = constraintangle;
 
+	temp_constraint.node_ids = std::move(node_ids);
+
+	// Insert to the constraint list
+	constraint_list.insert({ constraint_set_id, temp_constraint });
 
 }
 
 
-void h_refinement_store::add_nodeload(const int& node_id, 
-	const double& loadamplitude, const double& loadangle)
+void h_refinement_store::add_nodeload(const int& load_set_id,
+	const double& loadamplitude,
+	const double& loadangle, std::vector<int>& node_ids)
 {
+	// Load addition
+	load_store temp_load;
+	temp_load.load_set_id = load_set_id;
+	temp_load.loadamplitude = loadamplitude;
+	temp_load.loadangle = loadangle;
 
+	temp_load.node_ids = std::move(node_ids);
+
+	// Insert to the load list
+	load_list.insert({ load_set_id, temp_load });
 
 }
+
+
+
 
 void h_refinement_store::renumber_model()
 {
@@ -181,11 +204,18 @@ void h_refinement_store::renumber_model()
 	std::unordered_map<int, trielement_store> temp_trielement_list;
 	std::unordered_map<int, quadelement_store> temp_quadelement_list;
 
+	std::unordered_map<int, constraint_store> temp_constraint_list;
+	std::unordered_map<int, load_store> temp_load_list;
+
 	 // Reserve space to prevent rehashing
 	 temp_node_list.reserve(node_list.size());
 	 temp_edge_list.reserve(edge_list.size());
 	 temp_trielement_list.reserve(trielement_list.size());
 	 temp_quadelement_list.reserve(quadelement_list.size());
+
+	 temp_constraint_list.reserve(constraint_list.size());
+	 temp_load_list.reserve(load_list.size());
+
 
 	// Create the node map
 	std::unordered_map<int, int> nodeid_map;
@@ -294,18 +324,74 @@ void h_refinement_store::renumber_model()
 	}
 
 
+	// Constraint list
+	int constraint_set_id = 0;
+
+	for (const auto& cnst : constraint_list)
+	{
+		constraint_store temp_constraint;
+		temp_constraint.constraint_set_id = constraint_set_id;
+		temp_constraint.constrainttype = cnst.second.constrainttype;
+		temp_constraint.constraintangle = cnst.second.constraintangle;
+
+		std::vector<int> new_node_ids;
+
+		for (const int& nd_id : cnst.second.node_ids)
+		{
+			new_node_ids.push_back(nodeid_map[nd_id]);
+		}
+
+		temp_constraint.node_ids = std::move(new_node_ids);
+
+		// Add to the list
+		temp_constraint_list.emplace(constraint_set_id, std::move(temp_constraint));
+
+		constraint_set_id++;
+
+	}
+
+	// Load list
+	int load_set_id = 0;
+
+	for (const auto& load : load_list)
+	{
+		load_store temp_load;
+		temp_load.load_set_id = load_set_id;
+		temp_load.loadamplitude = load.second.loadamplitude;
+		temp_load.loadangle = load.second.loadangle;
+
+		std::vector<int> new_node_ids;
+
+		for (const int& nd_id : load.second.node_ids)
+		{
+			new_node_ids.push_back(nodeid_map[nd_id]);
+		}
+
+		temp_load.node_ids = std::move(new_node_ids);
+
+		// Add to the list
+		temp_load_list.emplace(load_set_id, std::move(temp_load));
+
+		load_set_id++;
+
+	}
+
+
 	// Move to original (more efficient than clear + insert)
 	node_list = std::move(temp_node_list);
 	edge_list = std::move(temp_edge_list);
 	trielement_list = std::move(temp_trielement_list);
 	quadelement_list = std::move(temp_quadelement_list);
 
+	constraint_list = std::move(temp_constraint_list);
+	load_list = std::move(temp_load_list);
+
 	node_edge_map = std::move(temp_node_edge_map);
 
 }
 
 
-void h_refinement_store :: refine_element()
+void h_refinement_store :: refine_elements()
 {
 	std::unordered_map<int, int> edge_to_node_ids;
 	edge_to_node_ids.reserve(edge_list.size());  // Reserve space for performance
@@ -316,18 +402,21 @@ void h_refinement_store :: refine_element()
 	// Lambda to create mid-node (captures by reference)
 	auto create_midnode = [&](int startnodeid, int endnodeid) -> int
 		{
-			// Get the nodes
-			auto start_it = node_list.find(startnodeid);
-			auto end_it = node_list.find(endnodeid);
+			//// Get the nodes
+			//auto start_it = node_list.find(startnodeid);
+			//auto end_it = node_list.find(endnodeid);
 
-			if (start_it == node_list.end() || end_it == node_list.end())
-			{
-				// Handle error: node not found
-				return -1;
-			}
+			//if (start_it == node_list.end() || end_it == node_list.end())
+			//{
+			//	// Handle error: node not found
+			//	return -1;
+			//}
 
-			const node_store& start_node = start_it->second;
-			const node_store& end_node = end_it->second;
+			//const node_store& start_node = start_it->second;
+			//const node_store& end_node = end_it->second;
+
+			const node_store& start_node = node_list[startnodeid];
+			const node_store& end_node = node_list[endnodeid];
 
 			// Create the mid point
 			double midpt_xcoord = (start_node.x_coord + end_node.x_coord) * 0.5;
@@ -537,88 +626,238 @@ void h_refinement_store :: refine_element()
 	trielement_list = std::move(refined_trielement_list);
 	quadelement_list = std::move(refined_quadelement_list);
 
+	// Extend the loads and constraints to the newly created midnodes
+	extend_constraints_to_midnodes(edge_to_node_ids);
+	extend_loads_to_midnodes(edge_to_node_ids);
+
+
+	// Recreate edges
+	recreate_edges();
 }
 
 
-void h_refinement_store::refine_elements1()
+
+void h_refinement_store::extend_constraints_to_midnodes(const std::unordered_map<int, int>& edge_to_node_ids)
 {
-	// Refine the elements
-	// Subdivide element at edge mid point
+	// Pre-allocate for performance
+	std::unordered_map<int, std::unordered_set<int>> constraint_node_sets;
+	constraint_node_sets.reserve(constraint_list.size());
 
-	// Temp edge list
-	std::unordered_map<int, edge_store> temp_edge_list;
-
-	std::unordered_map<int, std::vector<int>> temp_node_edge_map;
-
-	int node_id = static_cast<int>(node_list.size());
-	int edge_id = 0;
-
-	// Create nodes at the mid point of edges
-	for (const auto& edge : edge_list)
+	// Build a set for each constraint for faster lookup
+	for (const auto& constraint_pair : constraint_list)
 	{
-		node_store start_node = node_list[edge.second.startnodeid];
-		node_store end_node = node_list[edge.second.endnodeid];
-
-		// Create the mid point
-		double midpt_xcoord = (start_node.x_coord + end_node.x_coord) * 0.5;
-		double midpt_ycoord = (start_node.y_coord + end_node.y_coord) * 0.5;
-
-		node_store temp_node;
-		temp_node.node_id = node_id;
-		temp_node.x_coord = midpt_xcoord;
-		temp_node.y_coord = midpt_ycoord;
-
-		// Insert the new node to the original list
-		node_list.insert({ node_id, temp_node });
-
-		//_______________________________________________________________________
-		// Create edge 1
-		edge_store temp_edge1;
-		temp_edge1.edge_id = edge_id;
-		temp_edge1.startnodeid = edge.second.startnodeid;
-		temp_edge1.endnodeid = node_id;
-
-		// Handle face IDs 
-		temp_edge1.leftfaceid = edge.second.leftfaceid;
-		temp_edge1.rightfaceid = edge.second.rightfaceid;
-
-		// Insert the new edge, edge 1
-		temp_edge_list.insert({ edge_id, temp_edge1 });
-
-		// Add edge to node-to-edge map for both start and end nodes
-		temp_node_edge_map[edge.second.startnodeid].push_back(edge_id);
-		temp_node_edge_map[node_id].push_back(edge_id);
-
-		edge_id++;
-
-		//_______________________________________________________________________
-		// Create edge 2
-		edge_store temp_edge2;
-		temp_edge2.edge_id = edge_id;
-		temp_edge2.startnodeid = node_id;
-		temp_edge2.endnodeid = edge.second.endnodeid;
-
-		// Handle face IDs 
-		temp_edge2.leftfaceid = edge.second.leftfaceid;
-		temp_edge2.rightfaceid = edge.second.rightfaceid;
-
-		// Insert the new edge, edge 2 
-		temp_edge_list.insert({ edge_id, temp_edge2 });
-
-		// Add edge to node-to-edge map for both start and end nodes
-		temp_node_edge_map[node_id].push_back(edge_id);
-		temp_node_edge_map[edge.second.endnodeid].push_back(edge_id);
-
-		edge_id++;
-
-		// Increment the node id
-		node_id++;
+		const constraint_store& constraint = constraint_pair.second;
+		std::unordered_set<int> node_set;
+		node_set.reserve(constraint.node_ids.size());
+		node_set.insert(constraint.node_ids.begin(), constraint.node_ids.end());
+		constraint_node_sets.emplace(constraint_pair.first, std::move(node_set));
 	}
 
-	// Move to original (more efficient than clear + insert)
-	edge_list = std::move(temp_edge_list);
-	node_edge_map = std::move(temp_node_edge_map);
+	// Loop through all new nodes
+	for (const auto& edge_node_pair : edge_to_node_ids)
+	{
+		int edge_id = edge_node_pair.first;
+		int new_node_id = edge_node_pair.second;
 
+		// Get the edge
+		auto edge_it = edge_list.find(edge_id);
+		if (edge_it == edge_list.end())
+			continue;
+
+		const edge_store& edge = edge_it->second;
+		int startnodeid = edge.startnodeid;
+		int endnodeid = edge.endnodeid;
+
+		// Find which constraints contain both nodes
+		for (auto& constraint_pair : constraint_list)
+		{
+			int constraint_id = constraint_pair.first;
+			constraint_store& constraint = constraint_pair.second;
+
+			// pre-built set for fast lookup
+			const auto& node_set = constraint_node_sets[constraint_id];
+
+			if (node_set.find(startnodeid) != node_set.end() &&
+				node_set.find(endnodeid) != node_set.end())
+			{
+				// Both nodes are in this constraint
+				// Check if new node is already in constraint
+				auto it = std::find(constraint.node_ids.begin(),
+					constraint.node_ids.end(),
+					new_node_id);
+
+				if (it == constraint.node_ids.end())
+				{
+					constraint.node_ids.push_back(new_node_id);
+					// Update the set as well
+					constraint_node_sets[constraint_id].insert(new_node_id);
+				}
+			}
+		}
+	}
+	//
+}
+
+
+void h_refinement_store::extend_loads_to_midnodes(const std::unordered_map<int, int>& edge_to_node_ids)
+{
+	// Pre-allocate for performance
+	std::unordered_map<int, std::unordered_set<int>> load_node_sets;
+	load_node_sets.reserve(load_list.size());
+
+	// Build a set for each load for faster lookup
+	for (const auto& load_pair : load_list)
+	{
+		const load_store& load = load_pair.second;
+		std::unordered_set<int> node_set;
+		node_set.reserve(load.node_ids.size());
+		node_set.insert(load.node_ids.begin(), load.node_ids.end());
+		load_node_sets.emplace(load_pair.first, std::move(node_set));
+	}
+
+	// Loop through all new nodes
+	for (const auto& edge_node_pair : edge_to_node_ids)
+	{
+		int edge_id = edge_node_pair.first;
+		int new_node_id = edge_node_pair.second;
+
+		// Get the edge
+		auto edge_it = edge_list.find(edge_id);
+		if (edge_it == edge_list.end())
+			continue;
+
+		const edge_store& edge = edge_it->second;
+		int startnodeid = edge.startnodeid;
+		int endnodeid = edge.endnodeid;
+
+		// Find which load contain both nodes
+		for (auto& load_pair : load_list)
+		{
+			int load_id = load_pair.first;
+			load_store& load = load_pair.second;
+
+			// pre-built set for fast lookup
+			const auto& node_set = load_node_sets[load_id];
+
+			if (node_set.find(startnodeid) != node_set.end() &&
+				node_set.find(endnodeid) != node_set.end())
+			{
+				// Both nodes are in this load
+				// Check if new node is already in load
+				auto it = std::find(load.node_ids.begin(),
+					load.node_ids.end(),
+					new_node_id);
+
+				if (it == load.node_ids.end())
+				{
+					load.node_ids.push_back(new_node_id);
+					// Update the set as well
+					load_node_sets[load_id].insert(new_node_id);
+				}
+			}
+		}
+	}
+	//
+}
+
+
+void h_refinement_store::recreate_edges()
+{
+	// Use a set of encoded edge IDs for faster lookup
+	std::unordered_set<int> edge_set;
+	edge_set.reserve(node_list.size() * 2);
+
+	auto encode_edge = [](int node1, int node2) -> int 
+		{
+		int n1 = std::min(node1, node2);
+		int n2 = std::max(node1, node2);
+		// Encode as: (n1 << 16) | n2 (if node IDs fit in 16 bits)
+		// Or use: n1 * 1000000 + n2
+		return (n1 << 16) | n2;
+		};
+
+	auto check_edge_already_exist = [&](int startnodeid, int endnodeid) -> bool
+		{
+			int encoded = encode_edge(startnodeid, endnodeid);
+			auto it = edge_set.find(encoded);
+			if (it != edge_set.end())
+			{
+				return true;  // Edge exists
+			}
+			else
+			{
+				edge_set.insert(encoded);  // Add to set
+				return false;  // New edge
+			}
+		};
+
+	std::unordered_map<int, edge_store> temp_edge_list;
+	temp_edge_list.reserve(node_list.size() * 2);
+	int edge_id = 0;
+
+	auto create_edges = [&](int startnodeid, int endnodeid) -> void
+		{
+			if (check_edge_already_exist(startnodeid, endnodeid))
+				return;
+
+			edge_store edge;
+			edge.edge_id = edge_id;
+			edge.startnodeid = startnodeid; // std::min(startnodeid, endnodeid);
+			edge.endnodeid = endnodeid; // std::max(startnodeid, endnodeid);
+			edge.leftfaceid = -1;
+			edge.rightfaceid = -1;
+
+			temp_edge_list.emplace(edge_id, std::move(edge));
+			edge_id++;
+		};
+
+	// Process triangle edges
+	for (const auto& tri : trielement_list)
+	{
+		const trielement_store& trielement = tri.second;
+		create_edges(trielement.nodeid1, trielement.nodeid2);
+		create_edges(trielement.nodeid2, trielement.nodeid3);
+		create_edges(trielement.nodeid3, trielement.nodeid1);
+	}
+
+	// Process quadrilateral edges
+	for (const auto& quad : quadelement_list)
+	{
+		const quadelement_store& quadelement = quad.second;
+		create_edges(quadelement.nodeid1, quadelement.nodeid2);
+		create_edges(quadelement.nodeid2, quadelement.nodeid3);
+		create_edges(quadelement.nodeid3, quadelement.nodeid4);
+		create_edges(quadelement.nodeid4, quadelement.nodeid1);
+	}
+
+	edge_list = std::move(temp_edge_list);
+
+
+	//___________________________________________________________________________________
+	// Set the edges face id
+	for (const auto& tri : trielement_list)
+	{
+		const trielement_store& trielement = tri.second;
+
+		set_edge_faceid(trielement.nodeid1, trielement.nodeid2, tri.first);
+		set_edge_faceid(trielement.nodeid2, trielement.nodeid3, tri.first);
+		set_edge_faceid(trielement.nodeid3, trielement.nodeid1, tri.first);
+
+	}
+
+	for (const auto& quad : quadelement_list)
+	{
+		const quadelement_store& quadelement = quad.second;
+
+		set_edge_faceid(quadelement.nodeid1, quadelement.nodeid2, quad.first);
+		set_edge_faceid(quadelement.nodeid2, quadelement.nodeid3, quad.first);
+		set_edge_faceid(quadelement.nodeid3, quadelement.nodeid4, quad.first);
+		set_edge_faceid(quadelement.nodeid4, quadelement.nodeid1, quad.first);
+
+	}
+
+
+	//
 }
 
 
