@@ -3,11 +3,28 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include <fstream>
+
+#include <iomanip> // to get std::setprecision()
+
+#include "../system_store/stopwatch_events.h"
 #include "../system_store/stress_system_store.h"
 
 class h_refinement_store
 {
 public:
+
+	std::unordered_map<int, node_store> node_list;
+	std::unordered_map<int, edge_store> edge_list;
+	std::unordered_map<int, trielement_store> trielement_list;
+	std::unordered_map<int, quadelement_store> quadelement_list;
+	std::unordered_map<int, material_store> material_list;
+
+	std::unordered_map<int, constraint_store> constraint_list;
+	std::unordered_map<int, load_store> load_list;
+
+
+
 	h_refinement_store();
 	~h_refinement_store() = default;
 
@@ -16,9 +33,6 @@ public:
 		const double& x_coord,
 		const double& y_coord);
 
-	void add_edge(const int& edge_id,
-		const int& startnodeid,
-		const int& endnodeid);
 
 	void add_trielement(const int& tri_id,
 		const int& nodeid1,
@@ -33,11 +47,16 @@ public:
 		const int& nodeid4,
 		const int& materialid);
 
+	void create_edge_wireframe();
+
 
 	void add_material(const int& materialid,
 		const double& youngsmodulus,
 		const double& matdensity,
-		const double& poissonsratio);
+		const double& poissonsratio,
+		const double& yieldpoint, 
+		const double& thickness,
+		const int& numelementsappliedto);
 
 
 	void add_nodeconstraint(const int& constraint_set_id,
@@ -52,21 +71,21 @@ public:
 		std::vector<int>& node_ids);
 
 
-	void perform_refinement(int h_refinement);
+	void perform_refinement(int h_refinement, stopwatch_events* stopwatch,
+		void(*callback)(const char*));
+
+	void print_file_for_testing();
 
 
 private:
 
-	std::unordered_map<int, node_store> node_list;
-	std::unordered_map<int, edge_store> edge_list;
-	std::unordered_map<int, trielement_store> trielement_list;
-	std::unordered_map<int, quadelement_store> quadelement_list;
-	std::unordered_map<int, material_store> material_list;
-
-	std::unordered_map<int, constraint_store> constraint_list;
-	std::unordered_map<int, load_store> load_list;
-
 	std::unordered_map<int, std::vector<int>> node_edge_map;
+
+	stopwatch_events* m_stopwatch;
+
+	void add_edge(const int& edge_id,
+		const int& startnodeid,
+		const int& endnodeid);
 
 	void set_edge_faceid(const int& startnodeid, const int& endnodeid, const int& face_id);
 
@@ -82,7 +101,9 @@ private:
 
 	void recreate_edges();
 
-	
+	void(*m_callback)(const char*) = nullptr;
+
+	void report(const char* msg);
 
 	// void refine_elements1();
 

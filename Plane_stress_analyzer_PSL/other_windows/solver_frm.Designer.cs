@@ -39,6 +39,8 @@
             this.button_solve = new System.Windows.Forms.Button();
             this.label3 = new System.Windows.Forms.Label();
             this.comboBox_formulation = new System.Windows.Forms.ComboBox();
+            this.checkBox_extendconstraints = new System.Windows.Forms.CheckBox();
+            this.checkBox_extendloads = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // richTextBox_AnalysisUpdate
@@ -118,7 +120,7 @@
             // 
             // button_solve
             // 
-            this.button_solve.Location = new System.Drawing.Point(223, 434);
+            this.button_solve.Location = new System.Drawing.Point(221, 504);
             this.button_solve.Name = "button_solve";
             this.button_solve.Size = new System.Drawing.Size(110, 55);
             this.button_solve.TabIndex = 22;
@@ -147,11 +149,33 @@
             this.comboBox_formulation.Size = new System.Drawing.Size(273, 25);
             this.comboBox_formulation.TabIndex = 24;
             // 
+            // checkBox_extendconstraints
+            // 
+            this.checkBox_extendconstraints.AutoSize = true;
+            this.checkBox_extendconstraints.Location = new System.Drawing.Point(172, 409);
+            this.checkBox_extendconstraints.Name = "checkBox_extendconstraints";
+            this.checkBox_extendconstraints.Size = new System.Drawing.Size(318, 21);
+            this.checkBox_extendconstraints.TabIndex = 25;
+            this.checkBox_extendconstraints.Text = "Extend Constraints to Refined Mid Nodes";
+            this.checkBox_extendconstraints.UseVisualStyleBackColor = true;
+            // 
+            // checkBox_extendloads
+            // 
+            this.checkBox_extendloads.AutoSize = true;
+            this.checkBox_extendloads.Location = new System.Drawing.Point(172, 436);
+            this.checkBox_extendloads.Name = "checkBox_extendloads";
+            this.checkBox_extendloads.Size = new System.Drawing.Size(269, 21);
+            this.checkBox_extendloads.TabIndex = 26;
+            this.checkBox_extendloads.Text = "Exten Loads to Refined Mid Nodes";
+            this.checkBox_extendloads.UseVisualStyleBackColor = true;
+            // 
             // solver_frm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(564, 511);
+            this.ClientSize = new System.Drawing.Size(564, 571);
+            this.Controls.Add(this.checkBox_extendloads);
+            this.Controls.Add(this.checkBox_extendconstraints);
             this.Controls.Add(this.comboBox_formulation);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.button_solve);
@@ -186,5 +210,7 @@
         private System.Windows.Forms.Button button_solve;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.ComboBox comboBox_formulation;
+        private System.Windows.Forms.CheckBox checkBox_extendconstraints;
+        private System.Windows.Forms.CheckBox checkBox_extendloads;
     }
 }

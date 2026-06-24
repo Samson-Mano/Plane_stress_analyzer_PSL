@@ -8,6 +8,7 @@
 #include <iomanip>
 #include <sstream>
 
+#include "h_refinement/h_refinement_store.h"
 #include "system_store/stress_system_store.h"
 #include "system_store/stopwatch_events.h"
 // #include "solver/helmholtz2d_spectral_solver.h"
@@ -38,6 +39,8 @@ extern "C" __declspec(dllexport) void solve_2DstressanalysisCPP(
 	int h_refinement = 0;
 	int polynomial_order = 0;
 	int formulation = 0;
+	bool isConstraintExtend = false;
+	bool isLoadExtend = false;
 
 	if (solver_settings && solver_settings_count == 4)
 	{
@@ -45,6 +48,9 @@ extern "C" __declspec(dllexport) void solve_2DstressanalysisCPP(
 		h_refinement = solver_settings[1];
 		polynomial_order = solver_settings[2];
 		formulation = solver_settings[3];
+		isConstraintExtend = solver_settings[4] == 0 ? false : true;
+		isLoadExtend = solver_settings[5] == 0 ? false : true;
+
 
 		std::string s_type = "";
 		if (solvertype == 0)
@@ -109,6 +115,223 @@ extern "C" __declspec(dllexport) void solve_2DstressanalysisCPP(
 	}
 
 
+	//_______________________________________________________________________________________
+	// Read the elements for H Refinement module
+	h_refinement_store h_refinement_model;
+
+	// ---------- Nodes ----------
+	int32_t nodeCount;
+	infile.read(reinterpret_cast<char*>(&nodeCount), 4);
+
+	for (int i = 0; i < nodeCount; i++)
+	{
+		int32_t node_id = 0; double x_coord = 0.0, y_coord = 0.0;
+
+		infile.read(reinterpret_cast<char*>(&node_id), 4);
+		infile.read(reinterpret_cast<char*>(&x_coord), 8);
+		infile.read(reinterpret_cast<char*>(&y_coord), 8);
+
+		// Add node to the H Refinement system store
+		h_refinement_model.add_node(node_id, x_coord, y_coord);
+
+	}
+
+	stopwatch_elapsed_str.str("");       // clear the string content
+	stopwatch_elapsed_str.clear();       // clear any error flags
+	stopwatch_elapsed_str << std::fixed << std::setprecision(6) << stopwatch.elapsed();
+
+	msg = "Finished reading nodes at " + stopwatch_elapsed_str.str() + " secs";
+	if (callback) callback(msg.c_str());
+
+
+
+	// ---------- Tri Elements ----------
+	int32_t triCount;
+	infile.read(reinterpret_cast<char*>(&triCount), 4);
+
+	for (int i = 0; i < triCount; i++)
+	{
+		int32_t tri_id = 0, nodeid1 = 0, nodeid2 = 0, nodeid3 = 0, materialid = 0;
+
+		infile.read(reinterpret_cast<char*>(&tri_id), 4);
+		infile.read(reinterpret_cast<char*>(&nodeid1), 4);
+		infile.read(reinterpret_cast<char*>(&nodeid2), 4);
+		infile.read(reinterpret_cast<char*>(&nodeid3), 4);
+		infile.read(reinterpret_cast<char*>(&materialid), 4);
+
+		// Add tri element to the H Refinement system store
+		h_refinement_model.add_trielement(tri_id, nodeid1, nodeid2, nodeid3, materialid);
+
+	}
+
+	stopwatch_elapsed_str.str("");       // clear the string content
+	stopwatch_elapsed_str.clear();       // clear any error flags
+	stopwatch_elapsed_str << std::fixed << std::setprecision(6) << stopwatch.elapsed();
+
+	msg = "Finished reading triangular elements at " + stopwatch_elapsed_str.str() + " secs";
+	if (callback) callback(msg.c_str());
+
+
+	// ---------- Quad Elements ----------
+	int32_t quadCount;
+	infile.read(reinterpret_cast<char*>(&quadCount), 4);
+
+	for (int i = 0; i < quadCount; i++)
+	{
+		int32_t quad_id = 0, nodeid1 = 0, nodeid2 = 0, nodeid3 = 0, nodeid4 = 0, materialid = 0;
+
+		infile.read(reinterpret_cast<char*>(&quad_id), 4);
+		infile.read(reinterpret_cast<char*>(&nodeid1), 4);
+		infile.read(reinterpret_cast<char*>(&nodeid2), 4);
+		infile.read(reinterpret_cast<char*>(&nodeid3), 4);
+		infile.read(reinterpret_cast<char*>(&nodeid4), 4);
+		infile.read(reinterpret_cast<char*>(&materialid), 4);
+
+		// Add quad element to the H Refinement system store
+		h_refinement_model.add_quadelement(quad_id, nodeid1, nodeid2, nodeid3, nodeid4, materialid);
+
+	}
+
+	stopwatch_elapsed_str.str("");       // clear the string content
+	stopwatch_elapsed_str.clear();       // clear any error flags
+	stopwatch_elapsed_str << std::fixed << std::setprecision(6) << stopwatch.elapsed();
+
+	msg = "Finished reading quadrilateral elements at " + stopwatch_elapsed_str.str() + " secs";
+	if (callback) callback(msg.c_str());
+
+
+	// ---------- Materials ----------
+	int32_t matCount;
+	infile.read(reinterpret_cast<char*>(&matCount), 4);
+
+	for (int i = 0; i < matCount; i++)
+	{
+		int32_t materialid = 0, numelement = 0;
+		double material_density = 0.0, youngs_modulus = 0.0, poissons_ratio = 0.0;
+		double yield_point = 0.0, double thickness = 0.0;
+
+		infile.read(reinterpret_cast<char*>(&materialid), 4);
+
+		int32_t nameLen;
+		infile.read(reinterpret_cast<char*>(&nameLen), 4);
+
+		std::string matname(nameLen, '\0');
+		infile.read(&matname[0], nameLen);
+
+		infile.read(reinterpret_cast<char*>(&material_density), 8);
+		infile.read(reinterpret_cast<char*>(&youngs_modulus), 8);
+		infile.read(reinterpret_cast<char*>(&poissons_ratio), 8);
+		infile.read(reinterpret_cast<char*>(&yield_point), 8);
+		infile.read(reinterpret_cast<char*>(&thickness), 8);
+		infile.read(reinterpret_cast<char*>(&numelement), 4);
+
+		// Add material to the H Refinement system store
+		h_refinement_model.add_material(materialid, youngs_modulus, material_density, poissons_ratio,
+			yield_point, thickness, numelement);
+
+	}
+
+	stopwatch_elapsed_str.str("");       // clear the string content
+	stopwatch_elapsed_str.clear();       // clear any error flags
+	stopwatch_elapsed_str << std::fixed << std::setprecision(6) << stopwatch.elapsed();
+
+	msg = "Finished reading materials at " + stopwatch_elapsed_str.str() + " secs";
+	if (callback) callback(msg.c_str());
+
+
+	// ---------- Node Constraints ----------
+	int32_t ndCnstCount;
+	infile.read(reinterpret_cast<char*>(&ndCnstCount), 4);
+
+	for (int i = 0; i < ndCnstCount; i++)
+	{
+		int32_t nodeConstraintsetid = 0;
+		int32_t constrainttype = 0;
+		double constraint_angle = 0.0;
+
+		infile.read(reinterpret_cast<char*>(&nodeConstraintsetid), 4);
+		infile.read(reinterpret_cast<char*>(&constrainttype), 4);
+		infile.read(reinterpret_cast<char*>(&constraint_angle), 8);
+
+		int32_t nidCount;
+		infile.read(reinterpret_cast<char*>(&nidCount), 4);
+
+		std::vector<int> node_id_list;
+
+		for (int j = 0; j < nidCount; j++)
+		{
+			int32_t node_id = 0;
+			infile.read(reinterpret_cast<char*>(&node_id), 4);
+
+			// Update the constraint of the node where constarints are applied
+			node_id_list.push_back(node_id);
+		}
+
+		// Add node constraints to the H Refinement system store
+		h_refinement_model.add_nodeconstraint(nodeConstraintsetid, constrainttype, constraint_angle, node_id_list);
+
+	}
+
+	stopwatch_elapsed_str.str("");       // clear the string content
+	stopwatch_elapsed_str.clear();       // clear any error flags
+	stopwatch_elapsed_str << std::fixed << std::setprecision(6) << stopwatch.elapsed();
+
+	msg = "Finished reading nodal constraints at " + stopwatch_elapsed_str.str() + " secs";
+	if (callback) callback(msg.c_str());
+
+
+
+	// ---------- Node Loads ----------
+	int32_t ndLoadCount;
+	infile.read(reinterpret_cast<char*>(&ndLoadCount), 4);
+
+	for (int i = 0; i < ndLoadCount; i++)
+	{
+		int32_t nodeLoadsetid = 0;
+		double load_anplitude = 0;
+		double load_angle = 0.0;
+
+		infile.read(reinterpret_cast<char*>(&nodeLoadsetid), 4);
+		infile.read(reinterpret_cast<char*>(&load_anplitude), 8);
+		infile.read(reinterpret_cast<char*>(&load_angle), 8);
+
+		int32_t nidCount;
+		infile.read(reinterpret_cast<char*>(&nidCount), 4);
+
+		std::vector<int> node_id_list;
+
+		for (int j = 0; j < nidCount; j++)
+		{
+			int32_t node_id = 0;
+			infile.read(reinterpret_cast<char*>(&node_id), 4);
+
+			// Update the constraint of the node where constarints are applied
+			node_id_list.push_back(node_id);
+		}
+
+		// Add node loads to the H Refinement system store
+		h_refinement_model.add_nodeload(nodeLoadsetid, load_anplitude, load_angle, node_id_list);
+
+	}
+
+	stopwatch_elapsed_str.str("");       // clear the string content
+	stopwatch_elapsed_str.clear();       // clear any error flags
+	stopwatch_elapsed_str << std::fixed << std::setprecision(6) << stopwatch.elapsed();
+
+	msg = "Finished reading nodal constraints at " + stopwatch_elapsed_str.str() + " secs";
+	if (callback) callback(msg.c_str());
+
+
+
+	// Create the edge
+	h_refinement_model.create_edge_wireframe();
+
+	// Preform refinement
+	h_refinement_model.perform_refinement(0, &stopwatch, callback);
+
+
+	// Print the H Refined binary file for testing
+	h_refinement_model.print_file_for_testing();
 
 
 	// (*isAnalysisSuccess) = true;

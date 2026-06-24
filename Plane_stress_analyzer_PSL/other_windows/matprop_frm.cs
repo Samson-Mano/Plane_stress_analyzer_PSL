@@ -42,7 +42,9 @@ namespace Plane_stress_analyzer_PSL.other_windows
                     mat.material_name,
                     mat.youngs_modulus.ToString("G"),
                     mat.material_density.ToString("G"),
-                    mat.poissons_ratio.ToString("G")
+                    mat.poissons_ratio.ToString("G"),
+                    mat.yield_point.ToString("G"),
+                    mat.thickness.ToString("G")
                 );
 
                 // Get the newly added row
@@ -54,8 +56,8 @@ namespace Plane_stress_analyzer_PSL.other_windows
                 // row.DefaultCellStyle.BackColor = materialColor;
                 // row.DefaultCellStyle.ForeColor = Color.Black; // Text color
 
-                row.Cells["Column6_materialcolor"].Style.BackColor = materialColor;
-                row.Cells["Column6_materialcolor"].Style.SelectionBackColor = materialColor;
+                row.Cells["Column8_materialcolor"].Style.BackColor = materialColor;
+                row.Cells["Column8_materialcolor"].Style.SelectionBackColor = materialColor;
 
                 // Optional: Store the material_id in the row's Tag for later use
                // row.Tag = mat.material_id;
@@ -91,6 +93,8 @@ namespace Plane_stress_analyzer_PSL.other_windows
                 textBox_youngsmodulus.Text = selectedRow.Cells["Column3_youngsmodulus"].Value?.ToString();
                 textBox_density.Text = selectedRow.Cells["Column4_density"].Value?.ToString();
                 textBox_poissonsratio.Text = selectedRow.Cells["Column5_poissonsratio"].Value?.ToString();
+                textBox_yieldpoint.Text = selectedRow.Cells["Column6_yieldpoint"].Value?.ToString();
+                textBox_thickness.Text = selectedRow.Cells["Column7_thickness"].Value?.ToString();
 
             }
 
@@ -121,7 +125,9 @@ namespace Plane_stress_analyzer_PSL.other_windows
             // Test the data
             if (!double.TryParse(textBox_youngsmodulus.Text, out double youngsmodulus) ||
                 !double.TryParse(textBox_density.Text, out double density) ||
-                !double.TryParse(textBox_poissonsratio.Text, out double poissonsratio))
+                !double.TryParse(textBox_poissonsratio.Text, out double poissonsratio) ||
+                !double.TryParse(textBox_yieldpoint.Text, out double yieldpoint) ||
+                !double.TryParse(textBox_thickness.Text, out double thickness))
             {
                 MessageBox.Show("Please enter valid numeric values for youngs modulus, density, and poissons ratio.");
                 return;
@@ -133,7 +139,9 @@ namespace Plane_stress_analyzer_PSL.other_windows
                 material_name,
                 youngsmodulus.ToString("G"),
                 density.ToString("G"),
-                poissonsratio.ToString("G")
+                poissonsratio.ToString("G"),
+                yieldpoint.ToString("G"),
+                thickness.ToString("G")
             );
 
             // Get the newly added row
@@ -147,8 +155,8 @@ namespace Plane_stress_analyzer_PSL.other_windows
             // row.DefaultCellStyle.ForeColor = Color.Black; // Text color
 
 
-            row.Cells["Column6_materialcolor"].Style.BackColor = materialColor;
-            row.Cells["Column6_materialcolor"].Style.SelectionBackColor = materialColor;
+            row.Cells["Column8_materialcolor"].Style.BackColor = materialColor;
+            row.Cells["Column8_materialcolor"].Style.SelectionBackColor = materialColor;
 
 
 
@@ -159,7 +167,9 @@ namespace Plane_stress_analyzer_PSL.other_windows
                 material_name = material_name,
                 youngs_modulus = youngsmodulus,
                 material_density = density,
-                poissons_ratio = poissonsratio
+                poissons_ratio = poissonsratio,
+                yield_point = yieldpoint,
+                thickness = thickness
             };
 
             modeldata.fe_data.fe_materials[material_id] = newMaterial;
@@ -203,7 +213,9 @@ namespace Plane_stress_analyzer_PSL.other_windows
                 // Test the data
                 if (!double.TryParse(textBox_youngsmodulus.Text, out double youngsmodulus) ||
                     !double.TryParse(textBox_density.Text, out double density) ||
-                    !double.TryParse(textBox_poissonsratio.Text, out double poissonsratio))
+                    !double.TryParse(textBox_poissonsratio.Text, out double poissonsratio) ||
+                    !double.TryParse(textBox_yieldpoint.Text, out double yieldpoint) ||
+                    !double.TryParse(textBox_thickness.Text, out double thickness))
                 {
                     MessageBox.Show("Please enter valid numeric values for youngs modulus, density, and poissons ratio.");
                     return;
@@ -214,13 +226,17 @@ namespace Plane_stress_analyzer_PSL.other_windows
                 modeldata.fe_data.fe_materials[material_id].youngs_modulus = youngsmodulus;
                 modeldata.fe_data.fe_materials[material_id].material_density = density;
                 modeldata.fe_data.fe_materials[material_id].poissons_ratio = poissonsratio;
-
+                modeldata.fe_data.fe_materials[material_id].yield_point = yieldpoint;
+                modeldata.fe_data.fe_materials[material_id].thickness = thickness;
              
                 // Update the DataGridView row
                 selectedRow.Cells["Column2_materialname"].Value = material_name;
                 selectedRow.Cells["Column3_youngsmodulus"].Value = youngsmodulus.ToString("G");
                 selectedRow.Cells["Column4_density"].Value = density.ToString("G");
                 selectedRow.Cells["Column5_poissonsratio"].Value = poissonsratio.ToString("G");
+                selectedRow.Cells["Column6_yieldpoint"].Value = yieldpoint.ToString("G");
+                selectedRow.Cells["Column7_thickness"].Value = thickness.ToString("G");
+
 
                 // Set the row background color
                 Color rowColor = gvariables_static.ColorUtils.GetRandomColor(material_id);
@@ -234,8 +250,8 @@ namespace Plane_stress_analyzer_PSL.other_windows
                 //selectedRow.Cells["Column6_materialcolor"].Style.ForeColor = Color.Black;
 
                 // Option C: If you want to show the color as a colored box in the cell
-                selectedRow.Cells["Column6_materialcolor"].Style.BackColor = rowColor;
-                selectedRow.Cells["Column6_materialcolor"].Style.SelectionBackColor = rowColor;
+                selectedRow.Cells["Column8_materialcolor"].Style.BackColor = rowColor;
+                selectedRow.Cells["Column8_materialcolor"].Style.SelectionBackColor = rowColor;
 
 
                 // fe_data.updateMaterialIDLabels();

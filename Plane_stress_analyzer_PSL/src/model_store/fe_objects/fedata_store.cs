@@ -19,6 +19,8 @@ namespace Plane_stress_analyzer_PSL.src.model_store.fe_objects
         public double youngs_modulus = 0.0; // E
         public double poissons_ratio = 0.0; // G
         public double material_density = 0.0; // Rho
+        public double yield_point = 0.0; // Y
+        public double thickness = 0.0; // tk
 
         public int number_of_elements_appliedto = 0;
 

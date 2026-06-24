@@ -212,12 +212,13 @@ namespace Plane_stress_analyzer_PSL.other_windows
 
         
                 // Write input file
-                double[] solver_settings = new double[4];
+                int[] solver_settings = new int[6];
                 solver_settings[0] = comboBox_solvertype.SelectedIndex; // 0 = Elimination method, 1 = Lagrange method
                 solver_settings[1] = comboBox_HRefinement.SelectedIndex; // 0, 1, 2
                 solver_settings[2] = comboBox_polynomialrefinement.SelectedIndex; // 0, 1, 2, 3
                 solver_settings[3] = comboBox_formulation.SelectedIndex; // 0, 1
-
+                solver_settings[4] = checkBox_extendconstraints.Checked == false ? 0 : 1;
+                solver_settings[5] = checkBox_extendloads.Checked == false ? 0 : 1;
 
                 // Step 5: Safely call the solver
                 var result = await Task.Run(() => stress2DSolverInterop.SolveSafely(

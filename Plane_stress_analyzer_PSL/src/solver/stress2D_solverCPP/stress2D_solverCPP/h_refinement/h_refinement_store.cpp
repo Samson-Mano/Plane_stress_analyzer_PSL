@@ -2,7 +2,7 @@
 
 h_refinement_store::h_refinement_store()
 {
-// Empty constructor
+	// Empty constructor
 }
 
 
@@ -16,6 +16,14 @@ void h_refinement_store::add_node(const int& node_id, const double& x_coord, con
 
 	// Insert to the node list
 	node_list.insert({ node_id, temp_node });
+
+}
+
+
+void h_refinement_store::create_edge_wireframe()
+{
+	// Create the edges wire frame
+	recreate_edges();
 
 }
 
@@ -38,8 +46,8 @@ void h_refinement_store::add_edge(const int& edge_id, const int& startnodeid, co
 }
 
 
-void h_refinement_store::add_trielement(const int& tri_id, 
-	const int& nodeid1, const int& nodeid2, const int& nodeid3, 
+void h_refinement_store::add_trielement(const int& tri_id,
+	const int& nodeid1, const int& nodeid2, const int& nodeid3,
 	const int& materialid)
 {
 	// Triangle element addition
@@ -76,17 +84,10 @@ void h_refinement_store::add_trielement(const int& tri_id,
 	// Insert to the tri element list
 	trielement_list.insert({ tri_id, temp_trielement });
 
-
-	// Set the edge face IDs for the three edges of the triangle element
-	set_edge_faceid(nd1_id, nd2_id, tri_id); // Edge 1
-	set_edge_faceid(nd2_id, nd3_id, tri_id); // Edge 2
-	set_edge_faceid(nd3_id, nd1_id, tri_id); // Edge 3
-	//
-
 }
 
 
-void h_refinement_store::add_quadelement(const int& quad_id, 
+void h_refinement_store::add_quadelement(const int& quad_id,
 	const int& nodeid1, const int& nodeid2, const int& nodeid3, const int& nodeid4, const int& materialid)
 {
 	// Quadrilateral element addition
@@ -130,18 +131,13 @@ void h_refinement_store::add_quadelement(const int& quad_id,
 	// Insert to the quad element list
 	quadelement_list.insert({ quad_id, temp_quadelement });
 
-
-	// Set the edge face IDs for the four edges of the quadrilateral element
-	set_edge_faceid(nd1_id, nd2_id, quad_id); // Edge 1
-	set_edge_faceid(nd2_id, nd3_id, quad_id); // Edge 2
-	set_edge_faceid(nd3_id, nd4_id, quad_id); // Edge 3
-	set_edge_faceid(nd4_id, nd1_id, quad_id); // Edge 4
-	//
 }
 
 
-void h_refinement_store::add_material(const int& materialid, 
-	const double& youngsmodulus, const double& matdensity, const double& poissonsratio)
+void h_refinement_store::add_material(const int& materialid,
+	const double& youngsmodulus, const double& matdensity, const double& poissonsratio,
+	const double& yieldpoint, const double& thickness,
+	const int& numelementsappliedto)
 {
 	// Material addition
 	material_store temp_material;
@@ -149,6 +145,9 @@ void h_refinement_store::add_material(const int& materialid,
 	temp_material.youngsmodulus = youngsmodulus;
 	temp_material.matdensity = matdensity;
 	temp_material.poissonsratio = poissonsratio;
+	temp_material.yieldpoint = yieldpoint;
+	temp_material.thickness = thickness;
+	temp_material.numelementsappliedto = numelementsappliedto;
 
 	// Insert to the material list
 	material_list.insert({ materialid, temp_material });
@@ -196,7 +195,7 @@ void h_refinement_store::add_nodeload(const int& load_set_id,
 
 void h_refinement_store::renumber_model()
 {
-	
+
 	//_________________________________________________________________
 	// Use reserve to avoid rehashing (performance optimization)
 	std::unordered_map<int, node_store> temp_node_list;
@@ -207,14 +206,14 @@ void h_refinement_store::renumber_model()
 	std::unordered_map<int, constraint_store> temp_constraint_list;
 	std::unordered_map<int, load_store> temp_load_list;
 
-	 // Reserve space to prevent rehashing
-	 temp_node_list.reserve(node_list.size());
-	 temp_edge_list.reserve(edge_list.size());
-	 temp_trielement_list.reserve(trielement_list.size());
-	 temp_quadelement_list.reserve(quadelement_list.size());
+	// Reserve space to prevent rehashing
+	temp_node_list.reserve(node_list.size());
+	temp_edge_list.reserve(edge_list.size());
+	temp_trielement_list.reserve(trielement_list.size());
+	temp_quadelement_list.reserve(quadelement_list.size());
 
-	 temp_constraint_list.reserve(constraint_list.size());
-	 temp_load_list.reserve(load_list.size());
+	temp_constraint_list.reserve(constraint_list.size());
+	temp_load_list.reserve(load_list.size());
 
 
 	// Create the node map
@@ -388,10 +387,13 @@ void h_refinement_store::renumber_model()
 
 	node_edge_map = std::move(temp_node_edge_map);
 
+
+	report("Mesh renumbered for solver");
+
 }
 
 
-void h_refinement_store :: refine_elements()
+void h_refinement_store::refine_elements()
 {
 	std::unordered_map<int, int> edge_to_node_ids;
 	edge_to_node_ids.reserve(edge_list.size());  // Reserve space for performance
@@ -767,13 +769,13 @@ void h_refinement_store::recreate_edges()
 	std::unordered_set<int> edge_set;
 	edge_set.reserve(node_list.size() * 2);
 
-	auto encode_edge = [](int node1, int node2) -> int 
+	auto encode_edge = [](int node1, int node2) -> int
 		{
-		int n1 = std::min(node1, node2);
-		int n2 = std::max(node1, node2);
-		// Encode as: (n1 << 16) | n2 (if node IDs fit in 16 bits)
-		// Or use: n1 * 1000000 + n2
-		return (n1 << 16) | n2;
+			int n1 = std::min(node1, node2);
+			int n2 = std::max(node1, node2);
+			// Encode as: (n1 << 16) | n2 (if node IDs fit in 16 bits)
+			// Or use: n1 * 1000000 + n2
+			return (n1 << 16) | n2;
 		};
 
 	auto check_edge_already_exist = [&](int startnodeid, int endnodeid) -> bool
@@ -862,8 +864,17 @@ void h_refinement_store::recreate_edges()
 
 
 
-void h_refinement_store::perform_refinement(int h_refinement)
+void h_refinement_store::perform_refinement(int h_refinement, stopwatch_events* stopwatch,
+	void(*callback)(const char*))
 {
+
+	// Set the stopwatch
+	this->m_stopwatch = stopwatch;
+
+	// Store callback locally
+	this->m_callback = callback;
+
+
 	// Renumber the nodes and elements
 	renumber_model();
 
@@ -938,4 +949,153 @@ int h_refinement_store::get_edge_id(const int& startnodeid, const int& endnodeid
 
 
 
+void h_refinement_store::print_file_for_testing()
+{
+	// Print the binary file for debugging
 
+	std::string output_file = "h_refined_model";
+
+	std::ofstream bin_file(output_file.c_str(), std::ios::binary);
+
+	if (!bin_file.is_open())
+	{
+		std::string error_msg = "Failed to open output file: " + output_file;
+		report(error_msg.c_str());
+		throw std::runtime_error(error_msg);
+	}
+
+
+
+	int32_t node_points_count = static_cast<int32_t>(node_list.size());
+	bin_file.write(reinterpret_cast<const char*>(&node_points_count), sizeof(int32_t));
+
+	// Write the nodes
+	for (const auto& node : node_list)
+	{
+		int32_t nodeid = static_cast<int32_t>(node.second.node_id);
+
+		bin_file.write(reinterpret_cast<const char*>(&nodeid), sizeof(int32_t));
+		bin_file.write(reinterpret_cast<const char*>(&node.second.x_coord), sizeof(double));
+		bin_file.write(reinterpret_cast<const char*>(&node.second.y_coord), sizeof(double));
+	}
+
+	report("H Refined: Nodes written");
+
+	// Write the tri elements
+	int32_t tri_elements_count = static_cast<int32_t>(trielement_list.size());
+	bin_file.write(reinterpret_cast<const char*>(&tri_elements_count), sizeof(int32_t));
+
+	for (const auto& tri : trielement_list)
+	{
+		int32_t triid = static_cast<int32_t>(tri.second.tri_id);
+		int32_t n1 = static_cast<int32_t>(tri.second.nodeid1);
+		int32_t n2 = static_cast<int32_t>(tri.second.nodeid2);
+		int32_t n3 = static_cast<int32_t>(tri.second.nodeid3);
+		int32_t matid = static_cast<int32_t>(tri.second.materialid);
+
+
+		bin_file.write(reinterpret_cast<const char*>(&triid), sizeof(int32_t));
+		bin_file.write(reinterpret_cast<const char*>(&n1), sizeof(int32_t));
+		bin_file.write(reinterpret_cast<const char*>(&n2), sizeof(int32_t));
+		bin_file.write(reinterpret_cast<const char*>(&n3), sizeof(int32_t));
+		bin_file.write(reinterpret_cast<const char*>(&matid), sizeof(int32_t));
+
+	}
+
+	report("H Refined: Tri elements written");
+
+	// Write the quad elements
+	int32_t quad_elements_count = static_cast<int32_t>(quadelement_list.size());
+	bin_file.write(reinterpret_cast<const char*>(&quad_elements_count), sizeof(int32_t));
+
+	for (const auto& quad : quadelement_list)
+	{
+		int32_t quadid = static_cast<int32_t>(quad.second.quad_id);
+		int32_t n1 = static_cast<int32_t>(quad.second.nodeid1);
+		int32_t n2 = static_cast<int32_t>(quad.second.nodeid2);
+		int32_t n3 = static_cast<int32_t>(quad.second.nodeid3);
+		int32_t n4 = static_cast<int32_t>(quad.second.nodeid4);
+		int32_t matid = static_cast<int32_t>(quad.second.materialid);
+
+
+		bin_file.write(reinterpret_cast<const char*>(&quadid), sizeof(int32_t));
+		bin_file.write(reinterpret_cast<const char*>(&n1), sizeof(int32_t));
+		bin_file.write(reinterpret_cast<const char*>(&n2), sizeof(int32_t));
+		bin_file.write(reinterpret_cast<const char*>(&n3), sizeof(int32_t));
+		bin_file.write(reinterpret_cast<const char*>(&n4), sizeof(int32_t));
+		bin_file.write(reinterpret_cast<const char*>(&matid), sizeof(int32_t));
+
+	}
+
+	report("H Refined: Tri elements written");
+
+
+	// Write the materials
+	int32_t materials_count = static_cast<int32_t>(material_list.size());
+	bin_file.write(reinterpret_cast<const char*>(&materials_count), sizeof(int32_t));
+
+	for (const auto& mat : material_list)
+	{
+		int32_t matid = static_cast<int32_t>(mat.second.materialid);
+		bin_file.write(reinterpret_cast<const char*>(&matid), sizeof(int32_t));
+
+
+		// Write the string length as a 4 - byte integer
+		std::string mat_name = "MAT " + std::to_string(matid);
+
+		int32_t length = static_cast<int32_t>(mat_name.length());
+		bin_file.write(reinterpret_cast<const char*>(&length), sizeof(int32_t));
+
+		// Write the raw bytes
+		bin_file.write(mat_name.c_str(), length);
+
+		bin_file.write(reinterpret_cast<const char*>(&mat.second.matdensity), sizeof(double));
+		bin_file.write(reinterpret_cast<const char*>(&mat.second.youngsmodulus), sizeof(double));
+		bin_file.write(reinterpret_cast<const char*>(&mat.second.poissonsratio), sizeof(double));
+		bin_file.write(reinterpret_cast<const char*>(&mat.second.yieldpoint), sizeof(double));
+		bin_file.write(reinterpret_cast<const char*>(&mat.second.thickness), sizeof(double));
+
+		int32_t numelementsappliedto = static_cast<int32_t>(mat.second.numelementsappliedto);
+
+		bin_file.write(reinterpret_cast<const char*>(&numelementsappliedto), sizeof(int32_t));
+
+	}
+
+	report("H Refined: Materials written");
+
+
+	// Write the node constraints
+	int32_t constraints_count = static_cast<int32_t>(constraint_list.size());
+	bin_file.write(reinterpret_cast<const char*>(&constraints_count), sizeof(int32_t));
+
+
+
+
+
+	// Write the node loads
+	int32_t loads_count = static_cast<int32_t>(load_list.size());
+	bin_file.write(reinterpret_cast<const char*>(&loads_count), sizeof(int32_t));
+
+
+
+
+}
+
+
+
+
+void h_refinement_store::report(const char* msg)
+{
+	std::stringstream stopwatch_elapsed_str;
+
+	stopwatch_elapsed_str << std::fixed << std::setprecision(6)
+		<< this->m_stopwatch->elapsed();
+
+	std::string final_msg = std::string(msg) + " " +
+		stopwatch_elapsed_str.str() +
+		" secs";
+
+	if (m_callback)
+		m_callback(final_msg.c_str());
+	//
+}

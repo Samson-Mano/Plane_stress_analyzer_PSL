@@ -185,6 +185,8 @@ namespace Plane_stress_analyzer_PSL.src.events_handler
                                 youngs_modulus = double.Parse(splitValues[2]),
                                 poissons_ratio = double.Parse(splitValues[3]),
                                 material_density = double.Parse(splitValues[4]),
+                                yield_point = double.Parse(splitValues[5]),
+                                thickness = double.Parse(splitValues[6]),
                                 number_of_elements_appliedto = int.Parse(splitValues[5])
                             };
 
@@ -409,6 +411,8 @@ namespace Plane_stress_analyzer_PSL.src.events_handler
                     material_density = 2.9e-9, // Density
                     youngs_modulus = 69.5e+5, // Youngs modulus
                     poissons_ratio = 0.33,
+                    yield_point = 110.0,
+                    thickness = 10.0,
                     number_of_elements_appliedto = (fedata.fe_tris.elementtri_count + fedata.fe_quads.elementquad_count)
                 };
 
@@ -455,8 +459,8 @@ namespace Plane_stress_analyzer_PSL.src.events_handler
 
             using (BinaryWriter writer = new BinaryWriter(File.Open(filePath, FileMode.Create)))
             {
-                // Write the spectral order as the first piece of information in the file
-                writer.Write(fedata.p_order);
+                //// Write the spectral order as the first piece of information in the file
+                //writer.Write(fedata.p_order);
 
                 // Nodes
                 writer.Write(fedata.fe_nodes.nodeMap.Count);
@@ -513,6 +517,8 @@ namespace Plane_stress_analyzer_PSL.src.events_handler
                     writer.Write(mat.material_density);
                     writer.Write(mat.youngs_modulus);
                     writer.Write(mat.poissons_ratio);
+                    writer.Write(mat.yield_point);
+                    writer.Write(mat.thickness);
                     writer.Write(mat.number_of_elements_appliedto);
 
                 }
@@ -592,8 +598,8 @@ namespace Plane_stress_analyzer_PSL.src.events_handler
 
             using (BinaryReader reader = new BinaryReader(File.Open(filePath, FileMode.Open)))
             {
-                // Read the p order
-                fedata.p_order = reader.ReadInt32();
+                //// Read the p order
+                //fedata.p_order = reader.ReadInt32();
 
                 // --- NODES ---
                 int nodeCount = reader.ReadInt32();
@@ -695,6 +701,8 @@ namespace Plane_stress_analyzer_PSL.src.events_handler
                     mat.material_density = reader.ReadDouble();
                     mat.youngs_modulus = reader.ReadDouble();
                     mat.poissons_ratio = reader.ReadDouble();
+                    mat.yield_point = reader.ReadDouble();
+                    mat.thickness = reader.ReadDouble();
                     mat.number_of_elements_appliedto = reader.ReadInt32();
 
                     fedata.fe_materials[mat.material_id] = mat;

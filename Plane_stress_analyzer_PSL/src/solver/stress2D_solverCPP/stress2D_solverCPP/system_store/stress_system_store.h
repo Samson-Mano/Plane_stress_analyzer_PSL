@@ -53,7 +53,10 @@ struct material_store
 	double youngsmodulus = 0.0;
 	double matdensity = 0.0;
 	double poissonsratio = 0.0;
+	double yieldpoint = 0.0;
+	double thickness = 0.0;
 
+	int numelementsappliedto = 0;
 };
 
 
