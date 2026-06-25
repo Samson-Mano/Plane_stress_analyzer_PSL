@@ -39,6 +39,10 @@ namespace Plane_stress_analyzer_PSL.other_windows
             comboBox_polynomialrefinement.SelectedIndex = Properties.Settings.Default.Sett_Prefine;
             comboBox_formulation.SelectedIndex = 0;
 
+            checkBox_extendconstraints.Checked = true;
+            checkBox_extendloads.Checked = true;
+            checkBox_saveHrefinedmodel.Checked = true;
+
         }
 
         private async void button_solve_Click(object sender, EventArgs e)
@@ -212,13 +216,14 @@ namespace Plane_stress_analyzer_PSL.other_windows
 
         
                 // Write input file
-                int[] solver_settings = new int[6];
+                int[] solver_settings = new int[7];
                 solver_settings[0] = comboBox_solvertype.SelectedIndex; // 0 = Elimination method, 1 = Lagrange method
                 solver_settings[1] = comboBox_HRefinement.SelectedIndex; // 0, 1, 2
                 solver_settings[2] = comboBox_polynomialrefinement.SelectedIndex; // 0, 1, 2, 3
                 solver_settings[3] = comboBox_formulation.SelectedIndex; // 0, 1
                 solver_settings[4] = checkBox_extendconstraints.Checked == false ? 0 : 1;
                 solver_settings[5] = checkBox_extendloads.Checked == false ? 0 : 1;
+                solver_settings[6] = checkBox_saveHrefinedmodel.Checked == false ? 0 : 1;
 
                 // Step 5: Safely call the solver
                 var result = await Task.Run(() => stress2DSolverInterop.SolveSafely(

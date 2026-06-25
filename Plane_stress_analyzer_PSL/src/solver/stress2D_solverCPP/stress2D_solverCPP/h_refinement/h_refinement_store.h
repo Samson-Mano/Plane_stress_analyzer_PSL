@@ -55,8 +55,7 @@ public:
 		const double& matdensity,
 		const double& poissonsratio,
 		const double& yieldpoint, 
-		const double& thickness,
-		const int& numelementsappliedto);
+		const double& thickness);
 
 
 	void add_nodeconstraint(const int& constraint_set_id,
@@ -71,21 +70,23 @@ public:
 		std::vector<int>& node_ids);
 
 
-	void perform_refinement(int h_refinement, stopwatch_events* stopwatch,
+	void perform_refinement(int h_refinement, bool isConstraintExtend,
+		bool isLoadExtend,
+		stopwatch_events* stopwatch,
 		void(*callback)(const char*));
 
-	void print_file_for_testing();
+	void save_hrefined_model();
 
 
 private:
 
 	std::unordered_map<int, std::vector<int>> node_edge_map;
 
+	bool isConstraintExtend = false;
+	bool isLoadExtend = false;
+
 	stopwatch_events* m_stopwatch;
 
-	void add_edge(const int& edge_id,
-		const int& startnodeid,
-		const int& endnodeid);
 
 	void set_edge_faceid(const int& startnodeid, const int& endnodeid, const int& face_id);
 

@@ -41,8 +41,9 @@ extern "C" __declspec(dllexport) void solve_2DstressanalysisCPP(
 	int formulation = 0;
 	bool isConstraintExtend = false;
 	bool isLoadExtend = false;
+	bool isSavehRefinedModel = false;
 
-	if (solver_settings && solver_settings_count == 4)
+	if (solver_settings && solver_settings_count == 7)
 	{
 		solvertype = solver_settings[0];
 		h_refinement = solver_settings[1];
@@ -50,7 +51,7 @@ extern "C" __declspec(dllexport) void solve_2DstressanalysisCPP(
 		formulation = solver_settings[3];
 		isConstraintExtend = solver_settings[4] == 0 ? false : true;
 		isLoadExtend = solver_settings[5] == 0 ? false : true;
-
+		isSavehRefinedModel = solver_settings[6] == 0 ? false : true;
 
 		std::string s_type = "";
 		if (solvertype == 0)
@@ -208,7 +209,7 @@ extern "C" __declspec(dllexport) void solve_2DstressanalysisCPP(
 	{
 		int32_t materialid = 0, numelement = 0;
 		double material_density = 0.0, youngs_modulus = 0.0, poissons_ratio = 0.0;
-		double yield_point = 0.0, double thickness = 0.0;
+		double yield_point = 0.0, thickness = 0.0;
 
 		infile.read(reinterpret_cast<char*>(&materialid), 4);
 
@@ -223,11 +224,10 @@ extern "C" __declspec(dllexport) void solve_2DstressanalysisCPP(
 		infile.read(reinterpret_cast<char*>(&poissons_ratio), 8);
 		infile.read(reinterpret_cast<char*>(&yield_point), 8);
 		infile.read(reinterpret_cast<char*>(&thickness), 8);
-		infile.read(reinterpret_cast<char*>(&numelement), 4);
 
 		// Add material to the H Refinement system store
 		h_refinement_model.add_material(materialid, youngs_modulus, material_density, poissons_ratio,
-			yield_point, thickness, numelement);
+			yield_point, thickness);
 
 	}
 
@@ -327,11 +327,16 @@ extern "C" __declspec(dllexport) void solve_2DstressanalysisCPP(
 	h_refinement_model.create_edge_wireframe();
 
 	// Preform refinement
-	h_refinement_model.perform_refinement(0, &stopwatch, callback);
+	h_refinement_model.perform_refinement(h_refinement, isConstraintExtend, isLoadExtend, &stopwatch, callback);
 
 
 	// Print the H Refined binary file for testing
-	h_refinement_model.print_file_for_testing();
+	if (isSavehRefinedModel == true)
+	{
+		h_refinement_model.save_hrefined_model();
+	}
+	
+
 
 
 	// (*isAnalysisSuccess) = true;

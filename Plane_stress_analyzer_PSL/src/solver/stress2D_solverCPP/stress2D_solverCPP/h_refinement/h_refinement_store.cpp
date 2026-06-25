@@ -6,6 +6,7 @@ h_refinement_store::h_refinement_store()
 }
 
 
+
 void h_refinement_store::add_node(const int& node_id, const double& x_coord, const double& y_coord)
 {
 	// Node addition
@@ -20,6 +21,7 @@ void h_refinement_store::add_node(const int& node_id, const double& x_coord, con
 }
 
 
+
 void h_refinement_store::create_edge_wireframe()
 {
 	// Create the edges wire frame
@@ -27,23 +29,6 @@ void h_refinement_store::create_edge_wireframe()
 
 }
 
-
-void h_refinement_store::add_edge(const int& edge_id, const int& startnodeid, const int& endnodeid)
-{
-	// Edge addition
-	edge_store temp_edge;
-	temp_edge.edge_id = edge_id;
-	temp_edge.startnodeid = startnodeid;
-	temp_edge.endnodeid = endnodeid;
-
-	// Insert to the edge list
-	edge_list.insert({ edge_id, temp_edge });
-
-	// Add edge to node-to-edge map for both start and end nodes
-	node_edge_map[startnodeid].push_back(edge_id);
-	node_edge_map[endnodeid].push_back(edge_id);
-
-}
 
 
 void h_refinement_store::add_trielement(const int& tri_id,
@@ -85,6 +70,7 @@ void h_refinement_store::add_trielement(const int& tri_id,
 	trielement_list.insert({ tri_id, temp_trielement });
 
 }
+
 
 
 void h_refinement_store::add_quadelement(const int& quad_id,
@@ -134,10 +120,10 @@ void h_refinement_store::add_quadelement(const int& quad_id,
 }
 
 
+
 void h_refinement_store::add_material(const int& materialid,
 	const double& youngsmodulus, const double& matdensity, const double& poissonsratio,
-	const double& yieldpoint, const double& thickness,
-	const int& numelementsappliedto)
+	const double& yieldpoint, const double& thickness)
 {
 	// Material addition
 	material_store temp_material;
@@ -147,12 +133,12 @@ void h_refinement_store::add_material(const int& materialid,
 	temp_material.poissonsratio = poissonsratio;
 	temp_material.yieldpoint = yieldpoint;
 	temp_material.thickness = thickness;
-	temp_material.numelementsappliedto = numelementsappliedto;
 
 	// Insert to the material list
 	material_list.insert({ materialid, temp_material });
 
 }
+
 
 
 void h_refinement_store::add_nodeconstraint(const int& constraint_set_id,
@@ -171,6 +157,7 @@ void h_refinement_store::add_nodeconstraint(const int& constraint_set_id,
 	constraint_list.insert({ constraint_set_id, temp_constraint });
 
 }
+
 
 
 void h_refinement_store::add_nodeload(const int& load_set_id,
@@ -311,12 +298,12 @@ void h_refinement_store::renumber_model()
 			temp_edge.rightfaceid = elemid_map[edge.second.rightfaceid];
 		}
 
-		temp_edge_list.emplace(edge_id_t, std::move(temp_edge));
-
 
 		// Add edge to node-to-edge map for both start and end nodes
 		temp_node_edge_map[temp_edge.startnodeid].push_back(edge_id_t);
 		temp_node_edge_map[temp_edge.endnodeid].push_back(edge_id_t);
+
+		temp_edge_list.emplace(edge_id_t, std::move(temp_edge));
 
 		// edgeid_map.emplace(edge.second.edge_id, edge_id_t);
 		edge_id_t++;
@@ -629,8 +616,16 @@ void h_refinement_store::refine_elements()
 	quadelement_list = std::move(refined_quadelement_list);
 
 	// Extend the loads and constraints to the newly created midnodes
-	extend_constraints_to_midnodes(edge_to_node_ids);
-	extend_loads_to_midnodes(edge_to_node_ids);
+	if (this->isConstraintExtend == true)
+	{
+		extend_constraints_to_midnodes(edge_to_node_ids);
+	}
+	
+	if (this->isLoadExtend == true)
+	{
+		extend_loads_to_midnodes(edge_to_node_ids);
+	}
+	
 
 
 	// Recreate edges
@@ -810,8 +805,16 @@ void h_refinement_store::recreate_edges()
 			edge.rightfaceid = -1;
 
 			temp_edge_list.emplace(edge_id, std::move(edge));
+
+			// Add edge to node-to-edge map for both start and end nodes
+			node_edge_map[startnodeid].push_back(edge_id);
+			node_edge_map[endnodeid].push_back(edge_id);
+
 			edge_id++;
 		};
+
+
+	node_edge_map.clear();
 
 	// Process triangle edges
 	for (const auto& tri : trielement_list)
@@ -864,7 +867,8 @@ void h_refinement_store::recreate_edges()
 
 
 
-void h_refinement_store::perform_refinement(int h_refinement, stopwatch_events* stopwatch,
+void h_refinement_store::perform_refinement(int h_refinement, bool isConstraintExtend,
+	bool isLoadExtend, stopwatch_events* stopwatch,
 	void(*callback)(const char*))
 {
 
@@ -874,6 +878,8 @@ void h_refinement_store::perform_refinement(int h_refinement, stopwatch_events* 
 	// Store callback locally
 	this->m_callback = callback;
 
+	this->isConstraintExtend = isConstraintExtend;
+	this->isLoadExtend = isLoadExtend;
 
 	// Renumber the nodes and elements
 	renumber_model();
@@ -949,11 +955,11 @@ int h_refinement_store::get_edge_id(const int& startnodeid, const int& endnodeid
 
 
 
-void h_refinement_store::print_file_for_testing()
+void h_refinement_store::save_hrefined_model()
 {
 	// Print the binary file for debugging
 
-	std::string output_file = "h_refined_model";
+	std::string output_file = "h_refined_model.bin";
 
 	std::ofstream bin_file(output_file.c_str(), std::ios::binary);
 
@@ -1027,7 +1033,7 @@ void h_refinement_store::print_file_for_testing()
 
 	}
 
-	report("H Refined: Tri elements written");
+	report("H Refined: Quad elements written");
 
 
 	// Write the materials
@@ -1055,10 +1061,6 @@ void h_refinement_store::print_file_for_testing()
 		bin_file.write(reinterpret_cast<const char*>(&mat.second.yieldpoint), sizeof(double));
 		bin_file.write(reinterpret_cast<const char*>(&mat.second.thickness), sizeof(double));
 
-		int32_t numelementsappliedto = static_cast<int32_t>(mat.second.numelementsappliedto);
-
-		bin_file.write(reinterpret_cast<const char*>(&numelementsappliedto), sizeof(int32_t));
-
 	}
 
 	report("H Refined: Materials written");
@@ -1068,7 +1070,27 @@ void h_refinement_store::print_file_for_testing()
 	int32_t constraints_count = static_cast<int32_t>(constraint_list.size());
 	bin_file.write(reinterpret_cast<const char*>(&constraints_count), sizeof(int32_t));
 
+	for (const auto& cnstr : constraint_list)
+	{
+		int32_t cnstrsetid = static_cast<int32_t>(cnstr.second.constraint_set_id);
+		bin_file.write(reinterpret_cast<const char*>(&cnstrsetid), sizeof(int32_t));
 
+		int32_t cnstrtype = static_cast<int32_t>(cnstr.second.constrainttype);
+		bin_file.write(reinterpret_cast<const char*>(&cnstrtype), sizeof(int32_t));
+
+		bin_file.write(reinterpret_cast<const char*>(&cnstr.second.constraintangle), sizeof(double));
+
+		int32_t node_ids_count = static_cast<int32_t>(cnstr.second.node_ids.size());
+		bin_file.write(reinterpret_cast<const char*>(&node_ids_count), sizeof(int32_t));
+
+		for (const auto& nd_id1 : cnstr.second.node_ids)
+		{
+			int32_t nd_id = static_cast<int32_t>(nd_id1);
+			bin_file.write(reinterpret_cast<const char*>(&nd_id), sizeof(int32_t));
+		}
+	}
+
+	report("H Refined: Nodal constraints written");
 
 
 
@@ -1076,7 +1098,40 @@ void h_refinement_store::print_file_for_testing()
 	int32_t loads_count = static_cast<int32_t>(load_list.size());
 	bin_file.write(reinterpret_cast<const char*>(&loads_count), sizeof(int32_t));
 
+	for (const auto& load : load_list)
+	{
+		int32_t loadsetid = static_cast<int32_t>(load.second.load_set_id);
+		bin_file.write(reinterpret_cast<const char*>(&loadsetid), sizeof(int32_t));
 
+		bin_file.write(reinterpret_cast<const char*>(&load.second.loadamplitude), sizeof(double));
+		bin_file.write(reinterpret_cast<const char*>(&load.second.loadangle), sizeof(double));
+
+		int32_t node_ids_count = static_cast<int32_t>(load.second.node_ids.size());
+		bin_file.write(reinterpret_cast<const char*>(&node_ids_count), sizeof(int32_t));
+
+		for (const auto& nd_id1 : load.second.node_ids)
+		{
+			int32_t nd_id = static_cast<int32_t>(nd_id1);
+			bin_file.write(reinterpret_cast<const char*>(&nd_id), sizeof(int32_t));
+		}
+	}
+
+	report("H Refined: Nodal loads written");
+
+	bin_file.flush();
+
+	auto file_size = bin_file.tellp();  // tellp() for output file (tellg() is for input)
+
+	bin_file.close();
+
+	// Report Success and file size
+	std::string success_msg = "Results stored successfully: " +
+		output_file +
+		" (" + std::to_string(node_points_count) + " nodes, " +
+		std::to_string(tri_elements_count) + " triangles, " +
+		std::to_string(quad_elements_count) + " Quadrilaterals)";
+
+	report(success_msg.c_str());
 
 
 }
@@ -1099,3 +1154,7 @@ void h_refinement_store::report(const char* msg)
 		m_callback(final_msg.c_str());
 	//
 }
+
+
+
+

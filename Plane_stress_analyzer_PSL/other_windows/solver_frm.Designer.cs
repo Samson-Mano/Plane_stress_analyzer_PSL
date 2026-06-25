@@ -41,6 +41,7 @@
             this.comboBox_formulation = new System.Windows.Forms.ComboBox();
             this.checkBox_extendconstraints = new System.Windows.Forms.CheckBox();
             this.checkBox_extendloads = new System.Windows.Forms.CheckBox();
+            this.checkBox_saveHrefinedmodel = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // richTextBox_AnalysisUpdate
@@ -169,11 +170,22 @@
             this.checkBox_extendloads.Text = "Exten Loads to Refined Mid Nodes";
             this.checkBox_extendloads.UseVisualStyleBackColor = true;
             // 
+            // checkBox_saveHrefinedmodel
+            // 
+            this.checkBox_saveHrefinedmodel.AutoSize = true;
+            this.checkBox_saveHrefinedmodel.Location = new System.Drawing.Point(172, 463);
+            this.checkBox_saveHrefinedmodel.Name = "checkBox_saveHrefinedmodel";
+            this.checkBox_saveHrefinedmodel.Size = new System.Drawing.Size(179, 21);
+            this.checkBox_saveHrefinedmodel.TabIndex = 27;
+            this.checkBox_saveHrefinedmodel.Text = "Save h-Refined Model";
+            this.checkBox_saveHrefinedmodel.UseVisualStyleBackColor = true;
+            // 
             // solver_frm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(564, 571);
+            this.Controls.Add(this.checkBox_saveHrefinedmodel);
             this.Controls.Add(this.checkBox_extendloads);
             this.Controls.Add(this.checkBox_extendconstraints);
             this.Controls.Add(this.comboBox_formulation);
@@ -212,5 +224,6 @@
         private System.Windows.Forms.ComboBox comboBox_formulation;
         private System.Windows.Forms.CheckBox checkBox_extendconstraints;
         private System.Windows.Forms.CheckBox checkBox_extendloads;
+        private System.Windows.Forms.CheckBox checkBox_saveHrefinedmodel;
     }
 }

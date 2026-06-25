@@ -174,7 +174,7 @@ namespace Plane_stress_analyzer_PSL.src.events_handler
 
                         int numValues = splitValues.Length;
 
-                        if (numValues == 6)
+                        if (numValues == 7)
                         {
                             // Create a temporary materials
                             var tempMaterial = new material_data
@@ -187,7 +187,6 @@ namespace Plane_stress_analyzer_PSL.src.events_handler
                                 material_density = double.Parse(splitValues[4]),
                                 yield_point = double.Parse(splitValues[5]),
                                 thickness = double.Parse(splitValues[6]),
-                                number_of_elements_appliedto = int.Parse(splitValues[5])
                             };
 
                             // Add to material list
@@ -413,7 +412,6 @@ namespace Plane_stress_analyzer_PSL.src.events_handler
                     poissons_ratio = 0.33,
                     yield_point = 110.0,
                     thickness = 10.0,
-                    number_of_elements_appliedto = (fedata.fe_tris.elementtri_count + fedata.fe_quads.elementquad_count)
                 };
 
                 // Add to the material list
@@ -472,8 +470,8 @@ namespace Plane_stress_analyzer_PSL.src.events_handler
                 }
 
                 //// Edges
-                //writer.Write(mesh_edges.line_count);
-                //foreach (var edge in mesh_edges.lineMap.Values)
+                //writer.Write(fedata.line_count);
+                //foreach (var edge in fedata.lineMap.Values)
                 //{
                 //    writer.Write(edge.line_id);
                 //    writer.Write(edge.start_pt_id);
@@ -519,7 +517,6 @@ namespace Plane_stress_analyzer_PSL.src.events_handler
                     writer.Write(mat.poissons_ratio);
                     writer.Write(mat.yield_point);
                     writer.Write(mat.thickness);
-                    writer.Write(mat.number_of_elements_appliedto);
 
                 }
 
@@ -703,7 +700,6 @@ namespace Plane_stress_analyzer_PSL.src.events_handler
                     mat.poissons_ratio = reader.ReadDouble();
                     mat.yield_point = reader.ReadDouble();
                     mat.thickness = reader.ReadDouble();
-                    mat.number_of_elements_appliedto = reader.ReadInt32();
 
                     fedata.fe_materials[mat.material_id] = mat;
                     fedata.materialids.Add(mat.material_id);

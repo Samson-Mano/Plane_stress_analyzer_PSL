@@ -22,7 +22,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.fe_objects
         public double yield_point = 0.0; // Y
         public double thickness = 0.0; // tk
 
-        public int number_of_elements_appliedto = 0;
+        // public int number_of_elements_appliedto = 0;
 
     }
 
