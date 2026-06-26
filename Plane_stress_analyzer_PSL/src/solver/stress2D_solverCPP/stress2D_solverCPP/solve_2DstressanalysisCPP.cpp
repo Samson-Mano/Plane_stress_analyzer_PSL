@@ -11,7 +11,7 @@
 #include "h_refinement/h_refinement_store.h"
 #include "system_store/stress_system_store.h"
 #include "system_store/stopwatch_events.h"
-// #include "solver/helmholtz2d_spectral_solver.h"
+#include "solver/stress2d_solver.h"
 
 
 
@@ -92,6 +92,9 @@ extern "C" __declspec(dllexport) void solve_2DstressanalysisCPP(
 
 	stopwatch_events stopwatch;
 	std::stringstream stopwatch_elapsed_str;
+
+	// Start the solver stop watch
+	stopwatch.start();
 
 
 	if (!infile.is_open())
@@ -331,11 +334,36 @@ extern "C" __declspec(dllexport) void solve_2DstressanalysisCPP(
 
 
 	// Print the H Refined binary file for testing
-	if (isSavehRefinedModel == true)
+	if (isSavehRefinedModel == true && h_refinement > 0)
 	{
 		h_refinement_model.save_hrefined_model();
 	}
 	
+
+	// Copy H Refined Mesh to the stress analyzer
+	stress_system_store stress_system;
+
+	stress_system.polynomial_order = polynomial_order; // 0, 1, 2
+
+	stress_system.node_list = std::move(h_refinement_model.node_list);
+	stress_system.edge_list = std::move(h_refinement_model.edge_list);
+	stress_system.trielement_list = std::move(h_refinement_model.trielement_list);
+	stress_system.quadelement_list = std::move(h_refinement_model.quadelement_list);
+
+	stress_system.material_list = std::move(h_refinement_model.material_list);
+
+	stress_system.constraint_list = std::move(h_refinement_model.constraint_list);
+	stress_system.load_list = std::move(h_refinement_model.load_list);
+
+
+
+	// Initialize the solver
+	stress2d_solver solver;
+	solver.initialize_solver(stress_system, &stopwatch, callback);
+
+	solver.perform_solve();
+
+
 
 
 

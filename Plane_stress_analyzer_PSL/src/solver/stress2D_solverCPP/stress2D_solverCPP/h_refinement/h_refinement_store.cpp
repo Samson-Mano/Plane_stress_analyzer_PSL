@@ -761,21 +761,19 @@ void h_refinement_store::extend_loads_to_midnodes(const std::unordered_map<int, 
 void h_refinement_store::recreate_edges()
 {
 	// Use a set of encoded edge IDs for faster lookup
-	std::unordered_set<int> edge_set;
+	std::unordered_set<uint64_t> edge_set;
 	edge_set.reserve(node_list.size() * 2);
 
-	auto encode_edge = [](int node1, int node2) -> int
+	auto encode_edge = [](int node1, int node2) -> uint64_t
 		{
-			int n1 = std::min(node1, node2);
-			int n2 = std::max(node1, node2);
-			// Encode as: (n1 << 16) | n2 (if node IDs fit in 16 bits)
-			// Or use: n1 * 1000000 + n2
-			return (n1 << 16) | n2;
+			uint64_t n1 = static_cast<uint64_t>(std::min(node1, node2));
+			uint64_t n2 = static_cast<uint64_t>(std::max(node1, node2));
+			return (n1 << 32) | n2;  // Shift by 32 bits for 64-bit (! Limit of 4.29 Billions)
 		};
 
 	auto check_edge_already_exist = [&](int startnodeid, int endnodeid) -> bool
 		{
-			int encoded = encode_edge(startnodeid, endnodeid);
+			uint64_t encoded = encode_edge(startnodeid, endnodeid);
 			auto it = edge_set.find(encoded);
 			if (it != edge_set.end())
 			{
@@ -1125,7 +1123,7 @@ void h_refinement_store::save_hrefined_model()
 	bin_file.close();
 
 	// Report Success and file size
-	std::string success_msg = "Results stored successfully: " +
+	std::string success_msg = "H Refined Model Stored Successfully: " +
 		output_file +
 		" (" + std::to_string(node_points_count) + " nodes, " +
 		std::to_string(tri_elements_count) + " triangles, " +

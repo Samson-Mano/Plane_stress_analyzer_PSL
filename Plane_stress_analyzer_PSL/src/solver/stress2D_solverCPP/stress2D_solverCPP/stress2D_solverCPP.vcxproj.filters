@@ -30,6 +30,12 @@
     <ClCompile Include="h_refinement\h_refinement_store.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="solver\stress2d_solver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="solver\polynomial_2dmesh_store.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="system_store\stress_system_store.h">
@@ -39,6 +45,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="h_refinement\h_refinement_store.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="solver\stress2d_solver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="solver\polynomial_2dmesh_store.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -23,6 +23,7 @@ public:
 	std::unordered_map<int, constraint_store> constraint_list;
 	std::unordered_map<int, load_store> load_list;
 
+	std::unordered_map<int, std::vector<int>> node_edge_map;
 
 
 	h_refinement_store();
@@ -79,8 +80,6 @@ public:
 
 
 private:
-
-	std::unordered_map<int, std::vector<int>> node_edge_map;
 
 	bool isConstraintExtend = false;
 	bool isLoadExtend = false;

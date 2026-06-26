@@ -4,6 +4,7 @@
 
 
 
+
 struct node_store
 {
 	int node_id = 0;
@@ -103,6 +104,9 @@ public:
 	stress_system_store();
 	~stress_system_store() = default;
 
+
+
+private:
 
 
 
