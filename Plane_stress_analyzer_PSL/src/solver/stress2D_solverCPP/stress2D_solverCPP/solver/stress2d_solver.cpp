@@ -17,6 +17,8 @@ bool stress2d_solver::initialize_solver(stress_system_store* stress_system, int 
 	// Store callback locally
 	this->m_callback = callback;
 
+	this->polynomial_order = polynomial_order;
+
 	report("Solver initialized successfully");
 
 	polynomial_2dmesh.generate_2dpolynomial_mesh(stress_system, polynomial_order);

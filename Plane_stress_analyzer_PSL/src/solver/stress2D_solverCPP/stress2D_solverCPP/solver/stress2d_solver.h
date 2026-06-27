@@ -17,7 +17,7 @@ public:
 
 
 private:
-	// stress_system_store stress_system;
+	int polynomial_order = 0;
 	polynomial_2dmesh_store polynomial_2dmesh;
 	stopwatch_events* m_stopwatch;
 

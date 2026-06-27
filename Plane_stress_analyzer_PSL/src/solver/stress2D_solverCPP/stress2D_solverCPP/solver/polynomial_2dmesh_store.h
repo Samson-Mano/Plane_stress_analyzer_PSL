@@ -1,11 +1,12 @@
 #pragma once
 #include "../system_store/stress_system_store.h"
-
+#include <unordered_set>
 
 
 // Renderer Triangle
 struct renderer_triangle
 {
+	// int tri_id;
 	int n1, n2, n3;
 };
 
@@ -37,6 +38,8 @@ struct polynomial_node_store
 	int node_id = 0;
 	double x_coord = 0.0;
 	double y_coord = 0.0;
+
+	bool is_internal = false;
 
 };
 
@@ -95,34 +98,56 @@ struct polynomial_quadelement_store
 class polynomial_2dmesh_store
 {
 public:
+	std::unordered_map<int, polynomial_node_store> polynomial_node_list;
+	std::unordered_map<int, polynomial_edge_store> polynomial_edge_list;
+	std::unordered_map<int, polynomial_trielement_store> polynomial_trielement_list;
+	std::unordered_map<int, polynomial_quadelement_store> polynomial_quadelement_list;
+
+	bool isPolynomialMeshCreated = false;
+
+	// Store the renderer data
+	std::unordered_map<int, renderer_node> renderer_node_points;
+	std::vector<renderer_edge> renderer_edge_lines;
+	std::vector<renderer_triangle> renderer_element_triangles;
+
+
+
 	polynomial_2dmesh_store();
 	~polynomial_2dmesh_store() = default;
 
 	void generate_2dpolynomial_mesh(stress_system_store* stress_system, int polynomial_order);
 
-	bool isPolynomialMeshCreated = false;
+	
 
 private:
 	stress_system_store stress_system;
 
 	int polynomial_order = 0;
 
-	std::unordered_map<int, polynomial_node_store> polynomial_node_list;
-	std::unordered_map<int, polynomial_edge_store> polynomial_edge_list;
-	std::unordered_map<int, polynomial_trielement_store> polynomial_trielement_list;
-	std::unordered_map<int, polynomial_quadelement_store> polynomial_quadelement_list;
 
 
 	void copy_mesh_nodes();
 
-	void create_linear_mesh();
-	void create_quadratic_mesh();
-	void create_cubic_mesh();
-	void create_quartic_mesh();
+	void create_edge_internal_nodes();
 
+	void create_polynomial_tri_elements();
+	void create_polynomial_quad_elements();
+
+	std::vector<int> get_ordered_edge_internal_nodes(const polynomial_edge_store& p_edge, int element_id);
+
+	std::vector<int> create_tri_internal_nodes(int nd1, int nd2, int nd3);
+
+	std::vector<int> create_quad_internal_nodes(int nd1, int nd2, int nd3, int nd4);
 
 	int get_edge_id(const int& startnodeid, const int& endnodeid);
 
+	void create_renderer_mesh();
+
+	void create_trimesh_renderer_elements();
+
+	void create_quadmesh_renderer_elements();
+
+	void create_renderer_edges();
 
 };
 
