@@ -47,7 +47,7 @@ extern "C" __declspec(dllexport) void solve_2DstressanalysisCPP(
 	{
 		solvertype = solver_settings[0];
 		h_refinement = solver_settings[1];
-		polynomial_order = solver_settings[2];
+		polynomial_order = solver_settings[2] + 1;
 		formulation = solver_settings[3];
 		isConstraintExtend = solver_settings[4] == 0 ? false : true;
 		isLoadExtend = solver_settings[5] == 0 ? false : true;
@@ -82,7 +82,7 @@ extern "C" __declspec(dllexport) void solve_2DstressanalysisCPP(
 	}
 	else
 	{
-		msg = "Solver settings error";
+		msg = "Solver settings error"; 
 		if (callback) callback(msg.c_str());
 
 		return;
@@ -355,19 +355,21 @@ extern "C" __declspec(dllexport) void solve_2DstressanalysisCPP(
 	stress_system.constraint_list = std::move(h_refinement_model.constraint_list);
 	stress_system.load_list = std::move(h_refinement_model.load_list);
 
-
+	stress_system.node_edge_map = std::move(h_refinement_model.node_edge_map);
 
 	// Initialize the solver
+	bool isSolverInitialized = false;
+
 	stress2d_solver solver;
-	solver.initialize_solver(stress_system, &stopwatch, callback);
+	isSolverInitialized = solver.initialize_solver(&stress_system, polynomial_order, &stopwatch, callback);
 
-	solver.perform_solve();
+	if (isSolverInitialized == true)
+	{
+		solver.perform_solve();
 
+		// (*isAnalysisSuccess) = true;
+	}
 
-
-
-
-	// (*isAnalysisSuccess) = true;
 
 	//_________________________________________________________
 	// Close the files

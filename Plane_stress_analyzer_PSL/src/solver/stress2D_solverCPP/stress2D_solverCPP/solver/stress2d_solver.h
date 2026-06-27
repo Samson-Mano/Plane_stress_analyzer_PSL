@@ -10,7 +10,7 @@ public:
 	stress2d_solver();
 	~stress2d_solver() = default;
 
-	void initialize_solver(stress_system_store* stress_system, stopwatch_events* stopwatch,
+	bool initialize_solver(stress_system_store* stress_system, int polynomial_order, stopwatch_events* stopwatch,
 		void(*callback)(const char*));
 
 	void perform_solve();

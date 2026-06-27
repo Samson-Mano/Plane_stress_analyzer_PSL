@@ -7,7 +7,7 @@ stress2d_solver::stress2d_solver()
 }
 
 
-void stress2d_solver::initialize_solver(stress_system_store* stress_system, stopwatch_events* stopwatch,
+bool stress2d_solver::initialize_solver(stress_system_store* stress_system, int polynomial_order, stopwatch_events* stopwatch,
 	void(*callback)(const char*))
 {
 
@@ -19,17 +19,32 @@ void stress2d_solver::initialize_solver(stress_system_store* stress_system, stop
 
 	report("Solver initialized successfully");
 
-	polynomial_2dmesh.generate_2dpolynomial_mesh(stress_system);
+	polynomial_2dmesh.generate_2dpolynomial_mesh(stress_system, polynomial_order);
 
-	
+	if (polynomial_2dmesh.isPolynomialMeshCreated == true)
+	{
+		std::string rprt = "Linear solver mesh created";
+		if (polynomial_order > 1)
+		{
+			rprt = "Higher order solver mesh created (order = " + std::to_string(polynomial_order) + ")";
+		}
+		report(rprt.c_str());
 
+	}
+	else
+	{
+		report("Failed to create solver mesh");
+
+		return false;
+	}
+
+	return true;
 }
 
 
 void stress2d_solver::perform_solve()
 {
-	// Create the polynomial mesh
-
+	
 
 
 

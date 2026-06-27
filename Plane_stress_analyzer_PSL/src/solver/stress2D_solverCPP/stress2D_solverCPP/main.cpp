@@ -42,7 +42,7 @@ int main()
 
 	int solvertype = 0;
 	int h_refinement = 0;
-	int polynomial_order = 0;
+	int polynomial_order = 1;
 	int formulation = 0;
 	bool isConstraintExtend = false;
 	bool isLoadExtend = false;
@@ -282,20 +282,22 @@ int main()
 	stress_system.constraint_list = std::move(h_refinement_model.constraint_list);
 	stress_system.load_list = std::move(h_refinement_model.load_list);
 
-
+	stress_system.node_edge_map = std::move(h_refinement_model.node_edge_map);
 
 	// Initialize the solver
+	bool isSolverInitialized = false;
+
 	stress2d_solver solver;
-	solver.initialize_solver(stress_system, &stopwatch, m_callback);
+	isSolverInitialized = solver.initialize_solver(&stress_system, polynomial_order, &stopwatch, m_callback);
 
-	solver.perform_solve();
+	if (isSolverInitialized == true)
+	{
+		solver.perform_solve();
 
+		// (*isAnalysisSuccess) = true;
+	}
 
-
-
-
-
-	// (*isAnalysisSuccess) = true;
+		
 
 	//_________________________________________________________
 	// Close the files

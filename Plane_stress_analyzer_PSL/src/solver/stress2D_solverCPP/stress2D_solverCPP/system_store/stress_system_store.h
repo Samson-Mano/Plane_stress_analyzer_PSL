@@ -100,6 +100,7 @@ public:
 	std::unordered_map<int, constraint_store> constraint_list;
 	std::unordered_map<int, load_store> load_list;
 
+	std::unordered_map<int, std::vector<int>> node_edge_map;
 
 	stress_system_store();
 	~stress_system_store() = default;
