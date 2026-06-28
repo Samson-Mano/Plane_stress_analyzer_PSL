@@ -7,7 +7,8 @@ stress2d_solver::stress2d_solver()
 }
 
 
-bool stress2d_solver::initialize_solver(stress_system_store* stress_system, int polynomial_order, stopwatch_events* stopwatch,
+bool stress2d_solver::initialize_solver(stress_system_store* stress_system, int polynomial_order, 
+	int solver_type,  stopwatch_events* stopwatch,	
 	void(*callback)(const char*))
 {
 
@@ -18,6 +19,7 @@ bool stress2d_solver::initialize_solver(stress_system_store* stress_system, int 
 	this->m_callback = callback;
 
 	this->polynomial_order = polynomial_order;
+	this->solver_type = solver_type;
 
 	report("Solver initialized successfully");
 
@@ -47,11 +49,41 @@ bool stress2d_solver::initialize_solver(stress_system_store* stress_system, int 
 void stress2d_solver::perform_solve()
 {
 	
+	// Create the global stiffness matrix
+	create_global_stiffness_matrix();
+
+	report("Global stiffness matrix created");
 
 
 
 
 }
+
+
+void stress2d_solver::create_global_stiffness_matrix()
+{
+
+	this->numDOF = static_cast<int>(polynomial_2dmesh.polynomial_node_list.size()) * 2;
+
+	// Global stiffness matrix
+	this->global_stiffness_matrix.resize(numDOF, numDOF);
+	this->global_stiffness_matrix.setZero();
+
+	std::vector<Eigen::Triplet<double>> k_triplets;
+
+	if (static_cast<int>(polynomial_2dmesh.polynomial_trielement_list.size()) > 0)
+	{
+
+	}
+
+	if (static_cast<int>(polynomial_2dmesh.polynomial_quadelement_list.size()) > 0)
+	{
+
+	}
+
+}
+
+
 
 
 

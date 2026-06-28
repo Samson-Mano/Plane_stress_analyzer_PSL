@@ -123,16 +123,17 @@ void h_refinement_store::add_quadelement(const int& quad_id,
 
 void h_refinement_store::add_material(const int& materialid,
 	const double& youngsmodulus, const double& matdensity, const double& poissonsratio,
-	const double& yieldpoint, const double& thickness)
+	const double& yieldpoint, const double& thickness,
+	int formulation)
 {
 	// Material addition
-	material_store temp_material;
-	temp_material.materialid = materialid;
-	temp_material.youngsmodulus = youngsmodulus;
-	temp_material.matdensity = matdensity;
-	temp_material.poissonsratio = poissonsratio;
-	temp_material.yieldpoint = yieldpoint;
-	temp_material.thickness = thickness;
+	material_store temp_material(materialid, youngsmodulus, matdensity, poissonsratio, yieldpoint, thickness, formulation);
+	//temp_material.materialid = materialid;
+	//temp_material.youngsmodulus = youngsmodulus;
+	//temp_material.matdensity = matdensity;
+	//temp_material.poissonsratio = poissonsratio;
+	//temp_material.yieldpoint = yieldpoint;
+	//temp_material.thickness = thickness;
 
 	// Insert to the material list
 	material_list.insert({ materialid, temp_material });

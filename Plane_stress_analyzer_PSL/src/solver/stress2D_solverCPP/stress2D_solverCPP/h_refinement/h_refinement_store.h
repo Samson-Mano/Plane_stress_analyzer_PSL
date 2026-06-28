@@ -56,7 +56,8 @@ public:
 		const double& matdensity,
 		const double& poissonsratio,
 		const double& yieldpoint, 
-		const double& thickness);
+		const double& thickness,
+		int formulation);
 
 
 	void add_nodeconstraint(const int& constraint_set_id,

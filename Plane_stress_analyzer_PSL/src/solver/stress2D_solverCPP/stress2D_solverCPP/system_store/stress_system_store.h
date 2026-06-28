@@ -48,14 +48,29 @@ struct quadelement_store
 };
 
 
-struct material_store
+class material_store
 {
+public:
 	int materialid = 0;
 	double youngsmodulus = 0.0;
 	double matdensity = 0.0;
 	double poissonsratio = 0.0;
 	double yieldpoint = 0.0;
 	double thickness = 0.0;
+
+	int formulation = -1; // 0 = Plane stress, 1 = Plane strain
+
+	material_store(int t_materialid, double t_youngsmodulus, double t_matdensity, 
+		double t_poissonsratio, double t_yieldpoint, double t_thickness,
+		int t_formulation)
+		: materialid(t_materialid), youngsmodulus(t_youngsmodulus), 
+		matdensity(t_matdensity), poissonsratio(t_poissonsratio),
+		yieldpoint(t_yieldpoint), thickness(t_thickness),
+		formulation(t_formulation){}
+
+
+	// Get elasticity matrix C
+	Eigen::Matrix3d get_elasticity_matrix() const;
 
 };
 

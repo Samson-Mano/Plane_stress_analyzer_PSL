@@ -143,16 +143,28 @@
   <ItemGroup>
     <ClCompile Include="h_refinement\h_refinement_store.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="solver\element_formulation\quadelement_formulation.cpp" />
+    <ClCompile Include="solver\element_formulation\trielement_formulation.cpp" />
+    <ClCompile Include="solver\integration_rules.cpp" />
     <ClCompile Include="solver\polynomial_2dmesh_store.cpp" />
+    <ClCompile Include="solver\shape_functions.cpp" />
     <ClCompile Include="solver\stress2d_solver.cpp" />
+    <ClCompile Include="solver\utility\integration_rules.cpp" />
+    <ClCompile Include="solver\utility\shape_functions.cpp" />
     <ClCompile Include="solve_2DstressanalysisCPP.cpp" />
     <ClCompile Include="system_store\stopwatch_events.cpp" />
     <ClCompile Include="system_store\stress_system_store.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="h_refinement\h_refinement_store.h" />
+    <ClInclude Include="solver\element_formulation\quadelement_formulation.h" />
+    <ClInclude Include="solver\element_formulation\trielement_formulation.h" />
+    <ClInclude Include="solver\integration_rules.h" />
     <ClInclude Include="solver\polynomial_2dmesh_store.h" />
+    <ClInclude Include="solver\shape_functions.h" />
     <ClInclude Include="solver\stress2d_solver.h" />
+    <ClInclude Include="solver\utility\integration_rules.h" />
+    <ClInclude Include="solver\utility\shape_functions.h" />
     <ClInclude Include="system_store\stopwatch_events.h" />
     <ClInclude Include="system_store\stress_system_store.h" />
   </ItemGroup>

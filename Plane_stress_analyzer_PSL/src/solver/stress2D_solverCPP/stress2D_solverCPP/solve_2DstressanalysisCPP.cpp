@@ -230,7 +230,7 @@ extern "C" __declspec(dllexport) void solve_2DstressanalysisCPP(
 
 		// Add material to the H Refinement system store
 		h_refinement_model.add_material(materialid, youngs_modulus, material_density, poissons_ratio,
-			yield_point, thickness);
+			yield_point, thickness, formulation);
 
 	}
 
@@ -361,7 +361,7 @@ extern "C" __declspec(dllexport) void solve_2DstressanalysisCPP(
 	bool isSolverInitialized = false;
 
 	stress2d_solver solver;
-	isSolverInitialized = solver.initialize_solver(&stress_system, polynomial_order, &stopwatch, callback);
+	isSolverInitialized = solver.initialize_solver(&stress_system, polynomial_order, solvertype, &stopwatch, callback);
 
 	if (isSolverInitialized == true)
 	{

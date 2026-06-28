@@ -161,7 +161,7 @@ int main()
 
 		// Add material to the H Refinement system store
 		h_refinement_model.add_material(materialid, youngs_modulus, material_density, poissons_ratio,
-			yield_point, thickness);
+			yield_point, thickness, formulation);
 
 	}
 
@@ -288,7 +288,7 @@ int main()
 	bool isSolverInitialized = false;
 
 	stress2d_solver solver;
-	isSolverInitialized = solver.initialize_solver(&stress_system, polynomial_order, &stopwatch, m_callback);
+	isSolverInitialized = solver.initialize_solver(&stress_system, polynomial_order, solvertype, &stopwatch, m_callback);
 
 	if (isSolverInitialized == true)
 	{
