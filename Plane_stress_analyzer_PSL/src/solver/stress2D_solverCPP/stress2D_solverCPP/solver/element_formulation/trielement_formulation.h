@@ -3,8 +3,10 @@
 
 #include "../polynomial_2dmesh_store.h"
 
-#include "../utility/integration_rules.h"
-#include "../utility/shape_functions.h"
+#include "../utility/shapefunction_store.h"
+
+#include "../../system_store/stress_system_store.h"
+
 
 
 class trielement_formulation
@@ -23,15 +25,18 @@ public:
 
 private:
 	int polynomial_order = 0;
+	int nodes_per_element = 0;
 	int element_dof = 0;
-	std::vector<integration_point> integ_points;
+
+	shapefunction_store sf_store;
 
 
-	Eigen::Matrix2d compute_jacobian(const std::vector<Eigen::Vector2d>& node_coords, double xi, double eta);
+	Eigen::Matrix2d compute_jacobian(const std::vector<Eigen::Vector2d>& node_coords,
+		const std::vector<std::pair<double, double>>& dN);
 
-	Eigen::MatrixXd compute_B_matrix(const Eigen::Matrix2d& J_inv, double xi, double eta);
+	Eigen::MatrixXd compute_B_matrix(const Eigen::Matrix2d& J_inv,
+		const std::vector<std::pair<double, double>>& dN);
 
-	Eigen::MatrixXd compute_N_matrix(double xi, double eta);
 
 };
 

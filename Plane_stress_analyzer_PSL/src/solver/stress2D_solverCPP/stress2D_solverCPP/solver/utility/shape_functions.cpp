@@ -155,21 +155,30 @@ std::vector<std::pair<double, double>> shape_functions::get_quad_shape_derivativ
         double eta2 = eta * eta;
         dN = {
             // Corner nodes
-            { 0.25 * (-(1.0 - eta) * (-xi - eta - 1.0) + (1.0 - xi) * (1.0 - eta) * (-1.0)),
-              0.25 * (-(1.0 - xi) * (-xi - eta - 1.0) + (1.0 - xi) * (1.0 - eta) * (-1.0)) },
-            { 0.25 * ((1.0 - eta) * (xi - eta - 1.0) + (1.0 + xi) * (1.0 - eta)),
-              0.25 * (-(1.0 + xi) * (xi - eta - 1.0) + (1.0 + xi) * (1.0 - eta) * (-1.0)) },
-            { 0.25 * ((1.0 + eta) * (xi + eta - 1.0) + (1.0 + xi) * (1.0 + eta)),
-              0.25 * ((1.0 + xi) * (xi + eta - 1.0) + (1.0 + xi) * (1.0 + eta)) },
-            { 0.25 * (-(1.0 + eta) * (-xi + eta - 1.0) + (1.0 - xi) * (1.0 + eta) * (-1.0)),
-              0.25 * ((1.0 - xi) * (-xi + eta - 1.0) + (1.0 - xi) * (1.0 + eta)) },
-              // Edge nodes
-              {-xi * (1.0 - eta),          -0.5 * (1.0 - xi2)       },
-              { 0.5 * (1.0 - eta2),         -(1.0 + xi) * eta         },
-              {-xi * (1.0 + eta),           0.5 * (1.0 - xi2)        },
-              {-0.5 * (1.0 - eta2),         -(1.0 - xi) * eta         },
-              // Center node
-              {-2.0 * xi * (1.0 - eta2),        -2.0 * eta * (1.0 - xi2)   }
+            // Node 1: 0.25*(1-xi)*(1-eta)*(-xi-eta-1)
+            {0.25 * (1.0 - eta) * (2.0 * xi + eta),
+            0.25 * (1.0 - xi) * (xi + 2.0 * eta)},
+            // Node 2: 0.25*(1+xi)*(1-eta)*(xi-eta-1)
+            {0.25 * (1.0 - eta) * (2.0 * xi - eta),
+            0.25 * (1.0 + xi) * (-xi - 2.0 * eta)},
+            // Node 3: 0.25*(1+xi)*(1+eta)*(xi+eta-1)
+            {0.25 * (1.0 + eta) * (2.0 * xi + eta),
+            0.25 * (1.0 + xi) * (xi + 2.0 * eta)},
+            // Node 4: 0.25*(1-xi)*(1+eta)*(-xi+eta-1)
+            {0.25 * (1.0 + eta) * (-2.0 * xi + eta),
+            0.25 * (1.0 - xi) * (-xi + 2.0 * eta)},
+            // Edge nodes
+            // Node 5: 0.5*(1-xi^2)*(1-eta)
+            {-xi * (1.0 - eta), -0.5 * (1.0 - xi2)},
+            // Node 6: 0.5*(1+xi)*(1-eta^2)
+            {0.5 * (1.0 - eta2), -(1.0 + xi) * eta},
+            // Node 7: 0.5*(1-xi^2)*(1+eta)
+            {-xi * (1.0 + eta), 0.5 * (1.0 - xi2)},
+            // Node 8: 0.5*(1-xi)*(1-eta^2)
+            {-0.5 * (1.0 - eta2), -(1.0 - xi) * eta},
+            // Center node
+            // Node 9: (1-xi^2)*(1-eta^2)
+            {-2.0 * xi * (1.0 - eta2), -2.0 * eta * (1.0 - xi2)}
         };
 
     }
@@ -222,12 +231,14 @@ std::vector<std::pair<double, double>> shape_functions::get_tri_shape_derivative
         double zeta = 1.0 - xi - eta;
 
         dN = {
-            {4.0 * xi - 1.0, 0.0},
-            {0.0, 4.0 * eta - 1.0},
-            {-(4.0 * zeta - 1.0), -(4.0 * zeta - 1.0)},
-            {4.0 * eta, 4.0 * xi},
-            {-4.0 * eta, 4.0 * (1.0 - xi - eta) - 4.0 * eta},
-            {4.0 * (zeta -  xi), -4.0 * xi}
+            // Corner nodes
+            {4.0 * xi - 1.0, 0.0}, // Node 1: (2*xi - 1)*xi
+            {0.0, 4.0 * eta - 1.0},             // Node 2: (2*eta - 1)*eta
+            {-(4.0 * zeta - 1.0), -(4.0 * zeta - 1.0)}, // Node 3: (2*zeta - 1)*zeta
+            // Edge nodes
+            {4.0 * eta, 4.0 * xi}, // Node 4: 4*xi*eta
+            {-4.0 * eta, 4.0 * (zeta -  eta)},             // Node 5: 4*eta*zeta
+            {4.0 * (zeta -  xi), -4.0 * xi} // Node 6: 4*zeta*xi
         };
     }
     else if (order == 3 || order == 4)
@@ -357,15 +368,27 @@ std::vector<double> shape_functions::tri_bernstein(int p, double xi, double eta)
     std::vector<double> N;
     // N.reserve((p + 1) * (p + 2) / 2);
 
+
+    // Pre-compute powers 
+    std::vector<double> xi_pow(p + 1, 1.0);
+    std::vector<double> eta_pow(p + 1, 1.0);
+    std::vector<double> zeta_pow(p + 1, 1.0);
+
+
+    for (int i = 1; i <= p; ++i) 
+    {
+        xi_pow[i] = xi_pow[i - 1] * xi;
+        eta_pow[i] = eta_pow[i - 1] * eta;
+        zeta_pow[i] = zeta_pow[i - 1] * zeta;
+    }
+
     for (int j = 0; j <= p; ++j)
     {
         for (int i = 0; i <= p - j; ++i)
         {
             int k = p - i - j;
-            double val = (double)trinom(p, i, j, k);
-            if (i > 0) val *= std::pow(xi, i);
-            if (j > 0) val *= std::pow(eta, j);
-            if (k > 0) val *= std::pow(zeta, k);
+            double val = static_cast<double>(trinom(p, i, j, k));
+            val *= xi_pow[i] * eta_pow[j] * zeta_pow[k];
             N.push_back(val);
         }
     }
@@ -390,24 +413,40 @@ std::vector<std::pair<double, double>> shape_functions::dtri_bernstein(int p, do
     std::vector<std::pair<double, double>> dN;
     // dN.reserve((p + 1) * (p + 2) / 2);
 
-    auto pw = [](double base, int exp) -> double 
-        {
-        if (exp < 0) return 0.0;
-        if (exp == 0) return 1.0;
-        return std::pow(base, exp);
-        };
+    // Pre-compute powers
+    std::vector<double> xi_pow(p + 1, 1.0);
+    std::vector<double> eta_pow(p + 1, 1.0);
+    std::vector<double> zeta_pow(p + 1, 1.0);
+
+
+    for (int i = 1; i <= p; ++i) 
+    {
+        xi_pow[i] = xi_pow[i - 1] * xi;
+        eta_pow[i] = eta_pow[i - 1] * eta;
+        zeta_pow[i] = zeta_pow[i - 1] * zeta;
+    }
+
 
     for (int j = 0; j <= p; ++j)
     {
         for (int i = 0; i <= p - j; ++i)
         {
             int k = p - i - j;
-            double C = (double)trinom(p, i, j, k);
+            double C = static_cast<double>(trinom(p, i, j, k));
 
-            double dxi = C * (i * pw(xi, i - 1) * pw(eta, j) * pw(zeta, k)
-                - k * pw(xi, i) * pw(eta, j) * pw(zeta, k - 1));
-            double deta = C * (j * pw(xi, i) * pw(eta, j - 1) * pw(zeta, k)
-                - k * pw(xi, i) * pw(eta, j) * pw(zeta, k - 1));
+            // dN/dxi = C * (i*L1^(i-1)*L2^j*L3^k - k*L1^i*L2^j*L3^(k-1))
+            double dxi = 0.0;
+            if (i > 0) dxi += i * xi_pow[i - 1] * eta_pow[j] * zeta_pow[k];
+            if (k > 0) dxi -= k * xi_pow[i] * eta_pow[j] * zeta_pow[k - 1];
+            dxi *= C;
+
+
+            // dN/deta = C * (j*L1^i*L2^(j-1)*L3^k - k*L1^i*L2^j*L3^(k-1))
+            double deta = 0.0;
+            if (j > 0) deta += j * xi_pow[i] * eta_pow[j - 1] * zeta_pow[k];
+            if (k > 0) deta -= k * xi_pow[i] * eta_pow[j] * zeta_pow[k - 1];
+            deta *= C;
+
             dN.push_back({ dxi, deta });
         }
     }

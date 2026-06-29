@@ -54,6 +54,9 @@
     <ClCompile Include="solver\utility\shape_functions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="solver\utility\shapefunction_store.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="system_store\stress_system_store.h">
@@ -87,6 +90,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="solver\utility\shape_functions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="solver\utility\shapefunction_store.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

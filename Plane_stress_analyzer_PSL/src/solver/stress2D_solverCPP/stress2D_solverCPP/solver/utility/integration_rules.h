@@ -19,11 +19,12 @@ class integration_rules
 
 public:
 
-    // Get 2D Gauss-Legendre integration points for quadrilaterals
-    static std::vector<integration_point> get_quad_2d_gauss_points(int order);
+    // n = points per direction (2..5); builds tensor product
+    static std::vector<integration_point> get_quad_gauss_points(int polynomial_order);
 
-    // Get integration points for triangles (using Gauss quadrature)
-    static std::vector<integration_point> get_tri_gauss_points(int order);
+
+    // degree = required degree of exactness (1,3,5,7 for T3..T15)
+    static std::vector<integration_point> get_tri_dunavant_points(int polynomial_order);
 
 
 private:

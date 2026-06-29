@@ -1,19 +1,12 @@
 #include "quadelement_formulation.h"
 
-quadelement_formulation::quadelement_formulation(int order) : polynomial_order(order)
+quadelement_formulation::quadelement_formulation(int order) : polynomial_order(order),
+			sf_store(QUAD, order)
 {
-	// Number of integration points per direction — one more than the polynomial
-	// order ensures exact integration of the (2p-1)-degree integrand in the
-	// stiffness matrix (B^T C B contains derivatives of order-p shape functions).
- 
-	// Get the integration points
-	this->integ_points = integration_rules::get_quad_2d_gauss_points(order + 1);
-
-	// Set the degree of freedom based on polynomial order Q4, Q9, Q16, Q25
-	// DOF = 2 * (order + 1) ^ 2  (2 DOF per node, (order + 1) ^ 2 nodes per element)
-	int nodes_per_elem = (order + 1) * (order + 1);
-	this->element_dof = 2 * nodes_per_elem;
 	
+	this->nodes_per_element = sf_store.get_nodes_per_element();
+	this->element_dof = 2 * this->nodes_per_element;
+
 }
 
 
@@ -27,27 +20,30 @@ Eigen::MatrixXd quadelement_formulation::compute_quadelement_stiffness_matrix(
 	Eigen::MatrixXd K = Eigen::MatrixXd::Zero(this->element_dof, this->element_dof);
 	Eigen::Matrix3d C = element_material.get_elasticity_matrix();
 
-	// Numerical integration
-	for (const integration_point& ip : integ_points)
+	const auto& sf_datas_all = sf_store.get_data();
+
+
+	for (int idx = 0; idx < static_cast<int>(sf_datas_all.size()); ++idx)
 	{
-		double xi = ip.xi;
-		double eta = ip.eta;
-		double weight = ip.weight;
+		const auto& sf_data = sf_datas_all[idx];
+		const integration_point& ip = sf_data.ip;
 
 		// Compute Jacobian
-		Eigen::Matrix2d J = compute_jacobian(node_coords, xi, eta);
+		Eigen::Matrix2d J = compute_jacobian(node_coords, sf_data.dN);
 		double detJ = J.determinant();
+
+		// // Validate Jacobian
+		// validate_jacobian(detJ, ip.xi, ip.eta);
+
+		// Compute inverse Jacobian
 		Eigen::Matrix2d J_inv = J.inverse();
 
-
 		// Compute B matrix
-		Eigen::MatrixXd B = compute_B_matrix(J_inv, xi, eta);
-
-		// Compute B^T * C * B
-		Eigen::MatrixXd BT_C_B = B.transpose() * C * B;
+		Eigen::MatrixXd B = compute_B_matrix(J_inv, sf_data.dN);
 
 		// Accumulate stiffness
-		K += BT_C_B * detJ * weight * element_material.thickness;
+		Eigen::MatrixXd BT_C_B = B.transpose() * C * B;
+		K += BT_C_B * detJ * ip.weight * element_material.thickness;
 	}
 
 	return K;
@@ -64,17 +60,27 @@ Eigen::MatrixXd quadelement_formulation::compute_quadelement_mass_matrix(
 	// consistent mass matrix M = ∫ ρ t N^T N dΩ
 
 	Eigen::MatrixXd M = Eigen::MatrixXd::Zero(this->element_dof, this->element_dof);
+	double density_thickness = element_material.matdensity * element_material.thickness;
 
-	for (const integration_point& ip : integ_points)
+	const auto& sf_datas_all = sf_store.get_data();
+
+
+	for (int idx = 0; idx < static_cast<int>(sf_datas_all.size()); ++idx)
 	{
-		Eigen::Matrix2d J = compute_jacobian(node_coords, ip.xi, ip.eta);
-		double          detJ = J.determinant();
+		const auto& sf_data = sf_datas_all[idx];
+		const integration_point& ip = sf_data.ip;
 
-		Eigen::MatrixXd N_mat = compute_N_matrix(ip.xi, ip.eta);
+		// Compute Jacobian
+		Eigen::Matrix2d J = compute_jacobian(node_coords, sf_data.dN);
+		double detJ = J.determinant();
 
-		// M += ρ t (N^T N) detJ w
-		M += N_mat.transpose() * N_mat
-			* (element_material.matdensity * element_material.thickness * detJ * ip.weight);
+		// // Validate Jacobian
+		// validate_jacobian(detJ, ip.xi, ip.eta);
+
+		// Accumulate mass matrix
+		const Eigen::MatrixXd& N_mat = sf_data.N_mat;
+		M += N_mat.transpose() * N_mat * (density_thickness * detJ * ip.weight);
+
 	}
 
 	return M;
@@ -83,7 +89,7 @@ Eigen::MatrixXd quadelement_formulation::compute_quadelement_mass_matrix(
 
 
 Eigen::Matrix2d quadelement_formulation::compute_jacobian(const std::vector<Eigen::Vector2d>& node_coords,
-	double xi, double eta)
+	const std::vector<std::pair<double, double>>& dN)
 {
 	// Jacobian of the isoparametric mapping at (xi, eta)
 
@@ -91,11 +97,9 @@ Eigen::Matrix2d quadelement_formulation::compute_jacobian(const std::vector<Eige
 	//               Σ_i [ dNi/dη · xi,  dNi/dη · yi ]
 
 
-	std::vector<std::pair<double, double>> dN = shape_functions::get_quad_shape_derivatives(this->polynomial_order, xi, eta);
-
 	Eigen::Matrix2d J = Eigen::Matrix2d::Zero();
 
-	for (int i = 0; i < static_cast<int>(node_coords.size()); i++)
+	for (int i = 0; i < this->nodes_per_element; i++)
 	{
 		J(0, 0) += dN[i].first * node_coords[i].x(); // ∂x/∂ξ
 		J(0, 1) += dN[i].first * node_coords[i].y(); // ∂y/∂ξ
@@ -105,11 +109,11 @@ Eigen::Matrix2d quadelement_formulation::compute_jacobian(const std::vector<Eige
 
 	return J;
 
-
 }
 
+
 Eigen::MatrixXd quadelement_formulation::compute_B_matrix(const Eigen::Matrix2d& J_inv,
-	double xi, double eta)
+	const std::vector<std::pair<double, double>>& dN) 
 {
 	// Strain-displacement matrix (3 x 2n).
 	// Accepts a pre-computed J_inv to avoid recomputing the Jacobian.
@@ -125,12 +129,9 @@ Eigen::MatrixXd quadelement_formulation::compute_B_matrix(const Eigen::Matrix2d&
 	//   { dN/dy } = J^-T  { dN/dη }
 	//
 
-	std::vector<std::pair<double, double>> dN = shape_functions::get_quad_shape_derivatives(this->polynomial_order, xi, eta);
+	Eigen::MatrixXd B = Eigen::MatrixXd::Zero(3, 2 * this->nodes_per_element);
 
-	int num_nodes = static_cast<int>(dN.size());
-	Eigen::MatrixXd B = Eigen::MatrixXd::Zero(3, 2 * num_nodes);
-
-	for (int i = 0; i < num_nodes; ++i)
+	for (int i = 0; i < this->nodes_per_element; ++i)
 	{
 		// Transform derivatives from natural to physical coordinates
 		double dN_dx = J_inv(0, 0) * dN[i].first + J_inv(0, 1) * dN[i].second;
@@ -149,29 +150,4 @@ Eigen::MatrixXd quadelement_formulation::compute_B_matrix(const Eigen::Matrix2d&
 
 
 
-Eigen::MatrixXd quadelement_formulation::compute_N_matrix(double xi, double eta)
-{
-	// Shape function matrix (2 x 2n) for the mass matrix integrand
 
-	// Shape function matrix  N_mat (2 x 2n)
-	//
-	//          | N1  0   N2  0  ... Nn  0  |
-	// N_mat =  |  0  N1   0  N2 ...  0  Nn |
-	//
-	// Maps the nodal DOF vector  d = [u1 v1 u2 v2 ... un vn]^T
-	// to displacements  {u, v} = N_mat · d
-
-
-	std::vector<double> N = shape_functions::get_quad_shape_functions(this->polynomial_order, xi, eta);
-
-	int num_nodes = static_cast<int>(N.size());
-	Eigen::MatrixXd N_mat = Eigen::MatrixXd::Zero(2, 2 * num_nodes);
-
-	for (int i = 0; i < num_nodes; ++i)
-	{
-		N_mat(0, 2 * i) = N[i];   // u-component
-		N_mat(1, 2 * i + 1) = N[i];   // v-component
-	}
-	return N_mat;
-
-}

@@ -1,5 +1,163 @@
 #include "integration_rules.h"
 
+std::vector<integration_point> integration_rules::get_tri_dunavant_points(int polynomial_order)
+{
+    // Degree of exactness = 2 * polynomial_order - 1
+    // p=1 -> degree=1 (1 point)
+    // p=2 -> degree=3 (4 points) 
+    // p=3 -> degree=5 (7 points)
+    // p=4 -> degree=7 (12 points)
+    // 
+    // degree = required degree of exactness (1,3,5,7 for T3..T15)
+    // n=2,3,4,5 for p=1,2,3,4
+    int degree = (2 * polynomial_order) - 1;
+
+    std::vector<integration_point> points;
+
+    switch (degree)
+    {
+    case 1:
+    {
+        // 1-point rule, exact for degree 1
+        points = {
+            { 1.0 / 3.0, 1.0 / 3.0, 1.0 }
+        };
+        break;
+    }
+    case 3:
+    {
+        // 4-point rule - optimal for degree 3
+        const double w_centroid = -27.0 / 48.0;  //  -27.0 / 96.0 = -0.28125
+        const double w_edge = 25.0 / 48.0;       // 25.0 / 96.0 = 0.260416666666667
+
+        points = {
+            {1.0 / 3.0, 1.0 / 3.0, w_centroid},
+            {0.2, 0.2, w_edge},
+            {0.6, 0.2, w_edge},
+            {0.2, 0.6, w_edge}
+        };
+        break;
+    }
+    case 5:
+    {
+        // 7-point rule, exact for degree 5
+        const double w0 = 0.225000000000000;
+
+        const double a1 = 0.470142064105115;
+        const double b1 = 0.059715871789770;
+        const double w1 = 0.132394358246997;
+
+        const double a2 = 0.101286507323456;
+        const double b2 = 0.797426985353087;
+        const double w2 = 0.125939180544827;
+
+        points = {
+            // Centroid
+            { 1.0 / 3.0, 1.0 / 3.0, w0 },
+            // 3 permutations of (a1, a1, b1)
+            { a1, a1, w1 },
+            { b1, a1, w1 },
+            { a1, b1, w1 },
+            // 3 permutations of (a2, a2, b2)
+            { a2, a2, w2 },
+            { b2, a2, w2 },
+            { a2, b2, w2 }
+        };
+        break;
+    }
+    case 7:
+    {
+        // 13-point rule, exact for degree 7 (Dunavant 1985)
+        const double a1 = 0.260345966079038;
+        const double b1 = 0.479308067841923;
+        const double w1 = 0.175615257433204;
+
+        const double a2 = 0.065130102902216;
+        const double b2 = 0.869739794195568;
+        const double w2 = 0.053347235608839;
+
+        const double a3 = 0.048690315425316;
+        const double b3 = 0.312865496004875;
+        const double c3 = 0.638444188569809;
+        const double w3 = 0.077113596235860;
+
+        const double w0 = -0.149570044467670;  // negative weight at centroid
+
+        points = {
+            // Centroid
+            { 1.0 / 3.0, 1.0 / 3.0, w0 },
+            // 3 permutations of (a1, a1, b1)
+            { a1, a1, w1 },
+            { b1, a1, w1 },
+            { a1, b1, w1 },
+            // 3 permutations of (a2, a2, b2)
+            { a2, a2, w2 },
+            { b2, a2, w2 },
+            { a2, b2, w2 },
+            // 6 permutations of (a3, b3, c3) — scalene triangle, all 3 orderings x2
+            { a3, b3, w3 },
+            { b3, a3, w3 },
+            { a3, c3, w3 },
+            { c3, a3, w3 },
+            { b3, c3, w3 },
+            { c3, b3, w3 }
+        };
+        break;
+    }
+    default:
+        // Fallback to higher order
+        return get_quad_gauss_points(std::min(polynomial_order, 4));
+    }
+
+    return points;
+}
+
+
+//// 6-point rule, exact for degree xx
+//const double a1 = 0.445948490915965;
+//const double b1 = 0.108103018168070;
+//const double w1 = 0.223381589678011;
+//
+//const double a2 = 0.091576213509771;
+//const double b2 = 0.816847572980459;
+//const double w2 = 0.109951743655322;
+//
+//points = {
+//    // 3 permutations of (a1, a1, b1) — symmetric about centroid
+//    { a1, a1, w1 },
+//    { b1, a1, w1 },
+//    { a1, b1, w1 },
+//    // 1 permutation of (a2, a2, b2)
+//    { a2, a2, w2 },
+//    { b2, a2, w2 },
+//    { a2, b2, w2 }
+//};
+
+
+
+std::vector<integration_point> integration_rules::get_quad_gauss_points(int polynomial_order)
+{
+    // n = points per direction (2..5); builds tensor product
+     int n = polynomial_order + 1;
+
+    std::vector<std::pair<double, double>> gauss_1d = get_1d_gauss_points(n);
+
+    std::vector<integration_point> points;
+
+    for (const auto& [eta, wj] : gauss_1d)
+    {
+        for (const auto& [xi, wi] : gauss_1d)
+        {
+            points.push_back({ xi, eta, wi * wj });
+        }
+    }
+
+    return points;
+
+}
+
+
+
 // Get Gauss-Legendre integration points for 1D
 std::vector<std::pair<double, double>> integration_rules::get_1d_gauss_points(int order)
 {
@@ -41,104 +199,10 @@ std::vector<std::pair<double, double>> integration_rules::get_1d_gauss_points(in
 
 }
 
-// Get 2D Gauss-Legendre integration points for quadrilaterals
-std::vector<integration_point> integration_rules::get_quad_2d_gauss_points(int order)
-{
-    std::vector<integration_point> points;
-    auto gauss_1d = get_1d_gauss_points(order);
 
 
-    for (const auto& [eta, wj] : gauss_1d)
-    {
-        for (const auto& [xi, wi] : gauss_1d)
-        {
-            points.push_back({ xi, eta, wi * wj });
-        }
-    }
-
-    return points;
-
-}
-
-// Get integration points for triangles (using Gauss quadrature)
-std::vector<integration_point> integration_rules::get_tri_gauss_points(int order)
-{
-    std::vector<integration_point> points;
 
 
-    // 6-point rule
-    // Orbit 1 — closer to the vertices
-    constexpr double a1 = 0.0915762135097700;   // L1=L2=a1, L3=1-2*a1
-    constexpr double w1 = 0.0549758718276610;
-    // Orbit 2 — closer to the centroid
-    constexpr double a2 = 0.4459484909159650;   // L1=L2=a2, L3=1-2*a2
-    constexpr double w2 = 0.1116907948390050;
-
-
-    // 7-point rule
-    // Centroid
-    constexpr double w0 = 0.225 / 2.0;
-
-    // Orbit a — closer to the vertices (small a)
-    constexpr double oa = 0.1012865073235;      // L1=L2=oa, L3=1-2*oa
-    constexpr double wa = 0.1259391805448 / 2.0;
-
-    // Orbit b — between centroid and edge midpoints
-    constexpr double ob = 0.4701420641051;      // L1=L2=ob, L3=1-2*ob
-    constexpr double wb = 0.1323941527885 / 2.0;
-
-
-    switch (order)
-    {
-    case 1:  // 1-point rule (linear)
-        points = { {1.0 / 3.0, 1.0 / 3.0, 0.5} };
-        break;
-    case 2:  // 3-point rule (quadratic)
-        points = { {0.5, 0.0, 1.0 / 6.0},
-                  {0.5, 0.5, 1.0 / 6.0},
-                  {0.0, 0.5, 1.0 / 6.0} };
-        break;
-    case 3:  // 6-point rule — exact for degree 4 polynomials (Dunavant rule 4)
-        // Two 3-point orbits with different radii and weights.
-        // sum(w) = 3*(w1 + w2) = 3*(0.054975871827661 + 0.111690794839005) = 1/2
-        points = {
-            // Orbit 1: permutations of (a1, a1, 1-2*a1)
-            {a1,          a1,          w1},
-            {1.0 - 2.0 * a1,  a1,          w1},
-            {a1,          1.0 - 2.0 * a1,  w1},
-            // Orbit 2: permutations of (a2, a2, 1-2*a2)
-            {a2,          a2,          w2},
-            {1.0 - 2.0 * a2,  a2,          w2},
-            {a2,          1.0 - 2.0 * a2,  w2}
-        };
-        break;
-    case 4:  // 7-point rule — exact for degree 5 polynomials (Dunavant rule 5)
-        // One centroid point + two 3-point orbits.
-        // sum(w) = w0 + 3*(wa + wb)
-        //        = 0.225/2 + 3*(0.125939180544827/2 + 0.132394152788506/2) = 1/2
-
-        points = {
-            // Centroid
-            {1.0 / 3.0,       1.0 / 3.0,       w0},
-            // Orbit a
-            {oa,             oa,             wa},
-            {1.0 - 2.0 * oa,     oa,             wa},
-            {oa,             1.0 - 2.0 * oa,     wa},
-            // Orbit b
-            {ob,             ob,             wb},
-            {1.0 - 2.0 * ob,     ob,             wb},
-            {ob,             1.0 - 2.0 * ob,     wb}
-        };
-        break;
-    default:
-        // Use lower order
-        return get_tri_gauss_points(std::min(order, 4));
-    }
-
-    return points;
-
-
-}
 
 
 
