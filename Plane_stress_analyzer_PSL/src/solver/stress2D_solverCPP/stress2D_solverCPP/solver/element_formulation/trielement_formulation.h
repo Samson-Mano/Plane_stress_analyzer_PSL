@@ -23,6 +23,9 @@ public:
 	Eigen::MatrixXd compute_trielement_mass_matrix(const std::vector<Eigen::Vector2d>& node_coords,
 		const material_store& element_material);
 
+
+	const int& get_element_dof() const { return element_dof; }
+
 private:
 	int polynomial_order = 0;
 	int nodes_per_element = 0;

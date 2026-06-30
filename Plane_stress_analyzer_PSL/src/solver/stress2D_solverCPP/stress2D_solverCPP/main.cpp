@@ -46,7 +46,7 @@ int main()
 	int formulation = 0;
 	bool isConstraintExtend = false;
 	bool isLoadExtend = false;
-
+	bool isSelfWeight = true;
 
 	stopwatch.start();
 
@@ -287,8 +287,10 @@ int main()
 	// Initialize the solver
 	bool isSolverInitialized = false;
 
-	stress2d_solver solver;
-	isSolverInitialized = solver.initialize_solver(&stress_system, polynomial_order, solvertype, &stopwatch, m_callback);
+	stress2d_solver solver(solvertype, polynomial_order);
+
+	isSolverInitialized = solver.initialize_solver(&stress_system,
+		isSelfWeight, 0.0, -9806.65, &stopwatch, m_callback);
 
 	if (isSolverInitialized == true)
 	{

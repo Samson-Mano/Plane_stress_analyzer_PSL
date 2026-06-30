@@ -19,7 +19,7 @@
 extern "C" __declspec(dllexport) void solve_2DstressanalysisCPP(
 	const char* input_file,
 	const char* output_file,
-	const int* solver_settings,
+	const double* solver_settings,
 	int solver_settings_count,
 	bool* isAnalysisSuccess,
 	void(*callback)(const char*))
@@ -42,16 +42,25 @@ extern "C" __declspec(dllexport) void solve_2DstressanalysisCPP(
 	bool isConstraintExtend = false;
 	bool isLoadExtend = false;
 	bool isSavehRefinedModel = false;
+	bool isSelfWeight = false;
+	double accl_x = 0.0;
+	double accl_y = 0.0;
 
-	if (solver_settings && solver_settings_count == 7)
+	if (solver_settings && solver_settings_count == 10)
 	{
-		solvertype = solver_settings[0];
-		h_refinement = solver_settings[1];
-		polynomial_order = solver_settings[2] + 1;
-		formulation = solver_settings[3];
-		isConstraintExtend = solver_settings[4] == 0 ? false : true;
-		isLoadExtend = solver_settings[5] == 0 ? false : true;
-		isSavehRefinedModel = solver_settings[6] == 0 ? false : true;
+		solvertype = static_cast<int>(solver_settings[0]);
+		h_refinement = static_cast<int>(solver_settings[1]);
+		polynomial_order = static_cast<int>(solver_settings[2]) + 1;
+		formulation = static_cast<int>(solver_settings[3]);
+		isConstraintExtend = static_cast<int>(solver_settings[4]) == 0 ? false : true;
+		isLoadExtend = static_cast<int>(solver_settings[5]) == 0 ? false : true;
+		isSavehRefinedModel = static_cast<int>(solver_settings[6]) == 0 ? false : true;
+		isSelfWeight = static_cast<int>(solver_settings[7]) == 0 ? false : true;
+		accl_x = solver_settings[8];
+		accl_y = solver_settings[9];
+
+		if (accl_x == 0 && accl_y == 0)
+			isSelfWeight = false;
 
 		std::string s_type = "";
 		if (solvertype == 0)
@@ -360,8 +369,11 @@ extern "C" __declspec(dllexport) void solve_2DstressanalysisCPP(
 	// Initialize the solver
 	bool isSolverInitialized = false;
 
-	stress2d_solver solver;
-	isSolverInitialized = solver.initialize_solver(&stress_system, polynomial_order, solvertype, &stopwatch, callback);
+	stress2d_solver solver(solvertype, polynomial_order);
+
+	isSolverInitialized = solver.initialize_solver(&stress_system,
+		isSelfWeight, accl_x, accl_y, &stopwatch, callback);
+
 
 	if (isSolverInitialized == true)
 	{

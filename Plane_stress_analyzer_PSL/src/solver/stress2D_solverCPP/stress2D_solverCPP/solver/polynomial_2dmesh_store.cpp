@@ -214,6 +214,34 @@ void polynomial_2dmesh_store::create_polynomial_tri_elements()
 		// Create internal nodes for triangle (if polynomial_order >= 3)
 		p_tri.internal_nodes = create_tri_internal_nodes(nd1, nd2, nd3);
 
+		// create the ordered nodes
+		p_tri.ordered_node_ids.clear();
+
+		// Add corners (CCW)
+		p_tri.ordered_node_ids.insert(p_tri.ordered_node_ids.end(), p_tri.corner_nodes.begin(), p_tri.corner_nodes.end());
+
+		// Add edge nodes (CCW)
+		// Bottom edge
+		p_tri.ordered_node_ids.insert(p_tri.ordered_node_ids.end(),
+			p_tri.edge_node_ids[0].begin(),
+			p_tri.edge_node_ids[0].end());
+
+		// Right edge
+		p_tri.ordered_node_ids.insert(p_tri.ordered_node_ids.end(),
+			p_tri.edge_node_ids[1].begin(),
+			p_tri.edge_node_ids[1].end());
+
+		// Left edge
+		p_tri.ordered_node_ids.insert(p_tri.ordered_node_ids.end(),
+			p_tri.edge_node_ids[2].begin(),
+			p_tri.edge_node_ids[2].end());
+
+		// Add internal nodes
+		p_tri.ordered_node_ids.insert(p_tri.ordered_node_ids.end(),
+			p_tri.internal_nodes.begin(),
+			p_tri.internal_nodes.end());
+
+
 		this->polynomial_trielement_list.insert({ tri.first, p_tri });
 	}
 
@@ -259,6 +287,39 @@ void polynomial_2dmesh_store::create_polynomial_quad_elements()
 
 		// Create internal nodes
 		p_quad.internal_nodes = create_quad_internal_nodes(nd1, nd2, nd3, nd4);
+
+
+		// create the ordered nodes
+		p_quad.ordered_node_ids.clear();
+
+		// Add corners (CCW)
+		p_quad.ordered_node_ids.insert(p_quad.ordered_node_ids.end(), p_quad.corner_nodes.begin(), p_quad.corner_nodes.end());
+
+		// Add edge nodes (CCW)
+		// Bottom edge
+		p_quad.ordered_node_ids.insert(p_quad.ordered_node_ids.end(),
+			p_quad.edge_node_ids[0].begin(),
+			p_quad.edge_node_ids[0].end());
+
+		// Right edge
+		p_quad.ordered_node_ids.insert(p_quad.ordered_node_ids.end(),
+			p_quad.edge_node_ids[1].begin(),
+			p_quad.edge_node_ids[1].end());
+
+		// Top edge
+		p_quad.ordered_node_ids.insert(p_quad.ordered_node_ids.end(),
+			p_quad.edge_node_ids[2].begin(),
+			p_quad.edge_node_ids[2].end());
+
+		// Left edge
+		p_quad.ordered_node_ids.insert(p_quad.ordered_node_ids.end(),
+			p_quad.edge_node_ids[3].begin(),
+			p_quad.edge_node_ids[3].end());
+
+		// Add internal nodes
+		p_quad.ordered_node_ids.insert(p_quad.ordered_node_ids.end(),
+			p_quad.internal_nodes.begin(),
+			p_quad.internal_nodes.end());
 
 		this->polynomial_quadelement_list.insert({ quad.first, p_quad });
 	}

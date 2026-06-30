@@ -72,6 +72,8 @@ struct polynomial_trielement_store
 
 	std::vector<int> internal_nodes; // Internal nodes of the triangle element (for higher-order spectral elements)
 
+	std::vector<int> ordered_node_ids; // Ordered node ids of the triangle element
+
 	int materialid = 0;
 
 };
@@ -87,6 +89,8 @@ struct polynomial_quadelement_store
 	std::vector<std::vector<int>> edge_node_ids{ 4 };
 
 	std::vector<int> internal_nodes; // Internal nodes of the quadrialteral element (for higher-order spectral elements)
+	
+	std::vector<int> ordered_node_ids; // Ordered node ids of the quadrilateral element
 
 	int materialid = 0;
 
@@ -117,7 +121,8 @@ public:
 
 	void generate_2dpolynomial_mesh(stress_system_store* stress_system, int polynomial_order);
 
-	
+	// Access material data
+	const std::unordered_map<int, material_store>& get_material_data() const { return stress_system.material_list; }
 
 private:
 	stress_system_store stress_system;
