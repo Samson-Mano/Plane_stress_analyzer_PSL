@@ -28,7 +28,13 @@ struct renderer_node
 {
 	int n_id;
 	double x, y;
-	double r1, r2, r3, r4; // Scalar Result data
+	double x_displ, y_displ; // Displacement data
+
+	// Stress result data
+	double sigma_x, sigma_y, tau_xy; // Stress data
+	double principal_stress_1, principal_stress_2; // Principal stress data
+	double von_mises_stress; // Von Mises stress data
+	double max_shear_stress; // Maximum shear stress data
 };
 
 
@@ -121,8 +127,20 @@ public:
 
 	void generate_2dpolynomial_mesh(stress_system_store* stress_system, int polynomial_order);
 
+	// Access constraint data
+	const std::unordered_map<int, constraint_store>& get_constraint_data() const {
+		return stress_system.constraint_list;
+	}
+
+	// Access load data
+	const std::unordered_map<int, load_store>& get_load_data() const {
+		return stress_system.load_list;
+	}
+
 	// Access material data
-	const std::unordered_map<int, material_store>& get_material_data() const { return stress_system.material_list; }
+	const std::unordered_map<int, material_store>& get_material_data() const { 
+		return stress_system.material_list; 
+	}
 
 private:
 	stress_system_store stress_system;

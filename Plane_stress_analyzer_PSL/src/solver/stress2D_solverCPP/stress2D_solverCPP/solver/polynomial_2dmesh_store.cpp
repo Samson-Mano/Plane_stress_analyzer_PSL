@@ -508,11 +508,18 @@ void polynomial_2dmesh_store::create_renderer_mesh()
 		rd_node.x = nd.second.x_coord;
 		rd_node.y = nd.second.y_coord;
 
+		// Set the displacement data
+		rd_node.x_displ = 0.0;
+		rd_node.y_displ = 0.0;
+
 		// Null Result data
-		rd_node.r1 = 0.0;
-		rd_node.r2 = 0.0;
-		rd_node.r3 = 0.0;
-		rd_node.r4 = 0.0;
+		rd_node.sigma_x = 0.0;
+		rd_node.sigma_y = 0.0;
+		rd_node.tau_xy = 0.0;
+		rd_node.principal_stress_1 = 0.0;
+		rd_node.principal_stress_2 = 0.0;
+		rd_node.von_mises_stress = 0.0;
+		rd_node.max_shear_stress = 0.0;
 
 		this->renderer_node_points.insert({ nd.second.node_id, rd_node });
 	}

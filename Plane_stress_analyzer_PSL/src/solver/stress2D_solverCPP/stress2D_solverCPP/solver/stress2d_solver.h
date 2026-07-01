@@ -34,6 +34,10 @@ typedef Eigen::SparseMatrix<double> SparseMatrix;
 #include "../solver/element_formulation/trielement_formulation.h"
 #include "../solver/element_formulation/quadelement_formulation.h"
 
+#include <fstream>
+
+#include <iomanip> // to get std::setprecision()
+
 
 class stress2d_solver
 {
@@ -41,13 +45,16 @@ public:
 	stress2d_solver(int solver_type, int polynomial_order);
 	~stress2d_solver() = default;
 
-	bool initialize_solver(stress_system_store* stress_system, bool isSelfWeight, double accl_x, double accl_y,
+	bool initialize_solver(stress_system_store* stress_system, const char* output_file_char, 
+		bool isSelfWeight, double accl_x, double accl_y,
 		stopwatch_events* stopwatch, void(*callback)(const char*));
 
-	void perform_solve();
+	bool perform_solve();
 
 
 private:
+	const double M_PI = 3.14159265358979323846;
+
 	int polynomial_order = 0;
 	int solver_type = 0;
 	bool isSelfWeight = false;
@@ -58,6 +65,7 @@ private:
 	int trielement_dof = 0;
 	int quadelement_dof = 0;
 
+	std::string output_file;
 
 	polynomial_2dmesh_store polynomial_2dmesh;
 	stopwatch_events* m_stopwatch;
@@ -70,13 +78,44 @@ private:
 
 	int numDOF = 0;
 
+	Eigen::SparseMatrix<double> global_supportInclination_matrix; // Global Support Inclination Matrix [S]
+
 	Eigen::SparseMatrix<double> global_stiffness_matrix; // Global Stiffness Matrix [K]
 	Eigen::SparseMatrix<double> global_mass_matrix; // Global Mass Matrix [M]
 
 
+	Eigen::VectorXd global_load_vector; // Global Load Vector [F]
+	Eigen::VectorXd global_BC_flag_vector; // Global Boundary Condition Flag Vector [BC]
+	Eigen::VectorXd global_displacement_vector; // Global Displacement Vector [U]
+
+	Eigen::VectorXd global_reaction_vector; // Global Reaction Vector [R]
+
+
+	void solve_BCs_elimination_method();
+
+	void solve_BCs_lagrange_method();
+
+
+
+	void create_global_supportInclination_matrix();
+
 	void create_global_stiffness_matrix();
 
 	void create_global_mass_matrix();
+
+	void create_global_load_vector();
+
+	void create_global_load_vector_self_weight();
+
+	void create_global_BC_flag_vector();
+
+
+	void assemble_element_matrix(const std::vector<int>& node_ids,
+		const Eigen::MatrixXd& element_matrix, std::vector<Eigen::Triplet<double>>& triplets);
+
+	bool store_results();
+
+	bool check_valid_results(const Eigen::VectorXd& results, const std::string& result_name);
 
 	void report(const char* msg);
 

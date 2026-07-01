@@ -371,15 +371,22 @@ extern "C" __declspec(dllexport) void solve_2DstressanalysisCPP(
 
 	stress2d_solver solver(solvertype, polynomial_order);
 
-	isSolverInitialized = solver.initialize_solver(&stress_system,
+	isSolverInitialized = solver.initialize_solver(&stress_system, output_file,
 		isSelfWeight, accl_x, accl_y, &stopwatch, callback);
 
 
 	if (isSolverInitialized == true)
 	{
-		solver.perform_solve();
+		bool isSolveSuccessful = solver.perform_solve();
 
-		// (*isAnalysisSuccess) = true;
+		if (isSolveSuccessful == true)
+		{
+			(*isAnalysisSuccess) = true;
+		}
+		else
+		{
+			(*isAnalysisSuccess) = false;
+		}
 	}
 
 

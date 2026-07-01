@@ -289,14 +289,25 @@ int main()
 
 	stress2d_solver solver(solvertype, polynomial_order);
 
-	isSolverInitialized = solver.initialize_solver(&stress_system,
+	const char* output_file_char = "test_model_output.bin";
+
+	isSolverInitialized = solver.initialize_solver(&stress_system, output_file_char,
 		isSelfWeight, 0.0, -9806.65, &stopwatch, m_callback);
+
+
 
 	if (isSolverInitialized == true)
 	{
-		solver.perform_solve();
+		bool isSolveSuccessful = solver.perform_solve();
 
-		// (*isAnalysisSuccess) = true;
+		if (isSolveSuccessful == true)
+		{
+			
+		}
+		else
+		{
+		
+		}
 	}
 
 		
