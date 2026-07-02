@@ -390,6 +390,8 @@ extern "C" __declspec(dllexport) void solve_2DstressanalysisCPP(
 	}
 
 
+	(*isAnalysisSuccess) = false;
+
 	//_________________________________________________________
 	// Close the files
 	infile.close();

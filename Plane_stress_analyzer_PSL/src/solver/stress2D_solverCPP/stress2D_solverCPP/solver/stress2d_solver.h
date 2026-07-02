@@ -117,6 +117,9 @@ private:
 
 	bool check_valid_results(const Eigen::VectorXd& results, const std::string& result_name);
 
+
+	void store_k_m_matrices_text_debug();
+
 	void report(const char* msg);
 
 

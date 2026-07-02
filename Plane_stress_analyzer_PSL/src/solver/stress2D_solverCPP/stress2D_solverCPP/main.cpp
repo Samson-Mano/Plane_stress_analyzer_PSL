@@ -46,7 +46,7 @@ int main()
 	int formulation = 0;
 	bool isConstraintExtend = false;
 	bool isLoadExtend = false;
-	bool isSelfWeight = true;
+	bool isSelfWeight = false;
 
 	stopwatch.start();
 

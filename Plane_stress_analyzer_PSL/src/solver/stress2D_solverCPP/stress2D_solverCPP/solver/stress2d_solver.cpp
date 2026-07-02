@@ -108,6 +108,10 @@ bool stress2d_solver::perform_solve()
 
 	report("Global boundary condition flag vector created");
 
+
+	store_k_m_matrices_text_debug();
+
+
 	// Perform the solve based on the selected method
 	if (solver_type == 0)
 	{
@@ -520,7 +524,7 @@ void  stress2d_solver::solve_BCs_elimination_method()
 	// Map free DOF to Local indices
 	std::unordered_map<int, int> free_map;
 
-	for (int i = 0; i < free_dofs.size(); ++i)
+	for (int i = 0; i < static_cast<int>(free_dofs.size()); ++i)
 	{
 		free_map[free_dofs[i]] = i;
 	}
@@ -535,9 +539,8 @@ void  stress2d_solver::solve_BCs_elimination_method()
 			int i = it.row();
 			int j = it.col();
 
-			// keep only free-free block
-			if (global_BC_flag_vector(i) == 0 &&
-				global_BC_flag_vector(j) == 0)
+			// keep only free-free block 1 = Fixed, 0 = Free
+			if (global_BC_flag_vector(i) == 0 &&  global_BC_flag_vector(j) == 0)
 			{
 
 				// Get the local indices of free nodes
@@ -552,13 +555,13 @@ void  stress2d_solver::solve_BCs_elimination_method()
 
 
 	// Main stiffness matrix for free DOFs
-	Eigen::SparseMatrix<double> K_ff(free_dofs.size(), free_dofs.size());
+	Eigen::SparseMatrix<double> K_ff(static_cast<int>(free_dofs.size()), static_cast<int>(free_dofs.size()));
 	K_ff.setFromTriplets(triplets_ff.begin(), triplets_ff.end());
 
 
-	Eigen::VectorXd F_f(free_dofs.size()); // Load vector for free DOFs
+	Eigen::VectorXd F_f(static_cast<int>(free_dofs.size())); // Load vector for free DOFs
 
-	for (int i = 0; i < free_dofs.size(); ++i)
+	for (int i = 0; i < static_cast<int>(free_dofs.size()); ++i)
 	{
 		F_f(i) = global_load_vector(free_dofs[i]);
 	}
@@ -588,6 +591,8 @@ void  stress2d_solver::solve_BCs_elimination_method()
 	}
 	//
 }
+
+
 
 
 void stress2d_solver::solve_BCs_lagrange_method()
@@ -658,7 +663,7 @@ void stress2d_solver::solve_BCs_lagrange_method()
 	this->global_displacement_vector.setZero();
 
 	// Free DOF assign the result
-	for (int i = 0; i < free_dofs.size(); ++i)
+	for (int i = 0; i < static_cast<int>(free_dofs.size()); ++i)
 	{
 		this->global_displacement_vector(free_dofs[i]) = u_Aug(free_dofs[i]);
 	}
@@ -785,6 +790,211 @@ bool stress2d_solver::store_results()
 
 	return true;
 	//
+}
+
+
+
+void stress2d_solver::store_k_m_matrices_text_debug()
+{
+	std::string text_file_name = "debug_matrices.txt";
+	std::ofstream text_file(text_file_name);
+
+	if (!text_file.is_open())
+	{
+		std::string error_msg = "Failed to open output file: " + text_file_name;
+		report(error_msg.c_str());
+		throw std::runtime_error(error_msg);
+	}
+
+	// Print the global K and M matrices
+	// Only print 200 x 200, inform if the matrix size exceed 200 x 200
+
+	text_file << "# Plane Stress Analysis Solver - Ke & Me matrix\n";
+	text_file << "# Format: Debug Text Output\n";
+	text_file << "# Generated: " << __DATE__ << " " << __TIME__ << "\n\n";
+
+	int max_print_size = 200;
+	int matrix_rows = global_stiffness_matrix.rows();
+	int matrix_cols = global_stiffness_matrix.cols();
+
+	// Write Ke Matrix
+	text_file << "=== Stiffness Matrix ===\n";
+	text_file << "Size: " << matrix_rows << " x " << matrix_cols << "\n";
+
+	if (matrix_rows > max_print_size || matrix_cols > max_print_size)
+	{
+		text_file << "WARNING: Matrix size exceeds " << max_print_size
+			<< " x " << max_print_size << ". Printing only the first "
+			<< max_print_size << " x " << max_print_size << " block.\n\n";
+
+		// Print only the top-left corner
+		for (int i = 0; i < std::min(max_print_size, matrix_rows); i++)
+		{
+			for (int j = 0; j < std::min(max_print_size, matrix_cols); j++)
+			{
+				text_file << std::setw(15) << std::setprecision(6) << global_stiffness_matrix.coeff(i, j) << " ";
+			}
+			text_file << "\n";
+		}
+	}
+	else
+	{
+		// Print full matrix
+		for (int i = 0; i < matrix_rows; i++)
+		{
+			for (int j = 0; j < matrix_cols; j++)
+			{
+				text_file << std::setw(15) << std::setprecision(6) << global_stiffness_matrix.coeff(i, j) << " ";
+			}
+			text_file << "\n";
+		}
+	}
+	text_file << "\n";
+
+	if (isSelfWeight == true)
+	{
+		// Write Me Matrix
+		text_file << "=== Mass Matrix ===\n";
+		text_file << "Size: " << matrix_rows << " x " << matrix_cols << "\n";
+
+		if (matrix_rows > max_print_size || matrix_cols > max_print_size)
+		{
+			text_file << "WARNING: Matrix size exceeds " << max_print_size
+				<< " x " << max_print_size << ". Printing only the first "
+				<< max_print_size << " x " << max_print_size << " block.\n\n";
+
+			// Print only the top-left corner
+			for (int i = 0; i < std::min(max_print_size, matrix_rows); i++)
+			{
+				for (int j = 0; j < std::min(max_print_size, matrix_cols); j++)
+				{
+					text_file << std::setw(15) << std::setprecision(6) << global_mass_matrix.coeff(i, j) << " ";
+				}
+				text_file << "\n";
+			}
+		}
+		else
+		{
+			// Print full matrix
+			for (int i = 0; i < matrix_rows; i++)
+			{
+				for (int j = 0; j < matrix_cols; j++)
+				{
+					text_file << std::setw(15) << std::setprecision(6) << global_mass_matrix.coeff(i, j) << " ";
+				}
+				text_file << "\n";
+			}
+		}
+		text_file << "\n";
+	}
+	else
+	{
+		text_file << "Mass matrix not generated (self-weight not applied)\n\n";
+	}
+
+	
+
+	// Optional: Print matrix statistics
+	text_file << "=== Matrix Statistics ===\n";
+
+	// K matrix statistics
+	double k_min = 0, k_max = 0, k_sum = 0;
+	int k_nonzero = 0;
+	for (int k = 0; k < global_stiffness_matrix.outerSize(); ++k)
+	{
+		for (Eigen::SparseMatrix<double>::InnerIterator it(global_stiffness_matrix, k); it; ++it)
+		{
+			double val = it.value();
+			if (k_nonzero == 0) {
+				k_min = val;
+				k_max = val;
+			}
+			k_min = std::min(k_min, val);
+			k_max = std::max(k_max, val);
+			k_sum += std::abs(val);
+			k_nonzero++;
+		}
+	}
+
+	text_file << "Ke (Stiffness) Matrix:\n";
+	text_file << "  Non-zero entries: " << k_nonzero << "\n";
+	text_file << "  Density: " << (100.0 * k_nonzero / (matrix_rows * matrix_cols)) << "%\n";
+	text_file << "  Min value: " << k_min << "\n";
+	text_file << "  Max value: " << k_max << "\n";
+	text_file << "  Mean absolute value: " << (k_nonzero > 0 ? k_sum / k_nonzero : 0) << "\n\n";
+
+	
+
+	if (isSelfWeight == true)
+	{
+		// M matrix statistics
+		double m_min = 0, m_max = 0, m_sum = 0;
+		int m_nonzero = 0;
+		for (int k = 0; k < global_mass_matrix.outerSize(); ++k)
+		{
+			for (Eigen::SparseMatrix<double>::InnerIterator it(global_mass_matrix, k); it; ++it)
+			{
+				double val = it.value();
+				if (m_nonzero == 0) {
+					m_min = val;
+					m_max = val;
+				}
+				m_min = std::min(m_min, val);
+				m_max = std::max(m_max, val);
+				m_sum += std::abs(val);
+				m_nonzero++;
+			}
+		}
+
+		text_file << "Me (Mass) Matrix:\n";
+		text_file << "  Non-zero entries: " << m_nonzero << "\n";
+		text_file << "  Density: " << (100.0 * m_nonzero / (matrix_rows * matrix_cols)) << "%\n";
+		text_file << "  Min value: " << m_min << "\n";
+		text_file << "  Max value: " << m_max << "\n";
+		text_file << "  Mean absolute value: " << (m_nonzero > 0 ? m_sum / m_nonzero : 0) << "\n\n";
+
+		bool m_symmetric = global_mass_matrix.isApprox(global_mass_matrix.transpose());
+		text_file << "Me is symmetric: " << (m_symmetric ? "YES" : "NO") << "\n";
+	}
+
+	// Check for symmetry
+	bool k_symmetric = global_stiffness_matrix.isApprox(global_stiffness_matrix.transpose());
+	
+
+	// text_file << "=== Matrix Properties ===\n";
+	text_file << "Ke is symmetric: " << (k_symmetric ? "YES" : "NO") << "\n";
+	
+
+
+	// Print the global load vector
+	text_file << "\n=== Load Vector ===\n";
+
+	matrix_rows = global_load_vector.rows();
+
+	for (int i = 0; i < std::min(max_print_size, matrix_rows); i++)
+	{
+		text_file << std::setw(15) << std::setprecision(6) << global_load_vector(i) << "\n";
+	}
+
+
+	// Print the global BC flag vector
+	text_file << "\n=== BC Flag Vector ===\n";
+
+	matrix_rows = global_BC_flag_vector.rows();
+
+	for (int i = 0; i < std::min(max_print_size, matrix_rows); i++)
+	{
+		text_file << std::setw(15) << std::setprecision(6) << global_BC_flag_vector(i) << "\n";
+	}
+
+
+
+
+	text_file.close();
+
+	std::string msg = "Debug matrices written to: " + text_file_name;
+	report(msg.c_str());
+
 }
 
 

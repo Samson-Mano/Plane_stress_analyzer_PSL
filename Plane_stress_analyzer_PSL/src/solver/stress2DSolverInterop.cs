@@ -25,7 +25,7 @@ namespace src.solver
         public static extern void solve_2DstressanalysisCPP(
             [MarshalAs(UnmanagedType.LPStr)] string inputPath,
             [MarshalAs(UnmanagedType.LPStr)] string outputPath,
-            int[] solver_settings,
+            double[] solver_settings,
             int solver_settings_count,
             ref bool isAnalysisSuccess,
             CallbackDelegate callback
@@ -187,7 +187,7 @@ namespace src.solver
         public static (bool IsValid, string ErrorMessage) ValidatePrerequisites(
             string inputPath,
             string outputPath,
-            int[] solver_settings,
+            double[] solver_settings,
             CallbackDelegate callback)
         {
             // Check DLL is initialized
@@ -246,7 +246,7 @@ namespace src.solver
         public static (bool Success, string ErrorMessage) SolveSafely(
             string inputPath,
             string outputPath,
-            int[] solver_settings,
+            double[] solver_settings,
             CallbackDelegate callback)
         {
             // Validate prerequisites

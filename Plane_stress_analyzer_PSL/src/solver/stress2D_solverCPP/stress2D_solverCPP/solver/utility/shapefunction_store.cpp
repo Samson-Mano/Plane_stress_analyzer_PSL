@@ -30,7 +30,7 @@ void shapefunction_store::build_tri_data(int order)
 
 	// Get integration points for triangle
 	std::vector<integration_point> integ_points =
-		integration_rules::get_tri_gauss_points(order + 1);
+		integration_rules::get_tri_dunavant_points(order);
 
 	// Pre-compute shape functions and derivatives for all integration points
 	NdN_data.reserve(integ_points.size());
@@ -62,7 +62,7 @@ void shapefunction_store::build_quad_data(int order)
 
 	// Get integration points for quadrilateral
 	std::vector<integration_point> integ_points =
-		integration_rules::get_quad_2d_gauss_points(order + 1);
+		integration_rules::get_quad_gauss_points(order);
 
 	// Pre-compute shape functions and derivatives for all integration points
 	NdN_data.reserve(integ_points.size());

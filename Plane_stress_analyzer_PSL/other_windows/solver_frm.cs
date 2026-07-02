@@ -43,6 +43,9 @@ namespace Plane_stress_analyzer_PSL.other_windows
             checkBox_extendloads.Checked = true;
             checkBox_saveHrefinedmodel.Checked = true;
 
+            checkBox_selfweight.Checked = false;
+            self_weight_control();
+
         }
 
         private async void button_solve_Click(object sender, EventArgs e)
@@ -216,14 +219,28 @@ namespace Plane_stress_analyzer_PSL.other_windows
 
         
                 // Write input file
-                int[] solver_settings = new int[7];
+                double[] solver_settings = new double[10];
                 solver_settings[0] = comboBox_solvertype.SelectedIndex; // 0 = Elimination method, 1 = Lagrange method
                 solver_settings[1] = comboBox_HRefinement.SelectedIndex; // 0, 1, 2
                 solver_settings[2] = comboBox_polynomialrefinement.SelectedIndex; // 0, 1, 2, 3
                 solver_settings[3] = comboBox_formulation.SelectedIndex; // 0, 1
-                solver_settings[4] = checkBox_extendconstraints.Checked == false ? 0 : 1;
-                solver_settings[5] = checkBox_extendloads.Checked == false ? 0 : 1;
-                solver_settings[6] = checkBox_saveHrefinedmodel.Checked == false ? 0 : 1;
+                solver_settings[4] = checkBox_extendconstraints.Checked == false ? 0.0 : 1.0;
+                solver_settings[5] = checkBox_extendloads.Checked == false ? 0.0 : 1.0;
+                solver_settings[6] = checkBox_saveHrefinedmodel.Checked == false ? 0.0 : 1.0;
+                solver_settings[7] = checkBox_selfweight.Checked == false ? 0.0 : 1.0;
+                
+                // Validate the values
+                if( double.TryParse(textBox_xaccl.Text, out double xaccl) && double.TryParse(textBox_yaccl.Text, out double yaccl))
+                {
+                    solver_settings[8] = xaccl;
+                    solver_settings[9] = yaccl;
+                }
+                else
+                {
+                    AppendStatus("Invalid self-weight acceleration values. Please enter valid numbers.\n");
+                    return;
+                }
+
 
                 // Step 5: Safely call the solver
                 var result = await Task.Run(() => stress2DSolverInterop.SolveSafely(
@@ -584,6 +601,22 @@ namespace Plane_stress_analyzer_PSL.other_windows
             richTextBox_AnalysisUpdate.ScrollToCaret();
         }
 
+        private void checkBox_selfweight_CheckedChanged(object sender, EventArgs e) => self_weight_control();
+        
+
+        private void self_weight_control()
+        {
+            if(checkBox_selfweight.Checked == true)
+            {
+                textBox_xaccl.Enabled = true;
+                textBox_yaccl.Enabled = true;
+            }
+            else
+            {
+                textBox_xaccl.Enabled = false;
+                textBox_yaccl.Enabled = false;
+            }
+        }
 
 
     }

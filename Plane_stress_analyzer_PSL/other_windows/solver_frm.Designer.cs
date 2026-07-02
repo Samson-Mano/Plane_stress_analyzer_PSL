@@ -42,6 +42,13 @@
             this.checkBox_extendconstraints = new System.Windows.Forms.CheckBox();
             this.checkBox_extendloads = new System.Windows.Forms.CheckBox();
             this.checkBox_saveHrefinedmodel = new System.Windows.Forms.CheckBox();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.checkBox_selfweight = new System.Windows.Forms.CheckBox();
+            this.label4 = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
+            this.textBox_xaccl = new System.Windows.Forms.TextBox();
+            this.textBox_yaccl = new System.Windows.Forms.TextBox();
+            this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // richTextBox_AnalysisUpdate
@@ -49,7 +56,7 @@
             this.richTextBox_AnalysisUpdate.Font = new System.Drawing.Font("Verdana", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.richTextBox_AnalysisUpdate.Location = new System.Drawing.Point(12, 12);
             this.richTextBox_AnalysisUpdate.Name = "richTextBox_AnalysisUpdate";
-            this.richTextBox_AnalysisUpdate.Size = new System.Drawing.Size(540, 267);
+            this.richTextBox_AnalysisUpdate.Size = new System.Drawing.Size(760, 267);
             this.richTextBox_AnalysisUpdate.TabIndex = 1;
             this.richTextBox_AnalysisUpdate.Text = "";
             // 
@@ -180,11 +187,71 @@
             this.checkBox_saveHrefinedmodel.Text = "Save h-Refined Model";
             this.checkBox_saveHrefinedmodel.UseVisualStyleBackColor = true;
             // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.textBox_yaccl);
+            this.groupBox1.Controls.Add(this.textBox_xaccl);
+            this.groupBox1.Controls.Add(this.label5);
+            this.groupBox1.Controls.Add(this.label4);
+            this.groupBox1.Controls.Add(this.checkBox_selfweight);
+            this.groupBox1.Location = new System.Drawing.Point(509, 285);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(263, 133);
+            this.groupBox1.TabIndex = 28;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Self Weight:";
+            // 
+            // checkBox_selfweight
+            // 
+            this.checkBox_selfweight.AutoSize = true;
+            this.checkBox_selfweight.Location = new System.Drawing.Point(18, 23);
+            this.checkBox_selfweight.Name = "checkBox_selfweight";
+            this.checkBox_selfweight.Size = new System.Drawing.Size(77, 21);
+            this.checkBox_selfweight.TabIndex = 0;
+            this.checkBox_selfweight.Text = "Gravity";
+            this.checkBox_selfweight.UseVisualStyleBackColor = true;
+            this.checkBox_selfweight.CheckedChanged += new System.EventHandler(this.checkBox_selfweight_CheckedChanged);
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(15, 54);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(118, 17);
+            this.label4.TabIndex = 1;
+            this.label4.Text = "X Acceleration: ";
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(15, 84);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(117, 17);
+            this.label5.TabIndex = 2;
+            this.label5.Text = "Y Acceleration: ";
+            // 
+            // textBox_xaccl
+            // 
+            this.textBox_xaccl.Location = new System.Drawing.Point(138, 51);
+            this.textBox_xaccl.Name = "textBox_xaccl";
+            this.textBox_xaccl.Size = new System.Drawing.Size(110, 24);
+            this.textBox_xaccl.TabIndex = 3;
+            this.textBox_xaccl.Text = "0.0";
+            // 
+            // textBox_yaccl
+            // 
+            this.textBox_yaccl.Location = new System.Drawing.Point(138, 81);
+            this.textBox_yaccl.Name = "textBox_yaccl";
+            this.textBox_yaccl.Size = new System.Drawing.Size(110, 24);
+            this.textBox_yaccl.TabIndex = 4;
+            this.textBox_yaccl.Text = "-9806.65";
+            // 
             // solver_frm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(564, 571);
+            this.ClientSize = new System.Drawing.Size(784, 571);
+            this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.checkBox_saveHrefinedmodel);
             this.Controls.Add(this.checkBox_extendloads);
             this.Controls.Add(this.checkBox_extendconstraints);
@@ -201,10 +268,12 @@
             this.Font = new System.Drawing.Font("Verdana", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(4);
-            this.MinimumSize = new System.Drawing.Size(580, 550);
+            this.MinimumSize = new System.Drawing.Size(800, 610);
             this.Name = "solver_frm";
             this.Text = "Finite Element Solver";
             this.Load += new System.EventHandler(this.solver_frm_Load);
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -225,5 +294,11 @@
         private System.Windows.Forms.CheckBox checkBox_extendconstraints;
         private System.Windows.Forms.CheckBox checkBox_extendloads;
         private System.Windows.Forms.CheckBox checkBox_saveHrefinedmodel;
+        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.CheckBox checkBox_selfweight;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.TextBox textBox_yaccl;
+        private System.Windows.Forms.TextBox textBox_xaccl;
+        private System.Windows.Forms.Label label5;
     }
 }
