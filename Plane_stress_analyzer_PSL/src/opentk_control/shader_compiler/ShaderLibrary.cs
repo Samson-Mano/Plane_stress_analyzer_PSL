@@ -15,6 +15,7 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
             TextShader,
             ConstraintShader,
             LoadShader,
+            RsltMeshShader,
             SelectionShader
         }
 
@@ -72,6 +73,75 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
         }
 
         #endregion
+
+
+
+
+        #region "Result Mesh Shaders"
+
+        private static string rslt_mesh_vert_shader()
+        {
+            return @"
+
+            #version 330 core
+
+            // Pre-computed MVP matrix on CPU for better performance
+            uniform mat4 uMVP;           // Model-View-Projection matrix
+            uniform float sinevalue = 1.0f;                    
+
+            layout(location = 0) in vec2 aPosition;
+            layout(location = 1) in vec2 aDisplacement;
+            layout(location = 2) in float aScalarValue;
+                    
+            out float v_deflscale;
+                    
+            void main()
+            {
+                gl_Position = uMVP * vec4(aPosition + aDisplacement, 0.0, 1.0);
+                v_deflscale = aScalarValue * sinevalue;
+            }
+
+
+                    ";
+
+        }
+
+
+
+
+        private static string rslt_mesh_frag_shader()
+        {
+
+            return @"
+
+            #version 330 core
+            
+            uniform float vertexTransparency; // Transparency of the mesh
+            in float v_deflscale;
+
+            out vec4 fColor;
+    
+
+            vec3 jetHeatmap(float value) 
+            {
+                float t = (value + 1.0) * 0.5;
+                return clamp(vec3(1.5) - abs(4.0 * vec3(t) + vec3(-3, -2, -1)), vec3(0), vec3(1));
+            }
+
+
+            void main()
+            {
+                // Simple color output without lighting
+                fColor = vec4(jetHeatmap(v_deflscale), vertexTransparency);
+            }
+
+
+                    ";
+
+        }
+
+        #endregion
+
 
 
 
@@ -361,6 +431,8 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
             {
                 case ShaderType.MeshShader:
                     return mesh_vert_shader();
+                case ShaderType.RsltMeshShader:
+                    return rslt_mesh_vert_shader();
                 case ShaderType.SelectionShader:
                     return selrect_vert_shader();
                 case ShaderType.ConstraintShader: 
@@ -382,6 +454,8 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
             {
                 case ShaderType.MeshShader:
                     return mesh_frag_shader();
+                case ShaderType.RsltMeshShader:
+                    return rslt_mesh_frag_shader();
                 case ShaderType.SelectionShader:
                     return selrect_frag_shader();
                 case ShaderType.ConstraintShader:

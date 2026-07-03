@@ -22,7 +22,7 @@ using static System.Windows.Forms.LinkLabel;
 namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
 {
 
-    public class meshdata_store
+    public class meshdata_store : IDisposable
     {
 
         private struct point_store

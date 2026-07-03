@@ -310,7 +310,7 @@ int main()
 		}
 	}
 
-		
+	solver.store_k_m_matrices_text_debug();
 
 	//_________________________________________________________
 	// Close the files

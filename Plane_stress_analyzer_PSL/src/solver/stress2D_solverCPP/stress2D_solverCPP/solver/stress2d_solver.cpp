@@ -109,9 +109,6 @@ bool stress2d_solver::perform_solve()
 	report("Global boundary condition flag vector created");
 
 
-	store_k_m_matrices_text_debug();
-
-
 	// Perform the solve based on the selected method
 	if (solver_type == 0)
 	{
@@ -176,8 +173,23 @@ void stress2d_solver::create_global_supportInclination_matrix()
 
 	std::vector<Eigen::Triplet<double>> s_triplets;
 
+	for (const auto& node_id : polynomial_2dmesh.polynomial_node_list)
+	{
+		const polynomial_node_store& node_data = node_id.second;
 
-	auto apply_support_inclination = [&](int node_id, double support_angle, std::vector<Eigen::Triplet<double>>& triplets)
+		int dof_u = (node_data.node_id * 2);     // u DOF
+		int dof_v = (node_data.node_id * 2) + 1; // v DOF
+
+		// Default support inclination
+		s_triplets.emplace_back(dof_u, dof_u, 1.0);
+		// s_triplets.emplace_back(dof_u, dof_v, 0.0);
+		s_triplets.emplace_back(dof_v, dof_v, 1.0);
+		// s_triplets.emplace_back(dof_v, dof_u, 0.0);
+
+	}
+
+
+	auto apply_support_inclination = [&](int node_id, double support_angle)
 		{
 			// Convert angle to radians
 			double support_angle_rad = (support_angle - 90.0) * M_PI / 180.0;
@@ -187,12 +199,11 @@ void stress2d_solver::create_global_supportInclination_matrix()
 			int dof_u = (node_id * 2);     // u DOF
 			int dof_v = (node_id * 2) + 1; // v DOF
 
-			triplets.emplace_back(dof_u, dof_u, cos_theta);
-			triplets.emplace_back(dof_u, dof_v, -sin_theta);
-			triplets.emplace_back(dof_v, dof_u, sin_theta);
-			triplets.emplace_back(dof_v, dof_v, cos_theta);
+			s_triplets.emplace_back(dof_u, dof_u, cos_theta);
+			s_triplets.emplace_back(dof_u, dof_v, -sin_theta);
+			s_triplets.emplace_back(dof_v, dof_u, sin_theta);
+			s_triplets.emplace_back(dof_v, dof_v, cos_theta);
 		};
-
 
 
 	for (const auto& constraint : polynomial_2dmesh.get_constraint_data())
@@ -201,7 +212,7 @@ void stress2d_solver::create_global_supportInclination_matrix()
 
 		for (const auto& node_id : constraint_data.node_ids)
 		{
-			apply_support_inclination(node_id, constraint_data.constraintangle, s_triplets);
+			apply_support_inclination(node_id, constraint_data.constraintangle);
 		}
 	}
 
@@ -987,7 +998,15 @@ void stress2d_solver::store_k_m_matrices_text_debug()
 		text_file << std::setw(15) << std::setprecision(6) << global_BC_flag_vector(i) << "\n";
 	}
 
+	// Print the global displacement vector
+	text_file << "\n=== Displacement Vector ===\n";
 
+	matrix_rows = global_displacement_vector.rows();
+
+	for (int i = 0; i < std::min(max_print_size, matrix_rows); i++)
+	{
+		text_file << std::setw(15) << std::setprecision(6) << global_displacement_vector(i) << "\n";
+	}
 
 
 	text_file.close();

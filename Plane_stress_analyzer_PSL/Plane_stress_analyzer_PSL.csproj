@@ -140,6 +140,8 @@
     <Compile Include="src\model_store\geom_objects\selectrectangle_store.cs" />
     <Compile Include="src\model_store\geom_objects\shrunkmeshdata_store.cs" />
     <Compile Include="src\model_store\modeldata_store.cs" />
+    <Compile Include="src\model_store\rslt_objects\rsltdata_store.cs" />
+    <Compile Include="src\model_store\rslt_objects\shrunkrsltdata_store.cs" />
     <Compile Include="src\opentk_control\opentk_buffer\GDIFontAtlas.cs" />
     <Compile Include="src\opentk_control\opentk_buffer\IndexBuffer.cs" />
     <Compile Include="src\opentk_control\opentk_buffer\VertexArray.cs" />
@@ -265,7 +267,6 @@
   <ItemGroup>
     <Folder Include="Example_model\" />
     <Folder Include="lib\" />
-    <Folder Include="src\model_store\rslt_objects\" />
     <Folder Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Debug\microsoft\STL\" />
     <Folder Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Debug\stress2D.6c2862fb_MD.tlog\" />
     <Folder Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\x64\Release\microsoft\STL\" />

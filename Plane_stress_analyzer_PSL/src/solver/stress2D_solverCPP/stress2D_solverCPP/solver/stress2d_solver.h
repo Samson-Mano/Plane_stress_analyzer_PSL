@@ -51,6 +51,7 @@ public:
 
 	bool perform_solve();
 
+	void store_k_m_matrices_text_debug();
 
 private:
 	const double M_PI = 3.14159265358979323846;
@@ -117,8 +118,6 @@ private:
 
 	bool check_valid_results(const Eigen::VectorXd& results, const std::string& result_name);
 
-
-	void store_k_m_matrices_text_debug();
 
 	void report(const char* msg);
 
