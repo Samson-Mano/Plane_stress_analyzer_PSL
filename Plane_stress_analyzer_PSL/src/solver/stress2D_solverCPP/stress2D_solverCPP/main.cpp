@@ -42,7 +42,7 @@ int main()
 
 	int solvertype = 0;
 	int h_refinement = 0;
-	int polynomial_order = 1;
+	int polynomial_order = 2;
 	int formulation = 0;
 	bool isConstraintExtend = false;
 	bool isLoadExtend = false;
@@ -270,7 +270,7 @@ int main()
 	// Copy H Refined Mesh to the stress analyzer
 	stress_system_store stress_system;
 
-	stress_system.polynomial_order = polynomial_order; // 0, 1, 2
+	stress_system.polynomial_order = polynomial_order; // 1, 2, 3, 4
 
 	stress_system.node_list = std::move(h_refinement_model.node_list);
 	stress_system.edge_list = std::move(h_refinement_model.edge_list);

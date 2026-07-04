@@ -41,12 +41,19 @@
             this.addConstraintsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.materialPropertiesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.solveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
-            this.toolStripStatusLabel_zoom_value = new System.Windows.Forms.ToolStripStatusLabel();
-            this.glControl_main_panel = new OpenTK.GLControl();
             this.finiteElementSolverToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.resultOptionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.toolStripStatusLabel_zoom_value = new System.Windows.Forms.ToolStripStatusLabel();
+            this.glControl_main_panel = new OpenTK.GLControl();
+            this.resultsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.displacementToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.stressXToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.stressYToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.tauXYToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.hideResultsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -148,10 +155,30 @@
             this.solveToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.finiteElementSolverToolStripMenuItem,
             this.toolStripSeparator1,
-            this.resultOptionToolStripMenuItem});
+            this.resultOptionToolStripMenuItem,
+            this.resultsToolStripMenuItem});
             this.solveToolStripMenuItem.Name = "solveToolStripMenuItem";
             this.solveToolStripMenuItem.Size = new System.Drawing.Size(47, 20);
             this.solveToolStripMenuItem.Text = "Solve";
+            // 
+            // finiteElementSolverToolStripMenuItem
+            // 
+            this.finiteElementSolverToolStripMenuItem.Name = "finiteElementSolverToolStripMenuItem";
+            this.finiteElementSolverToolStripMenuItem.Size = new System.Drawing.Size(184, 22);
+            this.finiteElementSolverToolStripMenuItem.Text = "Finite Element Solver";
+            this.finiteElementSolverToolStripMenuItem.Click += new System.EventHandler(this.finiteElementSolverToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(181, 6);
+            // 
+            // resultOptionToolStripMenuItem
+            // 
+            this.resultOptionToolStripMenuItem.Name = "resultOptionToolStripMenuItem";
+            this.resultOptionToolStripMenuItem.Size = new System.Drawing.Size(184, 22);
+            this.resultOptionToolStripMenuItem.Text = "Result Option";
+            this.resultOptionToolStripMenuItem.Click += new System.EventHandler(this.resultOptionToolStripMenuItem_Click);
             // 
             // statusStrip1
             // 
@@ -190,24 +217,58 @@
             this.glControl_main_panel.MouseUp += new System.Windows.Forms.MouseEventHandler(this.glControl_main_panel_MouseUp);
             this.glControl_main_panel.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.glControl_main_panel_MouseWheel);
             // 
-            // finiteElementSolverToolStripMenuItem
+            // resultsToolStripMenuItem
             // 
-            this.finiteElementSolverToolStripMenuItem.Name = "finiteElementSolverToolStripMenuItem";
-            this.finiteElementSolverToolStripMenuItem.Size = new System.Drawing.Size(184, 22);
-            this.finiteElementSolverToolStripMenuItem.Text = "Finite Element Solver";
-            this.finiteElementSolverToolStripMenuItem.Click += new System.EventHandler(this.finiteElementSolverToolStripMenuItem_Click);
+            this.resultsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.displacementToolStripMenuItem,
+            this.stressXToolStripMenuItem,
+            this.stressYToolStripMenuItem,
+            this.tauXYToolStripMenuItem,
+            this.toolStripSeparator2,
+            this.hideResultsToolStripMenuItem});
+            this.resultsToolStripMenuItem.Name = "resultsToolStripMenuItem";
+            this.resultsToolStripMenuItem.Size = new System.Drawing.Size(184, 22);
+            this.resultsToolStripMenuItem.Text = "Results";
             // 
-            // toolStripSeparator1
+            // displacementToolStripMenuItem
             // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(181, 6);
+            this.displacementToolStripMenuItem.Name = "displacementToolStripMenuItem";
+            this.displacementToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.displacementToolStripMenuItem.Text = "Displacement";
+            this.displacementToolStripMenuItem.Click += new System.EventHandler(this.displacementToolStripMenuItem_Click);
             // 
-            // resultOptionToolStripMenuItem
+            // stressXToolStripMenuItem
             // 
-            this.resultOptionToolStripMenuItem.Name = "resultOptionToolStripMenuItem";
-            this.resultOptionToolStripMenuItem.Size = new System.Drawing.Size(184, 22);
-            this.resultOptionToolStripMenuItem.Text = "Result Option";
-            this.resultOptionToolStripMenuItem.Click += new System.EventHandler(this.resultOptionToolStripMenuItem_Click);
+            this.stressXToolStripMenuItem.Name = "stressXToolStripMenuItem";
+            this.stressXToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.stressXToolStripMenuItem.Text = "Stress X";
+            this.stressXToolStripMenuItem.Click += new System.EventHandler(this.stressXToolStripMenuItem_Click);
+            // 
+            // stressYToolStripMenuItem
+            // 
+            this.stressYToolStripMenuItem.Name = "stressYToolStripMenuItem";
+            this.stressYToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.stressYToolStripMenuItem.Text = "Stress Y";
+            this.stressYToolStripMenuItem.Click += new System.EventHandler(this.stressYToolStripMenuItem_Click);
+            // 
+            // tauXYToolStripMenuItem
+            // 
+            this.tauXYToolStripMenuItem.Name = "tauXYToolStripMenuItem";
+            this.tauXYToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.tauXYToolStripMenuItem.Text = "Tau XY";
+            this.tauXYToolStripMenuItem.Click += new System.EventHandler(this.tauXYToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(177, 6);
+            // 
+            // hideResultsToolStripMenuItem
+            // 
+            this.hideResultsToolStripMenuItem.Name = "hideResultsToolStripMenuItem";
+            this.hideResultsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.hideResultsToolStripMenuItem.Text = "Hide Results";
+            this.hideResultsToolStripMenuItem.Click += new System.EventHandler(this.hideResultsToolStripMenuItem_Click);
             // 
             // main_frm
             // 
@@ -251,6 +312,13 @@
         private System.Windows.Forms.ToolStripMenuItem finiteElementSolverToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripMenuItem resultOptionToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem resultsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem displacementToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem stressXToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem stressYToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem tauXYToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolStripMenuItem hideResultsToolStripMenuItem;
     }
 }
 

@@ -1,5 +1,6 @@
 ﻿using Plane_stress_analyzer_PSL.src.events_handler;
 using Plane_stress_analyzer_PSL.src.model_store;
+using Plane_stress_analyzer_PSL.src.model_store.rslt_objects;
 using src.solver;
 using System;
 using System.Collections.Generic;
@@ -95,39 +96,10 @@ namespace Plane_stress_analyzer_PSL.other_windows
                 }
 
 
-
-                AppendStatus("\nChecking dependencies...\n");
-
-                if (!CheckAllDependencies())
-                {
-                    AppendStatus("\n❌ Missing dependencies detected. Please copy all required DLLs to the application directory.\n");
-                    MessageBox.Show("Missing required DLL dependencies.\n\nPlease ensure all solver DLLs are copied to the application directory.",
-                                  "DLL Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-
-
-                AppendStatus("Starting solver initialization...\n");
-
-                // Step 1: Get diagnostic info (optional, good for debugging)
-                string diagnosticInfo = stress2DSolverInterop.GetDiagnosticInfo();
-                AppendStatus(diagnosticInfo);
-
-                // Step 2: Initialize the DLL
-                AppendStatus("\nInitializing solver DLL...\n");
-                if (!stress2DSolverInterop.Initialize())
-                {
-                    AppendStatus($"✗ DLL initialization failed: {stress2DSolverInterop.LastError}\n");
-                    MessageBox.Show($"Failed to initialize solver DLL:\n\n{stress2DSolverInterop.LastError}",
-                                  "DLL Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-
-                AppendStatus("✓ DLL loaded successfully!\n");
-
-                // Step 3: Run the solver
+                // Run the solver
                 AppendStatus("\nStarting stress analysis...\n");
                 await RunSolverAsync();
+
             }
             catch (Exception ex)
             {
@@ -150,62 +122,45 @@ namespace Plane_stress_analyzer_PSL.other_windows
         {
             try
             {
-                // Step 1: Check if DLL is available
-                if (!stress2DSolverInterop.CheckDllExists())
-                {
-                    richTextBox_AnalysisUpdate.AppendText($"ERROR: {stress2DSolverInterop.LastError}\n");
-                    richTextBox_AnalysisUpdate.AppendText(stress2DSolverInterop.GetDiagnosticInfo());
-                    return;
-                }
 
-                // Step 2: Initialize the DLL
-                if (!stress2DSolverInterop.Initialize())
-                {
-                    richTextBox_AnalysisUpdate.AppendText($"Failed to initialize DLL: {stress2DSolverInterop.LastError}\n");
-                    richTextBox_AnalysisUpdate.AppendText(stress2DSolverInterop.GetDiagnosticInfo());
-                    return;
-                }
+                // input files
+                string inputPath = Path.Combine(Application.StartupPath, "stress2d_input.bin");
+                string outputPath = Path.Combine(Application.StartupPath, "stress2d_output.bin");
 
-                richTextBox_AnalysisUpdate.AppendText("DLL loaded successfully!\n");
+                //// Delete existing input file if it exists
+                //if (File.Exists(inputPath))
+                //{
+                //    try
+                //    {
+                //        File.Delete(inputPath);
+                //        richTextBox_AnalysisUpdate.AppendText("Deleted existing input file.\n");
+                //    }
+                //    catch (IOException ex)
+                //    {
+                //        richTextBox_AnalysisUpdate.AppendText($"Warning: Could not delete existing input file: {ex.Message}\n");
+                //        // Try to force garbage collection to release any locks
+                //        GC.Collect();
+                //        GC.WaitForPendingFinalizers();
+                //        File.Delete(inputPath);
+                //    }
+                //}
 
-                // Step 3: Validate input files
-                string inputPath = Path.Combine(Application.StartupPath, "stress2d_analysis_input.bin");
-                string outputPath = Path.Combine(Application.StartupPath, "stress2d_analysis_output.bin");
-
-                // Delete existing input file if it exists
-                if (File.Exists(inputPath))
-                {
-                    try
-                    {
-                        File.Delete(inputPath);
-                        richTextBox_AnalysisUpdate.AppendText("Deleted existing input file.\n");
-                    }
-                    catch (IOException ex)
-                    {
-                        richTextBox_AnalysisUpdate.AppendText($"Warning: Could not delete existing input file: {ex.Message}\n");
-                        // Try to force garbage collection to release any locks
-                        GC.Collect();
-                        GC.WaitForPendingFinalizers();
-                        File.Delete(inputPath);
-                    }
-                }
-
-                // Delete existing output file if it exists
-                if (File.Exists(outputPath))
-                {
-                    try
-                    {
-                        File.Delete(outputPath);
-                        richTextBox_AnalysisUpdate.AppendText("Deleted existing output file.\n");
-                    }
-                    catch (IOException ex)
-                    {
-                        richTextBox_AnalysisUpdate.AppendText($"Warning: Could not delete existing output file: {ex.Message}\n");
-                        GC.Collect();
-                        GC.WaitForPendingFinalizers();
-                        File.Delete(outputPath);
-                    }
-                }
+                //// Delete existing output file if it exists
+                //if (File.Exists(outputPath))
+                //{
+                //    try
+                //    {
+                //        File.Delete(outputPath);
+                //        richTextBox_AnalysisUpdate.AppendText("Deleted existing output file.\n");
+                //    }
+                //    catch (IOException ex)
+                //    {
+                //        richTextBox_AnalysisUpdate.AppendText($"Warning: Could not delete existing output file: {ex.Message}\n");
+                //        GC.Collect();
+                //        GC.WaitForPendingFinalizers();
+                //        File.Delete(outputPath);
+                //    }
+                //}
 
 
 
@@ -219,21 +174,23 @@ namespace Plane_stress_analyzer_PSL.other_windows
 
         
                 // Write input file
-                double[] solver_settings = new double[10];
-                solver_settings[0] = comboBox_solvertype.SelectedIndex; // 0 = Elimination method, 1 = Lagrange method
-                solver_settings[1] = comboBox_HRefinement.SelectedIndex; // 0, 1, 2
-                solver_settings[2] = comboBox_polynomialrefinement.SelectedIndex; // 0, 1, 2, 3
-                solver_settings[3] = comboBox_formulation.SelectedIndex; // 0, 1
-                solver_settings[4] = checkBox_extendconstraints.Checked == false ? 0.0 : 1.0;
-                solver_settings[5] = checkBox_extendloads.Checked == false ? 0.0 : 1.0;
-                solver_settings[6] = checkBox_saveHrefinedmodel.Checked == false ? 0.0 : 1.0;
-                solver_settings[7] = checkBox_selfweight.Checked == false ? 0.0 : 1.0;
-                
+                stress2DSolverInterop.SolverSettings solver_settings = new stress2DSolverInterop.SolverSettings();
+                solver_settings.SolverType = comboBox_solvertype.SelectedIndex; // 0 = Elimination method, 1 = Lagrange method
+                solver_settings.HRefinement = comboBox_HRefinement.SelectedIndex; // 0, 1, 2
+                solver_settings.PRefinement = comboBox_polynomialrefinement.SelectedIndex; // 0, 1, 2, 3
+                solver_settings.Formulation = comboBox_formulation.SelectedIndex; // 0, 1
+                solver_settings.ExtendConstraints = checkBox_extendconstraints.Checked == false ? 0.0 : 1.0;
+                solver_settings.ExtendLoads = checkBox_extendloads.Checked == false ? 0.0 : 1.0;
+                solver_settings.SaveHRefinedModel = checkBox_saveHrefinedmodel.Checked == false ? 0.0 : 1.0;
+                solver_settings.SelfWeight = checkBox_selfweight.Checked == false ? 0.0 : 1.0;
+                solver_settings.XAcceleration = 0.0;
+                solver_settings.YAcceleration = 0.0;
+
                 // Validate the values
-                if( double.TryParse(textBox_xaccl.Text, out double xaccl) && double.TryParse(textBox_yaccl.Text, out double yaccl))
+                if ( double.TryParse(textBox_xaccl.Text, out double xaccl) && double.TryParse(textBox_yaccl.Text, out double yaccl))
                 {
-                    solver_settings[8] = xaccl;
-                    solver_settings[9] = yaccl;
+                    solver_settings.XAcceleration  = xaccl;
+                    solver_settings.YAcceleration  = yaccl;
                 }
                 else
                 {
@@ -241,16 +198,21 @@ namespace Plane_stress_analyzer_PSL.other_windows
                     return;
                 }
 
+                bool isAnalysisSuccess = false;
 
-                // Step 5: Safely call the solver
-                var result = await Task.Run(() => stress2DSolverInterop.SolveSafely(
-                    inputPath,
-                    outputPath,
-                    solver_settings,
-                    OnStatusUpdate
-                ));
 
-                if (result.Success)
+                // Run solver asynchronously
+                await Task.Run(() =>
+                {
+                    // Call C++ solver
+                    stress2DSolverInterop.solve_2DstressanalysisCPP(inputPath, outputPath, 
+                        ref solver_settings,
+                        ref isAnalysisSuccess, OnStatusUpdate);
+
+                });
+
+
+                if (isAnalysisSuccess)
                 {
                     richTextBox_AnalysisUpdate.AppendText("Solver completed successfully!\n");
 
@@ -260,19 +222,14 @@ namespace Plane_stress_analyzer_PSL.other_windows
                 }
                 else
                 {
-                    richTextBox_AnalysisUpdate.AppendText($"Solver failed: {result.ErrorMessage}\n");
+                    richTextBox_AnalysisUpdate.AppendText("Solver failed.\n");
                 }
             }
             catch (Exception ex)
             {
                 richTextBox_AnalysisUpdate.AppendText($"Unexpected error: {ex.Message}\n");
-                richTextBox_AnalysisUpdate.AppendText(stress2DSolverInterop.GetDiagnosticInfo());
             }
-            finally
-            {
-                // Clean up
-                stress2DSolverInterop.Unload();
-            }
+
         }
 
 
@@ -292,126 +249,73 @@ namespace Plane_stress_analyzer_PSL.other_windows
                 {
                     using (var reader = new BinaryReader(fs))
                     {
-                        //    // Read header
-                        //    var header = ReadStruct<BinaryFileHeader>(reader);
+                        modeldata.rslt_data = new rsltdata_store();
 
-                        //    if (System.Text.Encoding.ASCII.GetString(header.Magic) != "SEMF")
-                        //        throw new InvalidDataException("Invalid file format");
+                        // Read number of nodes
+                        int node_points_count = reader.ReadInt32();
+                        AppendStatus($"Reading results started...\n");
 
-                        //    AppendStatus($"File version: {header.Version}");
-                        //    AppendStatus($"Number of modes: {header.NumModes}");
-                        //    AppendStatus($"Number of nodes: {header.NumNodes}");
-                        //    AppendStatus($"Number of edges: {header.NumEdges}");
-                        //    AppendStatus($"Number of triangles: {header.NumTriangles}");
-                        //    AppendStatus($"Reading results started...\n");
+                        for (int i = 0; i < node_points_count; i++)
+                        {
+                            int node_id = reader.ReadInt32();
+                            double node_xcoord = reader.ReadDouble();
+                            double node_ycoord = reader.ReadDouble();
+                            double displ_x = reader.ReadDouble();
+                            double displ_y = reader.ReadDouble();
 
-                        //    fe_data.modalresultmeshdata = new modal_rsltdata_store();
+                            modeldata.rslt_data.add_point(node_id,
+                                (float)node_xcoord, 
+                                (float)node_ycoord,
+                                (float)displ_x,
+                                (float)displ_y
+                                );
 
-                        //    AppendStatus($"File position : {fs.Position}\n");
+                        }
 
-                        //    // Read nodes
-
-                        //    for (int i = 0; i < header.NumNodes; i++)
-                        //    {
-                        //        int node_id = reader.ReadInt32();
-                        //        double node_xcoord = reader.ReadDouble();
-                        //        double node_ycoord = reader.ReadDouble();
-
-                        //        fe_data.modalresultmeshdata.modal_rslt_nodes.Add(node_id,
-                        //            new modal_rsltnode_store
-                        //            {
-                        //                node_id = node_id,
-                        //                node_pt_x_coord = node_xcoord,
-                        //                node_pt_y_coord = node_ycoord
-                        //            });
-
-                        //    }
-
-                        //    AppendStatus($"Reading results for {header.NumNodes} nodes complete \n");
+                        AppendStatus($"Reading results for {node_points_count} nodes complete \n");
 
 
-                        //    // Read edges
-                        //    for (int i = 0; i < header.NumEdges; i++)
-                        //    {
-                        //        int start_nodeid = reader.ReadInt32();
-                        //        int end_nodeid = reader.ReadInt32();
+                        // Read number of edges
+                        int edge_lines_count = reader.ReadInt32();
 
-                        //        fe_data.modalresultmeshdata.rslt_edges.Add(new rsltedge_store
-                        //        {
-                        //            startnode = start_nodeid,
-                        //            endnode = end_nodeid
-                        //        });
-                        //    }
+                        for (int i = 0; i < edge_lines_count; i++)
+                        {
+                            int start_nodeid = reader.ReadInt32();
+                            int end_nodeid = reader.ReadInt32();
 
-                        //    AppendStatus($"Reading results for {header.NumEdges} edges complete \n");
+                            modeldata.rslt_data.add_wireframe_line(i, start_nodeid, end_nodeid
+                                );
+                        }
 
-
-                        //    // Read triangles
-                        //    for (int i = 0; i < header.NumTriangles; i++)
-                        //    {
-                        //        int n1 = reader.ReadInt32();
-                        //        int n2 = reader.ReadInt32();
-                        //        int n3 = reader.ReadInt32();
-
-                        //        fe_data.modalresultmeshdata.rslt_tris.Add(new rslttri_store
-                        //        {
-                        //            tri_node1 = n1,
-                        //            tri_node2 = n2,
-                        //            tri_node3 = n3,
-                        //        });
-                        //    }
-
-                        //    AppendStatus($"Reading results for {header.NumTriangles} triangles complete \n");
-
-                        //    AppendStatus($"File position : {fs.Position}\n");
-
-                        //    // Read mode index table
-                        //    AppendStatus($"\nReading mode index table...\n");
-                        //    fe_data.modalresultmeshdata.modes.Clear();
-                        //    fe_data.modalresultmeshdata.natural_Frequencies.Clear();
-
-                        //    // Set the Result mesh
-                        //    // Read mode index table
-                        //    for (int i = 0; i < header.NumModes; i++)
-                        //    {
-                        //        long posBeforeRead = fs.Position;
-
-                        //        // Read manually to avoid struct alignment issues
-                        //        uint modeId = reader.ReadUInt32();
-                        //        double frequency = reader.ReadDouble();
-                        //        ulong fileOffset = reader.ReadUInt64();
-                        //        ulong dataSize = reader.ReadUInt64();
-
-                        //        fe_data.modalresultmeshdata.natural_Frequencies.Add(frequency);
-
-                        //        AppendStatus($"  Mode {modeId}: f={frequency:F3} Hz, offset={fileOffset}, size={dataSize}\n");
-
-                        //        fe_data.modalresultmeshdata.modes.Add(new modeInfo
-                        //        {
-                        //            Id = (int)modeId,
-                        //            Frequency = frequency,
-                        //            FileOffset = (long)fileOffset,
-                        //            DataSize = (long)dataSize
-                        //        });
-                        //    }
-
-                        //    AppendStatus($"  File position at the end of mode index table: {fs.Position}\n");
+                        AppendStatus($"Reading results for {edge_lines_count} edges complete \n");
 
 
+                        // Read number of triangles
+                        int triangles_count = reader.ReadInt32();
 
-                        //    fe_data.modalresultmeshdata.setResultMesh();
-                        //    fe_data.modalresultmeshdata.isModalResultSet = true;
-                        //    fe_data.modalresultmeshdata.updateSelectedMode(0);
-                        //    fe_data.modalresultmeshdata.start_animation();
+                        for (int i = 0; i < triangles_count; i++)
+                        {
+                            int n1 = reader.ReadInt32();
+                            int n2 = reader.ReadInt32();
+                            int n3 = reader.ReadInt32();
 
-                        //    fe_data.update_openTK_uniforms(true, true, true);
-                        //}
+                            modeldata.rslt_data.add_tri(i, n1, n2, n3);
 
-                        //// Call the main form
-                        //if (this.Owner is main_frm mainForm)
-                        //{
-                        //    mainForm.set_ResultOption(5); // Set the result option = 5, Paint modal results
-                        //}
+                        }
+
+                        AppendStatus($"Reading results for {triangles_count} triangles complete \n");
+
+                        // Set the Result mesh
+                        modeldata.rslt_data.set_result_extremes();
+                        modeldata.rslt_data.create_buffer_data();
+
+                        modeldata.IsResultSet = true;
+
+                        // Call the main form
+                        if (this.Owner is main_frm mainForm)
+                        {
+                            mainForm.set_ResultOption(1);
+                        }
 
                         AppendStatus("Results read complete!\n");
                         MessageBox.Show("Solve completed successfully!", "Success",
@@ -429,48 +333,6 @@ namespace Plane_stress_analyzer_PSL.other_windows
         }
 
 
-
-
-
-
-        private bool CheckAllDependencies()
-        {
-            string targetDir = AppDomain.CurrentDomain.BaseDirectory;
-
-        //    string[] requiredDlls = new string[]
-        //    {
-        //"modalspectral_solverCPP.dll",
-        //"libarpack.dll",
-        //"libgcc_s_seh-1.dll",
-        //"libgfortran-5.dll",
-        //"liblapack.dll",
-        //"libquadmath-0.dll",
-        //"libwinpthread-1.dll",
-        //"openblas.dll"
-        //    };
-
-
-            bool allExist = true;
-            string fullPath = "";
-            bool exists = false;
-
-            //foreach (string dll in requiredDlls)
-            //{
-            //    fullPath = Path.Combine(targetDir, dll);
-            //    exists = File.Exists(fullPath);
-            //    AppendStatus($"  {(exists ? "✓" : "✗")} {dll}: {(exists ? "Found" : "MISSING")}\n");
-            //    if (!exists) allExist = false;
-            //}
-
-            string requiredDLL = "stress2D_solverCPP.dll";
-            fullPath = Path.Combine(targetDir, requiredDLL);
-            exists = File.Exists(fullPath);
-            AppendStatus($"  {(exists ? "✓" : "✗")} {requiredDLL}: {(exists ? "Found" : "MISSING")}\n");
-            if (!exists) allExist = false;
-
-
-            return allExist;
-        }
 
 
 

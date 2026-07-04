@@ -135,12 +135,20 @@ namespace Plane_stress_analyzer_PSL.src.global_variables
         public static bool is_paint_resultmesh = true;
         public static bool is_paint_result_shrunk_triangle = false;
 
+        public static bool is_paint_result_displacement = true;
+        public static bool is_paint_result_stressX = false;
+        public static bool is_paint_result_stressY = false;
+        public static bool is_paint_result_tauXY = false;
+
+
+
 
         public static float mesh_shrink_factor = 0.8f;
         public static float selectedmesh_shrink_factor = 0.8f;
         public static bool is_RectangleSelection = true; // true = Rectangle selection, false = Circle Selection
 
         public static float geom_size = 0.0f;
+        public static float displacement_scale = 0.01f;
 
         public static float PointSize = 1.0f;
         public static float LineWidth = 1.0f;

@@ -14,88 +14,94 @@
 #include "solver/stress2d_solver.h"
 
 
+#pragma pack(push, 1)
+struct SolverSettings
+{
+	int solverType;
+	int hRefinement;
+	int pRefinement;
+	int formulation;
+	double extendConstraints;
+	double extendLoads;
+	double saveHRefinedModel;
+	double selfWeight;
+	double xAcceleration;
+	double yAcceleration;
+};
+#pragma pack(pop)
+
+
 
 // Function to solve the system setting from C# or Python
-extern "C" __declspec(dllexport) void solve_2DstressanalysisCPP(
-	const char* input_file,
+extern "C" __declspec(dllexport) void solve_2DstressanalysisCPP(const char* input_file,
 	const char* output_file,
-	const double* solver_settings,
-	int solver_settings_count,
+	SolverSettings* settings,
 	bool* isAnalysisSuccess,
 	void(*callback)(const char*))
 {
+
+
+	if (callback) callback("Initializing solver...");
+	(*isAnalysisSuccess) = false;
+
+
+
 	std::string msg = "";
+
+	if (!settings)
+	{
+		msg = "Solver settings error";
+		if (callback) callback(msg.c_str());
+
+		return;
+	}
 
 
 	// Example placeholder
 	std::ifstream infile(input_file, std::ios::binary);
 	std::ofstream outfile(output_file, std::ios::binary);
 
-	if (callback) callback("Initializing solver...");
-	(*isAnalysisSuccess) = false;
 
+	int solvertype = settings->solverType;
+	int h_refinement = settings->hRefinement;
+	int polynomial_order = settings->pRefinement + 1;
+	int formulation = settings->formulation;
+	bool isConstraintExtend = static_cast<int>(settings->extendConstraints) == 0 ? false : true;
+	bool isLoadExtend = static_cast<int>(settings->extendLoads) == 0 ? false : true;
+	bool isSavehRefinedModel = static_cast<int>(settings->saveHRefinedModel) == 0 ? false : true;
+	bool isSelfWeight = static_cast<int>(settings->selfWeight) == 0 ? false : true;
+	double accl_x = settings->xAcceleration;
+	double accl_y = settings->yAcceleration;
 
-	int solvertype = 0;
-	int h_refinement = 0;
-	int polynomial_order = 0;
-	int formulation = 0;
-	bool isConstraintExtend = false;
-	bool isLoadExtend = false;
-	bool isSavehRefinedModel = false;
-	bool isSelfWeight = false;
-	double accl_x = 0.0;
-	double accl_y = 0.0;
+	if (accl_x == 0 && accl_y == 0)
+		isSelfWeight = false;
 
-	if (solver_settings && solver_settings_count == 10)
+	std::string s_type = "";
+	if (solvertype == 0)
 	{
-		solvertype = static_cast<int>(solver_settings[0]);
-		h_refinement = static_cast<int>(solver_settings[1]);
-		polynomial_order = static_cast<int>(solver_settings[2]) + 1;
-		formulation = static_cast<int>(solver_settings[3]);
-		isConstraintExtend = static_cast<int>(solver_settings[4]) == 0 ? false : true;
-		isLoadExtend = static_cast<int>(solver_settings[5]) == 0 ? false : true;
-		isSavehRefinedModel = static_cast<int>(solver_settings[6]) == 0 ? false : true;
-		isSelfWeight = static_cast<int>(solver_settings[7]) == 0 ? false : true;
-		accl_x = solver_settings[8];
-		accl_y = solver_settings[9];
-
-		if (accl_x == 0 && accl_y == 0)
-			isSelfWeight = false;
-
-		std::string s_type = "";
-		if (solvertype == 0)
-		{
-			s_type = "Elimination method";
-		}
-		else if (solvertype == 1)
-		{
-			s_type = "Lagrange method";
-		}
-
-		std::string f_type = "";
-
-		if(formulation == 0)
-		{
-			f_type = "Plane stress formulation";
-		}
-		else if (formulation == 1)
-		{
-			f_type = "Plane strain formulation";
-		}
-
-		msg = "Solver type = " + s_type +
-			", H_refinement order = " + std::to_string(h_refinement) + ", Polynomial order = " + 
-			std::to_string(polynomial_order) + ", Formulation = " + f_type;
-
-		if (callback) callback(msg.c_str());
+		s_type = "Elimination method";
 	}
-	else
+	else if (solvertype == 1)
 	{
-		msg = "Solver settings error"; 
-		if (callback) callback(msg.c_str());
-
-		return;
+		s_type = "Lagrange method";
 	}
+
+	std::string f_type = "";
+
+	if (formulation == 0)
+	{
+		f_type = "Plane stress formulation";
+	}
+	else if (formulation == 1)
+	{
+		f_type = "Plane strain formulation";
+	}
+
+	msg = "Solver type = " + s_type +
+		", H_refinement order = " + std::to_string(h_refinement) + ", Polynomial order = " +
+		std::to_string(polynomial_order) + ", Formulation = " + f_type;
+
+	if (callback) callback(msg.c_str());
 
 
 
@@ -116,6 +122,7 @@ extern "C" __declspec(dllexport) void solve_2DstressanalysisCPP(
 		// std::cerr << "Error: Unable to open input file: " << input_file << std::endl;
 		return;
 	}
+
 	if (!outfile.is_open())
 	{
 		msg = "Error: Unable to open output file: " + std::string(output_file);
@@ -334,7 +341,6 @@ extern "C" __declspec(dllexport) void solve_2DstressanalysisCPP(
 	if (callback) callback(msg.c_str());
 
 
-
 	// Create the edge
 	h_refinement_model.create_edge_wireframe();
 
@@ -347,55 +353,52 @@ extern "C" __declspec(dllexport) void solve_2DstressanalysisCPP(
 	{
 		h_refinement_model.save_hrefined_model();
 	}
+
 	
+		// Copy H Refined Mesh to the stress analyzer
+		stress_system_store stress_system;
 
-	// Copy H Refined Mesh to the stress analyzer
-	stress_system_store stress_system;
+		stress_system.polynomial_order = polynomial_order; // 0, 1, 2
 
-	stress_system.polynomial_order = polynomial_order; // 0, 1, 2
+		stress_system.node_list = std::move(h_refinement_model.node_list);
+		stress_system.edge_list = std::move(h_refinement_model.edge_list);
+		stress_system.trielement_list = std::move(h_refinement_model.trielement_list);
+		stress_system.quadelement_list = std::move(h_refinement_model.quadelement_list);
 
-	stress_system.node_list = std::move(h_refinement_model.node_list);
-	stress_system.edge_list = std::move(h_refinement_model.edge_list);
-	stress_system.trielement_list = std::move(h_refinement_model.trielement_list);
-	stress_system.quadelement_list = std::move(h_refinement_model.quadelement_list);
+		stress_system.material_list = std::move(h_refinement_model.material_list);
 
-	stress_system.material_list = std::move(h_refinement_model.material_list);
+		stress_system.constraint_list = std::move(h_refinement_model.constraint_list);
+		stress_system.load_list = std::move(h_refinement_model.load_list);
 
-	stress_system.constraint_list = std::move(h_refinement_model.constraint_list);
-	stress_system.load_list = std::move(h_refinement_model.load_list);
+		stress_system.node_edge_map = std::move(h_refinement_model.node_edge_map);
 
-	stress_system.node_edge_map = std::move(h_refinement_model.node_edge_map);
+		// Initialize the solver
+		bool isSolverInitialized = false;
+		(*isAnalysisSuccess) = false;
 
-	// Initialize the solver
-	bool isSolverInitialized = false;
+		stress2d_solver solver(solvertype, polynomial_order);
 
-	stress2d_solver solver(solvertype, polynomial_order);
-
-	isSolverInitialized = solver.initialize_solver(&stress_system, output_file,
-		isSelfWeight, accl_x, accl_y, &stopwatch, callback);
+		isSolverInitialized = solver.initialize_solver(&stress_system, output_file,
+			isSelfWeight, accl_x, accl_y, &stopwatch, callback);
 
 
-	if (isSolverInitialized == true)
-	{
-		bool isSolveSuccessful = solver.perform_solve();
-
-		if (isSolveSuccessful == true)
+		if (isSolverInitialized == true)
 		{
-			(*isAnalysisSuccess) = true;
-		}
-		else
-		{
-			(*isAnalysisSuccess) = false;
-		}
-	}
+			bool isSolveSuccessful = solver.perform_solve();
 
+			if (isSolveSuccessful == true)
+			{
+				(*isAnalysisSuccess) = true;
+			}
+		}
 
-	(*isAnalysisSuccess) = false;
 
 	//_________________________________________________________
 	// Close the files
 	infile.close();
 	outfile.close();
+
+
 
 
 }

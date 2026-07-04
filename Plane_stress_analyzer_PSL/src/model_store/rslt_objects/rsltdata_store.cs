@@ -3,6 +3,7 @@ using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
 using Plane_stress_analyzer_PSL.src.events_handler;
 using Plane_stress_analyzer_PSL.src.global_variables;
+using Plane_stress_analyzer_PSL.src.model_store.geom_objects;
 using Plane_stress_analyzer_PSL.src.opentk_control.opentk_buffer;
 using Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler;
 using System;
@@ -11,7 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace src.model_store.rslt_objects
+namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
 {
     public class rsltdata_store : IDisposable
     {
@@ -23,7 +24,7 @@ namespace src.model_store.rslt_objects
 
             public float displ_x;
             public float displ_y;
-
+            public float displ_magnitude;
 
         }
 
@@ -43,13 +44,33 @@ namespace src.model_store.rslt_objects
 
         }
 
-        private const int FLOATS_PER_VERTEX = 2;
+        private struct result_extremes
+        {
+            public float max_displacement;
 
-        private List<point_store> points = new List<point_store>();
+            // Stress extremes in X direction
+            public float max_stressX;
+            public float min_stressX;
+
+            // Stress extremes in Y direction
+            public float max_stressY; 
+            public float min_stressY;
+
+            // Shear stress extremes
+            public float max_tauXY; 
+            public float min_tauXY;
+
+
+
+        }
+
+        private Dictionary<int, point_store> points = new Dictionary<int, point_store>();
         private List<line_store> wireframe_lines = new List<line_store>();
         private List<tri_store> tris = new List<tri_store>();
 
-        public bool isResultSet = false;
+        private result_extremes rslt_extremes;
+
+        // public bool isResultSet = false;
 
 
         private Shader rsltmeshShader;
@@ -62,6 +83,10 @@ namespace src.model_store.rslt_objects
         private IndexBuffer point_ibo;
         private IndexBuffer wireframe_ibo;
         private IndexBuffer triangle_ibo;
+
+        // Shrunk mesh data
+        private shrunkrsltdata_store shrunk_rsltmesh_data = new shrunkrsltdata_store();
+
 
         private bool buffersInitialized = false;
 
@@ -85,13 +110,16 @@ namespace src.model_store.rslt_objects
 
         public void add_point(int point_id, float x, float y, float displ_x, float displ_y)
         {
-            points.Add(new point_store()
+            float displ_magnitude = (float)Math.Sqrt(displ_x * displ_x + displ_y * displ_y);    
+
+            points.Add(point_id, new point_store()
             {
                 point_id = point_id,
                 x_coord = x,
                 y_coord = y,
                 displ_x = displ_x,
-                displ_y = displ_y
+                displ_y = displ_y,
+                displ_magnitude = displ_magnitude
             });
 
         }
@@ -120,7 +148,34 @@ namespace src.model_store.rslt_objects
         }
 
 
-        public void paint_result_mesh()
+        public void set_result_extremes()
+        {
+            // Result extremes are calculated based on the points data
+            rslt_extremes = new result_extremes();
+            rslt_extremes.max_displacement = 0.0f;
+
+            foreach (var pt in points.Values)
+            {
+                if (pt.displ_magnitude > rslt_extremes.max_displacement)
+                {
+                    rslt_extremes.max_displacement = pt.displ_magnitude;
+                }
+            }
+
+        }
+
+
+        public void paint_results()
+        {
+            paint_result_mesh();
+
+            paint_result_mesh_wireframe();
+
+            paint_result_mesh_points();
+        }
+
+
+        private void paint_result_mesh()
         {
             if (!gvariables_static.is_paint_resultmesh || !buffersInitialized)
                 return;
@@ -130,7 +185,7 @@ namespace src.model_store.rslt_objects
             if (gvariables_static.is_paint_shrunk_triangle)
             {
                 // Paint the shrunk mesh 
-                // shrunk_mesh_data.paint_shrunk_mesh(ref meshShader);
+                shrunk_rsltmesh_data.paint_shrunk_rsltmesh();
                 rsltmeshShader.UnBind();
                 return;
             }
@@ -154,7 +209,7 @@ namespace src.model_store.rslt_objects
         }
 
 
-        public void paint_result_mesh_wireframe()
+        private void paint_result_mesh_wireframe()
         {
             if (!gvariables_static.is_paint_resultmesh_boundaries || !buffersInitialized)
                 return;
@@ -177,7 +232,7 @@ namespace src.model_store.rslt_objects
         }
 
 
-        public void paint_result_mesh_points()
+        private void paint_result_mesh_points()
         {
             if (!gvariables_static.is_paint_resultmeshpoints || !buffersInitialized)
                 return;
@@ -206,6 +261,7 @@ namespace src.model_store.rslt_objects
 
         public void create_buffer_data()
         {
+
             //_______________________________________________________________
             // prepare the Vertex data for openGL
             List<float> vertexData = new List<float>();
@@ -216,8 +272,17 @@ namespace src.model_store.rslt_objects
                 point_store pt = points[i];
                 vertexData.Add(pt.x_coord);
                 vertexData.Add(pt.y_coord);
+
+                // Normalized displacement values for plotting
+                vertexData.Add((float)(pt.displ_x / pt.displ_magnitude));
+                vertexData.Add((float)(pt.displ_y / pt.displ_magnitude));
+
+                // Calculate the magnitude of the displacement vector for color mapping
+                vertexData.Add((float)(pt.displ_magnitude / rslt_extremes.max_displacement)); // normalized scalar value
+
                 pointIndexData.Add(i);
             }
+
 
             // Create VAO and VBO for points
             point_vao = new VertexArray();
@@ -274,9 +339,7 @@ namespace src.model_store.rslt_objects
             }
 
             // Shrunk Mesh buffers
-
-
-
+            generate_shrunk_mesh();
 
             buffersInitialized = true;
         }
@@ -286,28 +349,42 @@ namespace src.model_store.rslt_objects
         private void generate_shrunk_mesh()
         {
 
-            point_store GetPointById(int pt_id)
-            {
-                int idx = pointIDToIndex[pt_id];
-
-                return points[idx];
-            }
-
             // Generate shrunk vertices for triangles
-            foreach (tri_store tri in tris.Values)
+            foreach (tri_store tri in tris)
             {
-                var p1 = GetPointById(tri.pt_id1);
-                var p2 = GetPointById(tri.pt_id2);
-                var p3 = GetPointById(tri.pt_id3);
+                var p1 = points[tri.pt_id1];
+                var p2 = points[tri.pt_id2];
+                var p3 = points[tri.pt_id3];
 
-                shrunk_mesh_data.add_shrunk_triangle(tri.tri_id,
-                    p1.x_coord, p1.y_coord, p2.x_coord, p2.y_coord, p3.x_coord, p3.y_coord,
-                    tri.mat_id);
+                float[] pt1_values = new float[5];
+                pt1_values[0] = p1.x_coord;
+                pt1_values[1] = p1.y_coord;
+                pt1_values[2] = (float)(p1.displ_x / p1.displ_magnitude);
+                pt1_values[3] = (float)(p1.displ_y / p1.displ_magnitude);
+                pt1_values[4] = (float)(p1.displ_magnitude / rslt_extremes.max_displacement);
+
+
+                float[] pt2_values = new float[5];
+                pt2_values[0] = p2.x_coord;
+                pt2_values[1] = p2.y_coord;
+                pt2_values[2] = (float)(p2.displ_x / p2.displ_magnitude);
+                pt2_values[3] = (float)(p2.displ_y / p2.displ_magnitude);
+                pt2_values[4] = (float)(p2.displ_magnitude / rslt_extremes.max_displacement);
+
+
+                float[] pt3_values = new float[5];
+                pt3_values[0] = p3.x_coord;
+                pt3_values[1] = p3.y_coord;
+                pt3_values[2] = (float)(p3.displ_x / p3.displ_magnitude);
+                pt3_values[3] = (float)(p3.displ_y / p3.displ_magnitude);
+                pt3_values[4] = (float)(p3.displ_magnitude / rslt_extremes.max_displacement);
+
+                shrunk_rsltmesh_data.add_shrunk_triangle(tri.tri_id, pt1_values, pt2_values, pt3_values);
             }
 
 
             // Initialize the buffer
-            shrunk_mesh_data.create_shrunkmesh_buffer_data();
+            shrunk_rsltmesh_data.create_shrunkrsltmesh_buffer_data();
 
         }
 
@@ -318,6 +395,8 @@ namespace src.model_store.rslt_objects
                 graphic_events_control.viewMatrix * graphic_events_control.modelMatrix;
 
             rsltmeshShader.SetMatrix4("uMVP", uMVP);
+            rsltmeshShader.SetFloat("geomscale", gvariables_static.geom_size);
+            rsltmeshShader.SetFloat("modelpercent", gvariables_static.displacement_scale);
 
             rsltmeshShader.SetFloat("vertexTransparency", gvariables_static.rslt_transparency);
 

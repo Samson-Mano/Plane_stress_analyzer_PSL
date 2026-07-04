@@ -10,7 +10,7 @@ using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
 
 
-namespace src.model_store.rslt_objects
+namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
 {
     public class shrunkrsltdata_store
     {
@@ -22,6 +22,7 @@ namespace src.model_store.rslt_objects
 
             public float displ_x;
             public float displ_y;
+            public float displ_magnitude;
 
         }
 
@@ -34,7 +35,6 @@ namespace src.model_store.rslt_objects
         }
 
         private int shrunkpt_id = 0;
-
         private const float SHRINKFACTOR = 0.80f;
 
 
@@ -56,7 +56,7 @@ namespace src.model_store.rslt_objects
         }
 
 
-        private void add_shrunk_point(int point_id, float x, float y, float displ_x, float displ_y)
+        private void add_shrunk_point(int point_id, float x, float y, float displ_x, float displ_y, float displ_magnitude)
         {
             shrunk_points.Add(new point_store()
             {
@@ -64,7 +64,8 @@ namespace src.model_store.rslt_objects
                 x_coord = x,
                 y_coord = y,
                 displ_x = displ_x,
-                displ_y = displ_y
+                displ_y = displ_y,
+                displ_magnitude = displ_magnitude
             });
         }
 
@@ -82,19 +83,22 @@ namespace src.model_store.rslt_objects
                 cx + (pt1_data[0] - cx) * SHRINKFACTOR,
                 cy + (pt1_data[1] - cy) * SHRINKFACTOR,
                 pt1_data[2],
-                pt1_data[3]);
+                pt1_data[3],
+                pt1_data[4]);
 
             add_shrunk_point(shrunkpt_id + 1,
                 cx + (pt2_data[0] - cx) * SHRINKFACTOR,
                 cy + (pt2_data[1] - cy) * SHRINKFACTOR,
                 pt2_data[2],
-                pt2_data[3]);
+                pt2_data[3],
+                pt2_data[4]);
 
             add_shrunk_point(shrunkpt_id + 2,
                 cx + (pt3_data[0] - cx) * SHRINKFACTOR,
                 cy + (pt3_data[1] - cy) * SHRINKFACTOR,
                 pt3_data[2],
-                pt3_data[3]);
+                pt3_data[3],
+                pt3_data[4]);
 
 
             shrunk_tris.Add(new tri_store()
@@ -123,6 +127,9 @@ namespace src.model_store.rslt_objects
                 point_store pt = shrunk_points[i];
                 shrunk_vertexData.Add(pt.x_coord);
                 shrunk_vertexData.Add(pt.y_coord);
+                shrunk_vertexData.Add(pt.displ_x);
+                shrunk_vertexData.Add(pt.displ_y);
+                shrunk_vertexData.Add(pt.displ_magnitude);
             }
 
             // Create VAO and VBO for points

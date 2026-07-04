@@ -577,7 +577,7 @@ void  stress2d_solver::solve_BCs_elimination_method()
 		F_f(i) = global_load_vector(free_dofs[i]);
 	}
 
-
+	// store_k_m_matrices_text_debug();
 
 	// Perform solve
 	Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;

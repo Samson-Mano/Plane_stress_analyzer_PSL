@@ -87,7 +87,9 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
 
             // Pre-computed MVP matrix on CPU for better performance
             uniform mat4 uMVP;           // Model-View-Projection matrix
+            uniform float geomscale = 1.0f; // Geometry scale factor
             uniform float sinevalue = 1.0f;                    
+            uniform float modelpercent = 0.01; // default 1 % scale factor             
 
             layout(location = 0) in vec2 aPosition;
             layout(location = 1) in vec2 aDisplacement;
@@ -97,7 +99,10 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
                     
             void main()
             {
-                gl_Position = uMVP * vec4(aPosition + aDisplacement, 0.0, 1.0);
+                float scalevalue = geomscale * modelpercent * aScalarValue;
+                vec2 scaledDisplacement = aDisplacement * scalevalue * sinevalue;
+
+                gl_Position = uMVP * vec4(aPosition + scaledDisplacement, 0.0, 1.0);
                 v_deflscale = aScalarValue * sinevalue;
             }
 

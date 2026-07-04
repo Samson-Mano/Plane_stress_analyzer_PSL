@@ -128,12 +128,6 @@ void h_refinement_store::add_material(const int& materialid,
 {
 	// Material addition
 	material_store temp_material(materialid, youngsmodulus, matdensity, poissonsratio, yieldpoint, thickness, formulation);
-	//temp_material.materialid = materialid;
-	//temp_material.youngsmodulus = youngsmodulus;
-	//temp_material.matdensity = matdensity;
-	//temp_material.poissonsratio = poissonsratio;
-	//temp_material.yieldpoint = yieldpoint;
-	//temp_material.thickness = thickness;
 
 	// Insert to the material list
 	material_list.insert({ materialid, temp_material });

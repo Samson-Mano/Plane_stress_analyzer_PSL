@@ -457,8 +457,6 @@ namespace Plane_stress_analyzer_PSL.src.events_handler
 
             using (BinaryWriter writer = new BinaryWriter(File.Open(filePath, FileMode.Create)))
             {
-                //// Write the spectral order as the first piece of information in the file
-                //writer.Write(fedata.p_order);
 
                 // Nodes
                 writer.Write(fedata.fe_nodes.nodeMap.Count);
@@ -468,15 +466,6 @@ namespace Plane_stress_analyzer_PSL.src.events_handler
                     writer.Write(node.node_pt_x_coord);
                     writer.Write(node.node_pt_y_coord);
                 }
-
-                //// Edges
-                //writer.Write(fedata.line_count);
-                //foreach (var edge in fedata.lineMap.Values)
-                //{
-                //    writer.Write(edge.line_id);
-                //    writer.Write(edge.start_pt_id);
-                //    writer.Write(edge.end_pt_id);
-                //}
 
                 // Tri elements
                 writer.Write(fedata.fe_tris.elementtriMap.Count);
@@ -546,29 +535,6 @@ namespace Plane_stress_analyzer_PSL.src.events_handler
                     foreach (int nid in load.load_node_ids)
                         writer.Write(nid);
                 }
-
-
-
-                // Edge constraints
-                //writer.Write(fe_edgeconstraints.edgecnstMap.Count);
-                //foreach (var cnst in fe_edgeconstraints.edgecnstMap.Values)
-                //{
-                //    writer.Write(cnst.edgecnst_id);
-                //    writer.Write(cnst.field_value);
-                //    writer.Write(cnst.normalderivfield_value);
-                //    writer.Write(cnst.isfieldvalue);
-                //    writer.Write(cnst.isnormalderivfieldvalue);
-                //    writer.Write(cnst.isSommerfieldBC);
-
-                //    writer.Write(cnst.constraint_edge_ids.Count);
-                //    for (int i = 0; i < cnst.constraint_edge_ids.Count; i++)
-                //    {
-                //        writer.Write(cnst.constraint_edge_ids[i]);
-                //        writer.Write(cnst.constraint_edge_startpt_ids[i]);
-                //        writer.Write(cnst.constraint_edge_endpt_ids[i]);
-                //    }
-
-                //}
 
             }
 

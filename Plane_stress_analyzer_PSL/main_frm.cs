@@ -662,5 +662,92 @@ namespace Plane_stress_analyzer_PSL
 
         #endregion
 
+
+        #region "Result Menu Events"
+
+        private void displacementToolStripMenuItem_Click(object sender, EventArgs e) => TrySetResultOption(1);
+
+        private void stressXToolStripMenuItem_Click(object sender, EventArgs e) => TrySetResultOption(2);
+
+        private void stressYToolStripMenuItem_Click(object sender, EventArgs e) => TrySetResultOption(3);
+
+        private void tauXYToolStripMenuItem_Click(object sender, EventArgs e) => TrySetResultOption(4);
+
+        private void hideResultsToolStripMenuItem_Click(object sender, EventArgs e) => TrySetResultOption(0);
+
+
+        private void TrySetResultOption(int option)
+        {
+            if (modeldata.IsResultSet == false)
+                return;
+
+            // Set the result option
+            set_ResultOption(option);
+
+        }
+
+
+        public void set_ResultOption(int option = 0)
+        {
+            // Result menu checks
+            displacementToolStripMenuItem.Checked = (option == 1);
+            stressXToolStripMenuItem.Checked = (option == 2);
+            stressYToolStripMenuItem.Checked = (option == 3);
+            tauXYToolStripMenuItem.Checked = (option == 4);
+            hideResultsToolStripMenuItem.Checked = (option == 0);
+
+            // Reset the result option flags in the modeldata_store
+            gvariables_static.is_paint_result_displacement = false;
+            gvariables_static.is_paint_result_stressX =  false;
+            gvariables_static.is_paint_result_stressY = false;
+            gvariables_static.is_paint_result_tauXY = false;
+
+            // Transparency defaults
+            gvariables_static.geom_transparency = 1.0f;
+            gvariables_static.rslt_transparency = 0.0f;
+
+            const float default_result_geom_transparency = 0.3f;
+
+            // Apply selection
+            switch (option)
+            {
+                case 1:
+                    gvariables_static.is_paint_result_displacement = true;
+                    gvariables_static.geom_transparency = default_result_geom_transparency;
+                    gvariables_static.rslt_transparency = 1.0f;
+                    break;
+                case 2:
+                    gvariables_static.is_paint_result_stressX = true;
+                    gvariables_static.geom_transparency = default_result_geom_transparency;
+                    gvariables_static.rslt_transparency = 1.0f;
+                    break;
+                case 3:
+                    gvariables_static.is_paint_result_stressY = true;
+                    gvariables_static.geom_transparency = default_result_geom_transparency;
+                    gvariables_static.rslt_transparency = 1.0f;
+                    break;
+                case 4:
+                    gvariables_static.is_paint_result_tauXY = true;
+                    gvariables_static.geom_transparency = default_result_geom_transparency;
+                    gvariables_static.rslt_transparency = 1.0f;
+                    break;
+                default:
+                    // Hide results
+                    break;
+            }
+
+            // Switch the result option in the modeldata_store
+            modeldata.switch_result_option();
+
+            modeldata.update_openTK_uniforms();
+
+            glControl_main_panel.Invalidate();
+
+        }
+
+
+        #endregion
+
+
     }
 }

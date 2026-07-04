@@ -6,6 +6,7 @@ using Plane_stress_analyzer_PSL.src.events_handler;
 using Plane_stress_analyzer_PSL.src.global_variables;
 using Plane_stress_analyzer_PSL.src.model_store.fe_objects;
 using Plane_stress_analyzer_PSL.src.model_store.geom_objects;
+using Plane_stress_analyzer_PSL.src.model_store.rslt_objects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,6 +21,8 @@ namespace Plane_stress_analyzer_PSL.src.model_store
         // FE Data store
         public fedata_store fe_data;
 
+        // Result data store
+        public rsltdata_store rslt_data;
 
         // Drawing bound data
         public Vector3 min_bounds = new Vector3(-1);
@@ -40,7 +43,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store
 
 
         public bool IsModelSet = false;
-
+        public bool IsResultSet = false;
 
 
         public modeldata_store()
@@ -58,6 +61,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store
 
 
             IsModelSet = false;
+            IsResultSet = false;
         }
 
 
@@ -68,7 +72,9 @@ namespace Plane_stress_analyzer_PSL.src.model_store
             selection_circle = new selectcircle_store();
 
             fe_data = new fedata_store();
+            rslt_data = new rsltdata_store();
 
+            IsResultSet = false;
         }
 
 
@@ -78,6 +84,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store
             IsModelSet = false;
 
             fe_data = new fedata_store();
+            rslt_data = new rsltdata_store();
 
             if (type == 0)
             {
@@ -149,6 +156,34 @@ namespace Plane_stress_analyzer_PSL.src.model_store
                 }
             }
 
+            if(IsResultSet == true)
+            {
+                // Paint the result mesh
+                if (gvariables_static.is_paint_result_displacement == true ||
+                    gvariables_static.is_paint_result_stressX == true ||
+                    gvariables_static.is_paint_result_stressY == true ||
+                    gvariables_static.is_paint_result_tauXY == true)
+                {
+
+                    rslt_data.paint_results();
+                }
+            }
+
+
+        }
+
+
+        public void switch_result_option()
+        {
+
+            if (!IsModelSet)
+                return;
+            if (IsResultSet == false)
+                return;
+
+
+            // Switch the result option
+
         }
 
 
@@ -158,6 +193,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store
                 return;
 
             fe_data.update_openTK_uniforms(graphic_events_control);
+            rslt_data.update_openTK_uniforms(graphic_events_control);
 
         }
 
