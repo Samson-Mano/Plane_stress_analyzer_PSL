@@ -165,6 +165,7 @@ std::vector<double> shape_functions::get_tri_shape_functions(int order, double x
 
 		if (order == 3)
 		{
+            // T10
             // Corner nodes
 			N.push_back(temp_N[0]); 
             N.push_back(temp_N[3]);
@@ -189,7 +190,33 @@ std::vector<double> shape_functions::get_tri_shape_functions(int order, double x
 		}
 		else if (order == 4)
 		{
-			N = temp_N; // T15
+            // T15
+            // Corner nodes
+            N.push_back(temp_N[0]);
+            N.push_back(temp_N[4]);
+            N.push_back(temp_N[14]);
+
+			// Edge nodes
+			// Edge 1
+			N.push_back(temp_N[1]);
+			N.push_back(temp_N[2]);
+			N.push_back(temp_N[3]);
+
+			// Edge 2
+            N.push_back(temp_N[8]);
+            N.push_back(temp_N[11]);
+			N.push_back(temp_N[13]);
+
+			// Edge 3
+            N.push_back(temp_N[12]);
+            N.push_back(temp_N[9]);
+            N.push_back(temp_N[5]);
+
+			// Internal nodes
+            N.push_back(temp_N[6]);
+            N.push_back(temp_N[7]);
+            N.push_back(temp_N[10]);
+
 		}
 
     }
@@ -409,12 +436,34 @@ std::vector<std::pair<double, double>> shape_functions::get_tri_shape_derivative
         }
         else if (order == 4)
         {
-            dN = temp_dN; // T15
+            // T15
+            // Corner nodes
+            dN.push_back(temp_dN[0]);
+            dN.push_back(temp_dN[4]);
+            dN.push_back(temp_dN[14]);
+
+            // Edge nodes
+            // Edge 1
+            dN.push_back(temp_dN[1]);
+            dN.push_back(temp_dN[2]);
+            dN.push_back(temp_dN[3]);
+
+            // Edge 2
+            dN.push_back(temp_dN[8]);
+            dN.push_back(temp_dN[11]);
+            dN.push_back(temp_dN[13]);
+
+            // Edge 3
+            dN.push_back(temp_dN[12]);
+            dN.push_back(temp_dN[9]);
+            dN.push_back(temp_dN[5]);
+
+            // Internal nodes
+            dN.push_back(temp_dN[6]);
+            dN.push_back(temp_dN[7]);
+            dN.push_back(temp_dN[10]);
+
         }
-
-
-        // dN = dtri_bernstein(order, xi, eta);
-
     }
 
     return dN;

@@ -339,6 +339,8 @@ namespace Plane_stress_analyzer_PSL
 
             glControl_main_panel_SizeChanged(sender, e);
 
+            set_ResultOption(0); // Reset result option to hide results
+
             glControl_main_panel.Refresh();
             glControl_main_panel.Invalidate();
 
@@ -374,6 +376,8 @@ namespace Plane_stress_analyzer_PSL
             }
 
             glControl_main_panel_SizeChanged(sender, e);
+
+            set_ResultOption(0); // Reset result option to hide results
 
             glControl_main_panel.Refresh();
             glControl_main_panel.Invalidate();

@@ -82,6 +82,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store
         {
             List<Vector3> nodePtsList = new List<Vector3>();
             IsModelSet = false;
+            IsResultSet = false;
 
             fe_data = new fedata_store();
             rslt_data = new rsltdata_store();

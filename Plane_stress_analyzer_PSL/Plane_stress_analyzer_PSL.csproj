@@ -107,6 +107,12 @@
     <Compile Include="other_windows\option_frm.Designer.cs">
       <DependentUpon>option_frm.cs</DependentUpon>
     </Compile>
+    <Compile Include="other_windows\rsltoption_frm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="other_windows\rsltoption_frm.Designer.cs">
+      <DependentUpon>rsltoption_frm.cs</DependentUpon>
+    </Compile>
     <Compile Include="other_windows\solver_frm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -165,6 +171,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="other_windows\option_frm.resx">
       <DependentUpon>option_frm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="other_windows\rsltoption_frm.resx">
+      <DependentUpon>rsltoption_frm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="other_windows\solver_frm.resx">
       <DependentUpon>solver_frm.cs</DependentUpon>

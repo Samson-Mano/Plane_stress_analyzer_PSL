@@ -369,12 +369,12 @@ std::vector<int> polynomial_2dmesh_store::create_tri_internal_nodes(int nd1, int
 	else if (this->polynomial_order == 4)
 	{
 		// T15: 3 internal nodes
-		// Using area coordinates: (1/3, 1/3, 1/3) and variations
+		// Using area coordinates: 
 		std::vector<std::pair<double, double>> internal_points =
 		{
-			{1.0 / 3.0, 1.0 / 3.0},
-			{1.0 / 6.0, 1.0 / 6.0},
-			{2.0 / 3.0, 1.0 / 6.0}
+			{1.0 / 2.0, 1.0 / 4.0},
+			{1.0 / 4.0, 1.0 / 2.0},
+			{1.0 / 4.0, 1.0 / 4.0}
 		};
 
 		for (const auto& [alpha, beta] : internal_points)
