@@ -55,12 +55,23 @@ namespace Plane_stress_analyzer_PSL.other_windows
             try
             {
                 // Check the inputs (Whether the boundary condition is applied or not)
-                if (modeldata.fe_data.fe_constraints.cnst_set_count == 0 ||
-                modeldata.fe_data.fe_loads.load_set_count == 0)
+                if (modeldata.fe_data.fe_constraints.cnst_set_count == 0 )
                 {
 
                     richTextBox_AnalysisUpdate.Clear();
-                    AppendStatus("No boundary conditions applied or loads applied...\n");
+                    AppendStatus("No boundary conditions applied...\n");
+
+                    return;
+                }
+
+
+
+
+                if (modeldata.fe_data.fe_loads.load_set_count == 0 && checkBox_selfweight.Checked == false)
+                {
+
+                    richTextBox_AnalysisUpdate.Clear();
+                    AppendStatus("No loads applied...\n");
 
                     return;
                 }

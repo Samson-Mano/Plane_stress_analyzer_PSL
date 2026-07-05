@@ -254,6 +254,9 @@ void stress2d_solver::create_global_stiffness_matrix()
 			// Calculate the element stiffness matrix
 			Eigen::MatrixXd element_stiffness_matrix = tri_elem_formulation.compute_trielement_stiffness_matrix(node_coords, element_material);
 
+			// std::string matrix_str = matrix_to_string(element_stiffness_matrix);
+
+
 			// Assemble the global stiffness matrix
 			assemble_element_matrix(tri_elm.ordered_node_ids, element_stiffness_matrix, k_triplets);
 		}
@@ -753,20 +756,35 @@ bool stress2d_solver::store_results()
 
 	report("Results: Nodes written");
 
-	int32_t edge_lines_count = static_cast<int32_t>(polynomial_2dmesh.renderer_edge_lines.size());
+	//int32_t edge_lines_count = static_cast<int32_t>(polynomial_2dmesh.renderer_edge_lines.size());
+	//bin_file.write(reinterpret_cast<const char*>(&edge_lines_count), sizeof(int32_t));
+
+	//// Write the edges
+	//for (const auto& edge : polynomial_2dmesh.renderer_edge_lines)
+	//{
+	//	int32_t start_nodeid = static_cast<int32_t>(edge.nstart);
+	//	int32_t end_nodeid = static_cast<int32_t>(edge.nend);
+
+	//	bin_file.write(reinterpret_cast<const char*>(&start_nodeid), sizeof(int32_t));
+	//	bin_file.write(reinterpret_cast<const char*>(&end_nodeid), sizeof(int32_t));
+	//}
+
+	int32_t edge_lines_count = static_cast<int32_t>(polynomial_2dmesh.polynomial_edge_list.size());
 	bin_file.write(reinterpret_cast<const char*>(&edge_lines_count), sizeof(int32_t));
 
 	// Write the edges
-	for (const auto& edge : polynomial_2dmesh.renderer_edge_lines)
+	for (const auto& edge : polynomial_2dmesh.polynomial_edge_list)
 	{
-		int32_t start_nodeid = static_cast<int32_t>(edge.nstart);
-		int32_t end_nodeid = static_cast<int32_t>(edge.nend);
+		int32_t start_nodeid = static_cast<int32_t>(edge.second.startnodeid);
+		int32_t end_nodeid = static_cast<int32_t>(edge.second.endnodeid);
 
 		bin_file.write(reinterpret_cast<const char*>(&start_nodeid), sizeof(int32_t));
 		bin_file.write(reinterpret_cast<const char*>(&end_nodeid), sizeof(int32_t));
 	}
 
 	report("Results: Edges written");
+
+
 
 	int32_t triangles_count = static_cast<int32_t>(polynomial_2dmesh.renderer_element_triangles.size());
 	bin_file.write(reinterpret_cast<const char*>(&triangles_count), sizeof(int32_t));
@@ -804,6 +822,26 @@ bool stress2d_solver::store_results()
 }
 
 
+std::string stress2d_solver::matrix_to_string(const Eigen::MatrixXd& mat)
+{
+	const int precision = 6; // Set the desired precision for floating-point numbers
+	std::stringstream ss;
+	ss << std::fixed << std::setprecision(precision);
+	ss << "[" << mat.rows() << "x" << mat.cols() << "]\n";
+
+	for (int i = 0; i < mat.rows(); ++i)
+	{
+		ss << "[";
+		for (int j = 0; j < mat.cols(); ++j)
+		{
+			ss << std::setw(12) << mat(i, j);
+			if (j < mat.cols() - 1) ss << ", ";
+		}
+		ss << "]\n";
+	}
+	return ss.str();
+}
+
 
 void stress2d_solver::store_k_m_matrices_text_debug()
 {
@@ -823,6 +861,21 @@ void stress2d_solver::store_k_m_matrices_text_debug()
 	text_file << "# Plane Stress Analysis Solver - Ke & Me matrix\n";
 	text_file << "# Format: Debug Text Output\n";
 	text_file << "# Generated: " << __DATE__ << " " << __TIME__ << "\n\n";
+
+	text_file << "Solver Polynomial Order: " << polynomial_order << "\n";
+	text_file << "=== Elastictiy matrix ===\n";
+
+	const Eigen::Matrix3d& elasticity_matrix = polynomial_2dmesh.get_material_data().at(0).get_elasticity_matrix();
+
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			text_file << std::setw(15) << std::setprecision(6) << elasticity_matrix(i, j) << " ";
+		}
+		text_file << "\n";
+	}
+
 
 	int max_print_size = 200;
 	int matrix_rows = global_stiffness_matrix.rows();

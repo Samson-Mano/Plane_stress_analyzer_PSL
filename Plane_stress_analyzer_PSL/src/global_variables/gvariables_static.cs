@@ -157,7 +157,7 @@ namespace Plane_stress_analyzer_PSL.src.global_variables
 
 
         public static float geom_transparency = 1.0f;
-        public static float rslt_transparency = 1.0f;
+        public static float rslt_transparency = 0.8f;
 
 
         // Control Modal Animation

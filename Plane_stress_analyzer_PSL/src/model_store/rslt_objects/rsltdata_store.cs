@@ -74,6 +74,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
 
 
         private Shader rsltmeshShader;
+        private Shader rsltmeshwireframeShader;
 
         // Vertex Buffer object and Vertex Array object 
         private VertexBuffer point_vbo;
@@ -104,6 +105,10 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
                 ShaderLibrary.get_fragment_shader(ShaderLibrary.ShaderType.RsltMeshShader)
                 );
 
+            rsltmeshwireframeShader = new Shader(
+                ShaderLibrary.get_vertex_shader(ShaderLibrary.ShaderType.RsltWireframeShader),
+                ShaderLibrary.get_fragment_shader(ShaderLibrary.ShaderType.RsltWireframeShader)
+                );
         }
 
 
@@ -217,14 +222,14 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
 
             if (wireframe_ibo.BufferCount > 0)
             {
-                rsltmeshShader.Bind();
+                rsltmeshwireframeShader.Bind();
 
                 point_vao.Bind();
                 wireframe_ibo.Bind();
-
+                
                 GL.DrawElements(PrimitiveType.Lines, wireframe_ibo.BufferCount, DrawElementsType.UnsignedInt, 0);
 
-                rsltmeshShader.UnBind();
+                rsltmeshwireframeShader.UnBind();
                 point_vao.UnBind();
                 wireframe_ibo.UnBind();
             }
@@ -274,8 +279,16 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
                 vertexData.Add(pt.y_coord);
 
                 // Normalized displacement values for plotting
-                vertexData.Add((float)(pt.displ_x / pt.displ_magnitude));
-                vertexData.Add((float)(pt.displ_y / pt.displ_magnitude));
+                if(pt.displ_magnitude > 0)
+                {
+                    vertexData.Add((float)(pt.displ_x / pt.displ_magnitude));
+                    vertexData.Add((float)(pt.displ_y / pt.displ_magnitude));
+                }
+                else
+                {
+                    vertexData.Add(0);
+                    vertexData.Add(0);
+                }
 
                 // Calculate the magnitude of the displacement vector for color mapping
                 vertexData.Add((float)(pt.displ_magnitude / rslt_extremes.max_displacement)); // normalized scalar value
@@ -359,24 +372,48 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
                 float[] pt1_values = new float[5];
                 pt1_values[0] = p1.x_coord;
                 pt1_values[1] = p1.y_coord;
-                pt1_values[2] = (float)(p1.displ_x / p1.displ_magnitude);
-                pt1_values[3] = (float)(p1.displ_y / p1.displ_magnitude);
+                if (p1.displ_magnitude > 0)
+                {
+                    pt1_values[2] = (float)(p1.displ_x / p1.displ_magnitude);
+                    pt1_values[3] = (float)(p1.displ_y / p1.displ_magnitude);
+                }
+                else
+                {
+                    pt1_values[2] = 0;
+                    pt1_values[3] = 0;
+                }
                 pt1_values[4] = (float)(p1.displ_magnitude / rslt_extremes.max_displacement);
 
 
                 float[] pt2_values = new float[5];
                 pt2_values[0] = p2.x_coord;
                 pt2_values[1] = p2.y_coord;
-                pt2_values[2] = (float)(p2.displ_x / p2.displ_magnitude);
-                pt2_values[3] = (float)(p2.displ_y / p2.displ_magnitude);
+                if (p2.displ_magnitude > 0)
+                {
+                    pt2_values[2] = (float)(p2.displ_x / p2.displ_magnitude);
+                    pt2_values[3] = (float)(p2.displ_y / p2.displ_magnitude);
+                }
+                else
+                {
+                    pt2_values[2] = 0;
+                    pt2_values[3] = 0;
+                }
                 pt2_values[4] = (float)(p2.displ_magnitude / rslt_extremes.max_displacement);
 
 
                 float[] pt3_values = new float[5];
                 pt3_values[0] = p3.x_coord;
                 pt3_values[1] = p3.y_coord;
-                pt3_values[2] = (float)(p3.displ_x / p3.displ_magnitude);
-                pt3_values[3] = (float)(p3.displ_y / p3.displ_magnitude);
+                if (p3.displ_magnitude > 0)
+                {
+                    pt3_values[2] = (float)(p3.displ_x / p3.displ_magnitude);
+                    pt3_values[3] = (float)(p3.displ_y / p3.displ_magnitude);
+                }
+                else
+                {
+                    pt3_values[2] = 0;
+                    pt3_values[3] = 0;
+                }
                 pt3_values[4] = (float)(p3.displ_magnitude / rslt_extremes.max_displacement);
 
                 shrunk_rsltmesh_data.add_shrunk_triangle(tri.tri_id, pt1_values, pt2_values, pt3_values);
@@ -399,6 +436,18 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
             rsltmeshShader.SetFloat("modelpercent", gvariables_static.displacement_scale);
 
             rsltmeshShader.SetFloat("vertexTransparency", gvariables_static.rslt_transparency);
+
+
+            rsltmeshwireframeShader.SetMatrix4("uMVP", uMVP);
+            rsltmeshwireframeShader.SetFloat("geomscale", gvariables_static.geom_size);
+            rsltmeshwireframeShader.SetFloat("modelpercent", gvariables_static.displacement_scale);
+
+            // rsltmeshwireframeShader.SetFloat("vertexTransparency", gvariables_static.rslt_transparency);
+
+            Vector3 customColor = new Vector3(1.0f, 1.0f, 1.0f); // Fallback color
+
+            // rsltmeshwireframeShader.SetVector3("wireframeColor", customColor);
+            rsltmeshwireframeShader.SetFloat("wireframeAlpha", 0.5f);
 
         }
 

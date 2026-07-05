@@ -121,5 +121,7 @@ private:
 
 	void report(const char* msg);
 
+	std::string matrix_to_string(const Eigen::MatrixXd& mat);
+
 
 };

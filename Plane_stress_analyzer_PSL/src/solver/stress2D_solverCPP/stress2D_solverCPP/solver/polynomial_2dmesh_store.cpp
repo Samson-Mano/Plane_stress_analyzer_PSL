@@ -203,8 +203,8 @@ void polynomial_2dmesh_store::create_polynomial_tri_elements()
 
 		// Get ordered edge nodes
 		std::vector<int> edge1_nodes = get_ordered_edge_internal_nodes(p_edge1, tri.second.tri_id);
-		std::vector<int> edge2_nodes = get_ordered_edge_internal_nodes(p_edge1, tri.second.tri_id);
-		std::vector<int> edge3_nodes = get_ordered_edge_internal_nodes(p_edge1, tri.second.tri_id);
+		std::vector<int> edge2_nodes = get_ordered_edge_internal_nodes(p_edge2, tri.second.tri_id);
+		std::vector<int> edge3_nodes = get_ordered_edge_internal_nodes(p_edge3, tri.second.tri_id);
 
 		// Store edge nodes
 		p_tri.edge_node_ids[0] = std::move(edge1_nodes);

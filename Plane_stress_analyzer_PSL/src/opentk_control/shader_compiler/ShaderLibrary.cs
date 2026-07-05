@@ -16,6 +16,7 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
             ConstraintShader,
             LoadShader,
             RsltMeshShader,
+            RsltWireframeShader,
             SelectionShader
         }
 
@@ -90,6 +91,7 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
             uniform float geomscale = 1.0f; // Geometry scale factor
             uniform float sinevalue = 1.0f;                    
             uniform float modelpercent = 0.01; // default 1 % scale factor             
+            
 
             layout(location = 0) in vec2 aPosition;
             layout(location = 1) in vec2 aDisplacement;
@@ -148,6 +150,73 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
         #endregion
 
 
+
+
+        #region "Result WireFrame Mesh Shaders"
+
+        private static string rslt_wireframe_vert_shader()
+        {
+            return @"
+            #version 330 core
+
+            uniform mat4 uMVP;
+            uniform float geomscale = 1.0f;
+            uniform float sinevalue = 1.0f;                    
+            uniform float modelpercent = 0.01;
+    
+            layout(location = 0) in vec2 aPosition;
+            layout(location = 1) in vec2 aDisplacement;
+            layout(location = 2) in float aScalarValue;
+    
+            out float v_deflscale;
+        
+            void main()
+            {
+                float scalevalue = geomscale * modelpercent * aScalarValue;
+                vec2 scaledDisplacement = aDisplacement * scalevalue * sinevalue;
+                gl_Position = uMVP * vec4(aPosition + scaledDisplacement, 0.0, 1.0);
+                v_deflscale = aScalarValue * sinevalue;
+            }
+            ";
+        }
+
+
+        private static string rslt_wireframe_frag_shader()
+        {
+            return @"
+            #version 330 core
+    
+            uniform float wireframeAlpha;
+    
+            in float v_deflscale;
+    
+            out vec4 fColor;
+    
+            vec3 jetHeatmap(float value) 
+            {
+                float t = (value + 1.0) * 0.5;
+                return clamp(vec3(1.5) - abs(4.0 * vec3(t) + vec3(-3, -2, -1)), vec3(0), vec3(1));
+            }
+    
+            void main()
+            {
+                vec3 contourColor = jetHeatmap(v_deflscale);
+                vec3 finalColor;
+        
+         
+                // Use complementary color with some brightness enhancement
+                finalColor = vec3(1.0) - contourColor;
+
+                // Make it brighter for visibility
+                finalColor = mix(finalColor, vec3(1.0), 0.3);
+              
+        
+                fColor = vec4(finalColor, wireframeAlpha);
+            }
+            ";
+        }
+
+        #endregion
 
 
         #region "Text shaders"
@@ -438,9 +507,11 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
                     return mesh_vert_shader();
                 case ShaderType.RsltMeshShader:
                     return rslt_mesh_vert_shader();
+                case ShaderType.RsltWireframeShader:
+                    return rslt_wireframe_vert_shader();
                 case ShaderType.SelectionShader:
                     return selrect_vert_shader();
-                case ShaderType.ConstraintShader: 
+                case ShaderType.ConstraintShader:
                     return constraint_vert_shader();
                 case ShaderType.LoadShader:
                     return load_vert_shader();
@@ -461,6 +532,8 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
                     return mesh_frag_shader();
                 case ShaderType.RsltMeshShader:
                     return rslt_mesh_frag_shader();
+                case ShaderType.RsltWireframeShader:
+                    return rslt_wireframe_frag_shader();
                 case ShaderType.SelectionShader:
                     return selrect_frag_shader();
                 case ShaderType.ConstraintShader:

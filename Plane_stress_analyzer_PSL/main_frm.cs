@@ -707,6 +707,7 @@ namespace Plane_stress_analyzer_PSL
             gvariables_static.rslt_transparency = 0.0f;
 
             const float default_result_geom_transparency = 0.3f;
+            const float default_result_rslt_transparency = 0.8f;
 
             // Apply selection
             switch (option)
@@ -714,22 +715,22 @@ namespace Plane_stress_analyzer_PSL
                 case 1:
                     gvariables_static.is_paint_result_displacement = true;
                     gvariables_static.geom_transparency = default_result_geom_transparency;
-                    gvariables_static.rslt_transparency = 1.0f;
+                    gvariables_static.rslt_transparency = default_result_rslt_transparency;
                     break;
                 case 2:
                     gvariables_static.is_paint_result_stressX = true;
                     gvariables_static.geom_transparency = default_result_geom_transparency;
-                    gvariables_static.rslt_transparency = 1.0f;
+                    gvariables_static.rslt_transparency = default_result_rslt_transparency;
                     break;
                 case 3:
                     gvariables_static.is_paint_result_stressY = true;
                     gvariables_static.geom_transparency = default_result_geom_transparency;
-                    gvariables_static.rslt_transparency = 1.0f;
+                    gvariables_static.rslt_transparency = default_result_rslt_transparency;
                     break;
                 case 4:
                     gvariables_static.is_paint_result_tauXY = true;
                     gvariables_static.geom_transparency = default_result_geom_transparency;
-                    gvariables_static.rslt_transparency = 1.0f;
+                    gvariables_static.rslt_transparency = default_result_rslt_transparency;
                     break;
                 default:
                     // Hide results

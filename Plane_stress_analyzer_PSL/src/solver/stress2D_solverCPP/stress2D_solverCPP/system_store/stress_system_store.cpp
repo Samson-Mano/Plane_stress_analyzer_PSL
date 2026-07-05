@@ -15,8 +15,8 @@ Eigen::Matrix3d material_store::get_elasticity_matrix() const
 	Eigen::Matrix3d C;
 	C.setZero();
 
-	double E = youngsmodulus;
-	double nu = poissonsratio;
+	double E = youngsmodulus;   // 910; //
+	double nu = poissonsratio; // 0.3; //
 
 	if (formulation == 0)
 	{

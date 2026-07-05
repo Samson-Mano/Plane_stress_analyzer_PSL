@@ -24,15 +24,15 @@ std::vector<double> shape_functions::get_quad_shape_functions(int order, double 
 
         N = {
             // Corner nodes
-            0.25 * (1.0 - xi) * (1.0 - eta) * (-xi - eta - 1.0),
-            0.25 * (1.0 + xi) * (1.0 - eta) * (xi - eta - 1.0),
-            0.25 * (1.0 + xi) * (1.0 + eta) * (xi + eta - 1.0),
-            0.25 * (1.0 - xi) * (1.0 + eta) * (-xi + eta - 1.0),
+            0.25 * xi * (xi - 1.0) * eta * (eta - 1.0),
+            0.25 * xi * (xi + 1.0) * eta * (eta - 1.0),
+            0.25 * xi * (xi + 1.0) * eta * (eta + 1.0),
+            0.25 * xi * (xi - 1.0) * eta * (eta + 1.0),
             // Edge nodes
-            0.5 * (1.0 - xi2) * (1.0 - eta),
-            0.5 * (1.0 + xi) * (1.0 - eta2),
-            0.5 * (1.0 - xi2) * (1.0 + eta),
-            0.5 * (1.0 - xi) * (1.0 - eta2),
+            0.5 * (1.0 - xi2) * eta * (eta - 1.0),
+            0.5 * xi * (xi + 1.0) * (1.0 - eta2),
+            0.5 * (1.0 - xi2) * eta * (eta + 1.0),
+            0.5 * xi * (xi - 1.0) * (1.0 - eta2),
             // Center node
             (1.0 - xi2) * (1.0 - eta2)
         };
@@ -53,9 +53,46 @@ std::vector<double> shape_functions::get_quad_shape_functions(int order, double 
         const std::vector<double> nodes = quad_nodes(order);
         int np = static_cast<int>(nodes.size());           // order+1 nodes per direction
 
-        for (int row = 0; row < np; ++row)
+
+		// Corner nodes
+		N.push_back(lagrange1d(0, xi, nodes) * lagrange1d(0, eta, nodes));
+		N.push_back(lagrange1d(np - 1, xi, nodes) * lagrange1d(0, eta, nodes));
+		N.push_back(lagrange1d(np - 1, xi, nodes) * lagrange1d(np - 1, eta, nodes));
+		N.push_back(lagrange1d(0, xi, nodes) * lagrange1d(np - 1, eta, nodes));
+
+
+
+        // Edge nodes
+        // Edge 1
+        for (int col = 1; col < np - 1; ++col)
         {
-            for (int col = 0; col < np; ++col)
+            N.push_back(lagrange1d(col, xi, nodes) * lagrange1d(0, eta, nodes));
+        }
+
+        // Edge 2
+        for (int row = 1; row < np - 1; ++row)
+        {
+            N.push_back(lagrange1d(np-1, xi, nodes) * lagrange1d(row, eta, nodes));
+        }
+
+
+        // Edge 3
+        for (int col = np - 2; col > 0; --col)
+        {
+            N.push_back(lagrange1d(col, xi, nodes) * lagrange1d(np - 1, eta, nodes));
+        }
+
+        // Edge 4
+        for (int row = np - 2; row > 0; --row)
+        {
+            N.push_back(lagrange1d(0, xi, nodes) * lagrange1d(row, eta, nodes));
+        }
+
+
+        // Internal nodes
+        for (int row = 1; row < np - 1; ++row)
+        {
+            for (int col = 1; col < np - 1; ++col)
             {
                 N.push_back(lagrange1d(col, xi, nodes) * lagrange1d(row, eta, nodes));
             }
@@ -124,7 +161,37 @@ std::vector<double> shape_functions::get_tri_shape_functions(int order, double x
         //                  N_13 (1/4,3/4)
         //                  N_14 (0,1)
 
-        N = tri_bernstein(order, xi, eta);
+        std::vector<double> temp_N = tri_bernstein(order, xi, eta);
+
+		if (order == 3)
+		{
+            // Corner nodes
+			N.push_back(temp_N[0]); 
+            N.push_back(temp_N[3]);
+			N.push_back(temp_N[9]);
+
+			// Edge nodes
+            // Edge 1
+			N.push_back(temp_N[1]);
+			N.push_back(temp_N[2]);
+
+            // Edge 2
+            N.push_back(temp_N[6]);
+            N.push_back(temp_N[8]);
+
+			// Edge 3
+			N.push_back(temp_N[7]);
+			N.push_back(temp_N[4]);
+
+			// Internal node
+			N.push_back(temp_N[5]);
+
+		}
+		else if (order == 4)
+		{
+			N = temp_N; // T15
+		}
+
     }
 
     return N;
@@ -155,30 +222,35 @@ std::vector<std::pair<double, double>> shape_functions::get_quad_shape_derivativ
         double eta2 = eta * eta;
         dN = {
             // Corner nodes
-            // Node 1: 0.25*(1-xi)*(1-eta)*(-xi-eta-1)
-            {0.25 * (1.0 - eta) * (2.0 * xi + eta),
-            0.25 * (1.0 - xi) * (xi + 2.0 * eta)},
-            // Node 2: 0.25*(1+xi)*(1-eta)*(xi-eta-1)
-            {0.25 * (1.0 - eta) * (2.0 * xi - eta),
-            0.25 * (1.0 + xi) * (-xi - 2.0 * eta)},
-            // Node 3: 0.25*(1+xi)*(1+eta)*(xi+eta-1)
-            {0.25 * (1.0 + eta) * (2.0 * xi + eta),
-            0.25 * (1.0 + xi) * (xi + 2.0 * eta)},
-            // Node 4: 0.25*(1-xi)*(1+eta)*(-xi+eta-1)
-            {0.25 * (1.0 + eta) * (-2.0 * xi + eta),
-            0.25 * (1.0 - xi) * (-xi + 2.0 * eta)},
+            // Node 1: 0.25*xi*(xi-1.0)*eta*(eta-1.0)
+            {0.25 * (2.0 * xi - 1.0) * eta * (eta - 1.0),
+            0.25 * (2.0 * eta - 1.0) * xi * (xi - 1.0)},
+            // Node 2: 0.25*xi*(xi+1.0)*eta*(eta-1.0)
+            {0.25 * (2.0 * xi + 1.0) * eta * (eta - 1.0),
+            0.25 * (2.0 * eta - 1.0) * xi * (xi + 1.0)},
+            // Node 3: 0.25*xi*(xi+1.0)*eta*(eta+1.0)
+            {0.25 * (2.0 * xi + 1.0) * eta * (eta + 1.0),
+            0.25 * (2.0 * eta + 1.0) * xi * (xi + 1.0)},
+            // Node 4: 0.25*xi*(xi-1.0)*eta*(eta+1.0)
+            {0.25 * (2.0 * xi - 1.0) * eta * (eta + 1.0),
+            0.25 * (2.0 * eta + 1.0) * xi * (xi - 1.0)},
             // Edge nodes
-            // Node 5: 0.5*(1-xi^2)*(1-eta)
-            {-xi * (1.0 - eta), -0.5 * (1.0 - xi2)},
-            // Node 6: 0.5*(1+xi)*(1-eta^2)
-            {0.5 * (1.0 - eta2), -(1.0 + xi) * eta},
-            // Node 7: 0.5*(1-xi^2)*(1+eta)
-            {-xi * (1.0 + eta), 0.5 * (1.0 - xi2)},
-            // Node 8: 0.5*(1-xi)*(1-eta^2)
-            {-0.5 * (1.0 - eta2), -(1.0 - xi) * eta},
+            // Node 5: 0.5*(1.0-xi2)*eta*(eta-1.0)
+            {-xi * eta * (eta - 1.0),
+            0.5 * (1.0 - xi2) * (2.0 * eta - 1.0)},
+            // Node 6: 0.5*xi*(xi+1.0)*(1.0-eta2)
+            {0.5 * (2.0 * xi + 1.0) * (1.0 - eta2),
+            -eta * xi * (xi + 1.0)},
+            // Node 7: 0.5*(1.0-xi2)*eta*(eta+1.0)
+            {-xi * eta * (eta + 1.0),
+            0.5 * (1.0 - xi2) * (2.0 * eta + 1.0)},
+            // Node 8: 0.5*xi*(xi-1.0)*(1.0-eta2)
+            {0.5 * (2.0 * xi - 1.0) * (1.0 - eta2),
+            -eta * xi * (xi - 1.0)},
             // Center node
-            // Node 9: (1-xi^2)*(1-eta^2)
-            {-2.0 * xi * (1.0 - eta2), -2.0 * eta * (1.0 - xi2)}
+            // Node 9: (1.0-xi2)*(1.0-eta2)
+            {-2.0 * xi * (1.0 - eta2),
+             -2.0 * eta * (1.0 - xi2)}
         };
 
     }
@@ -191,13 +263,74 @@ std::vector<std::pair<double, double>> shape_functions::get_quad_shape_derivativ
         const std::vector<double> nodes = quad_nodes(order);
         int np =  static_cast<int>(nodes.size());
 
+        double dNdxi = 0.0;
+        double dNdeta = 0.0;
 
-        for (int row = 0; row < np; ++row)
+		// Corner nodes
+        // Corner 1
+		dNdxi = dlagrange1d(0, xi, nodes) * lagrange1d(0, eta, nodes);
+		dNdeta = lagrange1d(0, xi, nodes) * dlagrange1d(0, eta, nodes);
+		dN.push_back({ dNdxi, dNdeta });
+
+		// Corner 2
+		dNdxi = dlagrange1d(np - 1, xi, nodes) * lagrange1d(0, eta, nodes);
+		dNdeta = lagrange1d(np - 1, xi, nodes) * dlagrange1d(0, eta, nodes);
+		dN.push_back({ dNdxi, dNdeta });
+
+		// Corner 3
+		dNdxi = dlagrange1d(np - 1, xi, nodes) * lagrange1d(np - 1, eta, nodes);
+		dNdeta = lagrange1d(np - 1, xi, nodes) * dlagrange1d(np - 1, eta, nodes);
+		dN.push_back({ dNdxi, dNdeta });
+
+		// Corner 4
+		dNdxi = dlagrange1d(0, xi, nodes) * lagrange1d(np - 1, eta, nodes);
+		dNdeta = lagrange1d(0, xi, nodes) * dlagrange1d(np - 1, eta, nodes);
+		dN.push_back({ dNdxi, dNdeta });
+
+
+		// Edge nodes
+        // Edge 1
+		for (int col = 1; col < np - 1; ++col)
+		{
+			dNdxi = dlagrange1d(col, xi, nodes) * lagrange1d(0, eta, nodes);
+			dNdeta = lagrange1d(col, xi, nodes) * dlagrange1d(0, eta, nodes);
+			dN.push_back({ dNdxi, dNdeta });
+		}
+
+        // Edge 2
+        for (int row = 1; row < np - 1; ++row)
         {
-            for (int col = 0; col < np; ++col)
+			dNdxi = dlagrange1d(np - 1, xi, nodes) * lagrange1d(row, eta, nodes);
+			dNdeta = lagrange1d(np - 1, xi, nodes) * dlagrange1d(row, eta, nodes);
+			dN.push_back({ dNdxi, dNdeta });
+        }
+
+
+		// Edge 3
+		for (int col = np - 2; col > 0; --col)
+		{
+			dNdxi = dlagrange1d(col, xi, nodes) * lagrange1d(np - 1, eta, nodes);
+			dNdeta = lagrange1d(col, xi, nodes) * dlagrange1d(np - 1, eta, nodes);
+			dN.push_back({ dNdxi, dNdeta });
+		}
+
+		// Edge 4
+		for (int row = np - 2; row > 0; --row)
+		{
+			dNdxi = dlagrange1d(0, xi, nodes) * lagrange1d(row, eta, nodes);
+			dNdeta = lagrange1d(0, xi, nodes) * dlagrange1d(row, eta, nodes);
+			dN.push_back({ dNdxi, dNdeta });
+		}
+
+
+        
+        // Internal nodes
+        for (int row = 1; row < np - 1; ++row)
+        {
+            for (int col = 1; col < np - 1; ++col)
             {
-                double dNdxi = dlagrange1d(col, xi, nodes) * lagrange1d(row, eta, nodes);
-                double dNdeta = lagrange1d(col, xi, nodes) * dlagrange1d(row, eta, nodes);
+                dNdxi = dlagrange1d(col, xi, nodes) * lagrange1d(row, eta, nodes);
+                dNdeta = lagrange1d(col, xi, nodes) * dlagrange1d(row, eta, nodes);
                 dN.push_back({ dNdxi, dNdeta });
             }
         }
@@ -247,7 +380,40 @@ std::vector<std::pair<double, double>> shape_functions::get_tri_shape_derivative
         // T15 derivatives
 
          // Orders 3 (T10) and 4 (T15): Bernstein derivatives.
-        dN = dtri_bernstein(order, xi, eta);
+
+        std::vector<std::pair<double, double>> temp_dN = dtri_bernstein(order, xi, eta);
+
+        if (order == 3)
+        {
+            // Corner nodes
+            dN.push_back(temp_dN[0]);
+            dN.push_back(temp_dN[3]);
+            dN.push_back(temp_dN[9]);
+
+            // Edge nodes
+            // Edge 1
+            dN.push_back(temp_dN[1]);
+            dN.push_back(temp_dN[2]);
+
+            // Edge 2
+            dN.push_back(temp_dN[6]);
+            dN.push_back(temp_dN[8]);
+
+            // Edge 3
+            dN.push_back(temp_dN[7]);
+            dN.push_back(temp_dN[4]);
+
+            // Internal node
+            dN.push_back(temp_dN[5]);
+
+        }
+        else if (order == 4)
+        {
+            dN = temp_dN; // T15
+        }
+
+
+        // dN = dtri_bernstein(order, xi, eta);
 
     }
 
