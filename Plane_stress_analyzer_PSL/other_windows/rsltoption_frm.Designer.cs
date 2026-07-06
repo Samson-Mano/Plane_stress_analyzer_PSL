@@ -31,12 +31,14 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(rsltoption_frm));
             this.button_ok = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.label_deformation_scale = new System.Windows.Forms.Label();
+            this.trackBar_deformation_scale = new System.Windows.Forms.TrackBar();
+            this.label1 = new System.Windows.Forms.Label();
+            this.comboBox_contourlevels = new System.Windows.Forms.ComboBox();
             this.checkBox_paintrsltmeshpoints = new System.Windows.Forms.CheckBox();
             this.checkBox_paintcontourlines = new System.Windows.Forms.CheckBox();
             this.checkBox_paintrsltmeshboundaries = new System.Windows.Forms.CheckBox();
             this.checkBox_paintrsltmesh = new System.Windows.Forms.CheckBox();
-            this.comboBox_contourlevels = new System.Windows.Forms.ComboBox();
-            this.label1 = new System.Windows.Forms.Label();
             this.label_status = new System.Windows.Forms.Label();
             this.button_stop = new System.Windows.Forms.Button();
             this.button_play_pause = new System.Windows.Forms.Button();
@@ -44,26 +46,25 @@
             this.label_animation_speed = new System.Windows.Forms.Label();
             this.label_realtimeanim_speed = new System.Windows.Forms.Label();
             this.button_animation_speed = new System.Windows.Forms.Button();
-            this.label2 = new System.Windows.Forms.Label();
-            this.trackBar1 = new System.Windows.Forms.TrackBar();
             this.groupBox1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBar_deformation_scale)).BeginInit();
             this.groupBox2.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
             this.SuspendLayout();
             // 
             // button_ok
             // 
-            this.button_ok.Location = new System.Drawing.Point(295, 379);
+            this.button_ok.Location = new System.Drawing.Point(271, 362);
             this.button_ok.Name = "button_ok";
-            this.button_ok.Size = new System.Drawing.Size(131, 45);
+            this.button_ok.Size = new System.Drawing.Size(133, 52);
             this.button_ok.TabIndex = 5;
             this.button_ok.Text = "Ok";
             this.button_ok.UseVisualStyleBackColor = true;
+            this.button_ok.Click += new System.EventHandler(this.button_ok_Click);
             // 
             // groupBox1
             // 
-            this.groupBox1.Controls.Add(this.trackBar1);
-            this.groupBox1.Controls.Add(this.label2);
+            this.groupBox1.Controls.Add(this.label_deformation_scale);
+            this.groupBox1.Controls.Add(this.trackBar_deformation_scale);
             this.groupBox1.Controls.Add(this.label1);
             this.groupBox1.Controls.Add(this.comboBox_contourlevels);
             this.groupBox1.Controls.Add(this.checkBox_paintrsltmeshpoints);
@@ -72,50 +73,36 @@
             this.groupBox1.Controls.Add(this.checkBox_paintrsltmesh);
             this.groupBox1.Location = new System.Drawing.Point(12, 12);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(315, 346);
+            this.groupBox1.Size = new System.Drawing.Size(315, 344);
             this.groupBox1.TabIndex = 4;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Drawing Option";
             // 
-            // checkBox_paintrsltmeshpoints
+            // label_deformation_scale
             // 
-            this.checkBox_paintrsltmeshpoints.AutoSize = true;
-            this.checkBox_paintrsltmeshpoints.Location = new System.Drawing.Point(31, 52);
-            this.checkBox_paintrsltmeshpoints.Name = "checkBox_paintrsltmeshpoints";
-            this.checkBox_paintrsltmeshpoints.Size = new System.Drawing.Size(188, 20);
-            this.checkBox_paintrsltmeshpoints.TabIndex = 5;
-            this.checkBox_paintrsltmeshpoints.Text = "Paint Result Mesh Points";
-            this.checkBox_paintrsltmeshpoints.UseVisualStyleBackColor = true;
+            this.label_deformation_scale.AutoSize = true;
+            this.label_deformation_scale.Location = new System.Drawing.Point(28, 258);
+            this.label_deformation_scale.Name = "label_deformation_scale";
+            this.label_deformation_scale.Size = new System.Drawing.Size(61, 20);
+            this.label_deformation_scale.TabIndex = 21;
+            this.label_deformation_scale.Text = "label3";
             // 
-            // checkBox_paintcontourlines
+            // trackBar_deformation_scale
             // 
-            this.checkBox_paintcontourlines.AutoSize = true;
-            this.checkBox_paintcontourlines.Location = new System.Drawing.Point(31, 167);
-            this.checkBox_paintcontourlines.Name = "checkBox_paintcontourlines";
-            this.checkBox_paintcontourlines.Size = new System.Drawing.Size(154, 20);
-            this.checkBox_paintcontourlines.TabIndex = 4;
-            this.checkBox_paintcontourlines.Text = "Paint Contour Lines";
-            this.checkBox_paintcontourlines.UseVisualStyleBackColor = true;
+            this.trackBar_deformation_scale.Location = new System.Drawing.Point(20, 286);
+            this.trackBar_deformation_scale.Name = "trackBar_deformation_scale";
+            this.trackBar_deformation_scale.Size = new System.Drawing.Size(238, 56);
+            this.trackBar_deformation_scale.TabIndex = 20;
+            this.trackBar_deformation_scale.Scroll += new System.EventHandler(this.trackBar_deformation_scale_Scroll);
             // 
-            // checkBox_paintrsltmeshboundaries
+            // label1
             // 
-            this.checkBox_paintrsltmeshboundaries.AutoSize = true;
-            this.checkBox_paintrsltmeshboundaries.Location = new System.Drawing.Point(31, 128);
-            this.checkBox_paintrsltmeshboundaries.Name = "checkBox_paintrsltmeshboundaries";
-            this.checkBox_paintrsltmeshboundaries.Size = new System.Drawing.Size(219, 20);
-            this.checkBox_paintrsltmeshboundaries.TabIndex = 2;
-            this.checkBox_paintrsltmeshboundaries.Text = "Paint Result Mesh Boundaries";
-            this.checkBox_paintrsltmeshboundaries.UseVisualStyleBackColor = true;
-            // 
-            // checkBox_paintrsltmesh
-            // 
-            this.checkBox_paintrsltmesh.AutoSize = true;
-            this.checkBox_paintrsltmesh.Location = new System.Drawing.Point(31, 91);
-            this.checkBox_paintrsltmesh.Name = "checkBox_paintrsltmesh";
-            this.checkBox_paintrsltmesh.Size = new System.Drawing.Size(143, 20);
-            this.checkBox_paintrsltmesh.TabIndex = 1;
-            this.checkBox_paintrsltmesh.Text = "Paint Result Mesh";
-            this.checkBox_paintrsltmesh.UseVisualStyleBackColor = true;
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(44, 210);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(150, 20);
+            this.label1.TabIndex = 18;
+            this.label1.Text = "Contour Levels: ";
             // 
             // comboBox_contourlevels
             // 
@@ -129,17 +116,53 @@
             "80"});
             this.comboBox_contourlevels.Location = new System.Drawing.Point(166, 207);
             this.comboBox_contourlevels.Name = "comboBox_contourlevels";
-            this.comboBox_contourlevels.Size = new System.Drawing.Size(128, 24);
+            this.comboBox_contourlevels.Size = new System.Drawing.Size(128, 26);
             this.comboBox_contourlevels.TabIndex = 17;
+            this.comboBox_contourlevels.SelectedIndexChanged += new System.EventHandler(this.comboBox_contourlevels_SelectedIndexChanged);
             // 
-            // label1
+            // checkBox_paintrsltmeshpoints
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(44, 210);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(116, 16);
-            this.label1.TabIndex = 18;
-            this.label1.Text = "Contour Levels: ";
+            this.checkBox_paintrsltmeshpoints.AutoSize = true;
+            this.checkBox_paintrsltmeshpoints.Location = new System.Drawing.Point(31, 52);
+            this.checkBox_paintrsltmeshpoints.Name = "checkBox_paintrsltmeshpoints";
+            this.checkBox_paintrsltmeshpoints.Size = new System.Drawing.Size(242, 24);
+            this.checkBox_paintrsltmeshpoints.TabIndex = 5;
+            this.checkBox_paintrsltmeshpoints.Text = "Paint Result Mesh Points";
+            this.checkBox_paintrsltmeshpoints.UseVisualStyleBackColor = true;
+            this.checkBox_paintrsltmeshpoints.CheckedChanged += new System.EventHandler(this.checkBox_paintrsltmeshpoints_CheckedChanged);
+            // 
+            // checkBox_paintcontourlines
+            // 
+            this.checkBox_paintcontourlines.AutoSize = true;
+            this.checkBox_paintcontourlines.Location = new System.Drawing.Point(31, 167);
+            this.checkBox_paintcontourlines.Name = "checkBox_paintcontourlines";
+            this.checkBox_paintcontourlines.Size = new System.Drawing.Size(198, 24);
+            this.checkBox_paintcontourlines.TabIndex = 4;
+            this.checkBox_paintcontourlines.Text = "Paint Contour Lines";
+            this.checkBox_paintcontourlines.UseVisualStyleBackColor = true;
+            this.checkBox_paintcontourlines.CheckedChanged += new System.EventHandler(this.checkBox_paintcontourlines_CheckedChanged);
+            // 
+            // checkBox_paintrsltmeshboundaries
+            // 
+            this.checkBox_paintrsltmeshboundaries.AutoSize = true;
+            this.checkBox_paintrsltmeshboundaries.Location = new System.Drawing.Point(31, 128);
+            this.checkBox_paintrsltmeshboundaries.Name = "checkBox_paintrsltmeshboundaries";
+            this.checkBox_paintrsltmeshboundaries.Size = new System.Drawing.Size(286, 24);
+            this.checkBox_paintrsltmeshboundaries.TabIndex = 2;
+            this.checkBox_paintrsltmeshboundaries.Text = "Paint Result Mesh Boundaries";
+            this.checkBox_paintrsltmeshboundaries.UseVisualStyleBackColor = true;
+            this.checkBox_paintrsltmeshboundaries.CheckedChanged += new System.EventHandler(this.checkBox_paintrsltmeshboundaries_CheckedChanged);
+            // 
+            // checkBox_paintrsltmesh
+            // 
+            this.checkBox_paintrsltmesh.AutoSize = true;
+            this.checkBox_paintrsltmesh.Location = new System.Drawing.Point(31, 91);
+            this.checkBox_paintrsltmesh.Name = "checkBox_paintrsltmesh";
+            this.checkBox_paintrsltmesh.Size = new System.Drawing.Size(184, 24);
+            this.checkBox_paintrsltmesh.TabIndex = 1;
+            this.checkBox_paintrsltmesh.Text = "Paint Result Mesh";
+            this.checkBox_paintrsltmesh.UseVisualStyleBackColor = true;
+            this.checkBox_paintrsltmesh.CheckedChanged += new System.EventHandler(this.checkBox_paintrsltmesh_CheckedChanged);
             // 
             // label_status
             // 
@@ -147,7 +170,7 @@
             this.label_status.Location = new System.Drawing.Point(351, 157);
             this.label_status.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label_status.Name = "label_status";
-            this.label_status.Size = new System.Drawing.Size(53, 16);
+            this.label_status.Size = new System.Drawing.Size(71, 20);
             this.label_status.TabIndex = 39;
             this.label_status.Text = "Playing";
             // 
@@ -160,6 +183,7 @@
             this.button_stop.TabIndex = 38;
             this.button_stop.Text = "Stop Animation";
             this.button_stop.UseVisualStyleBackColor = true;
+            this.button_stop.Click += new System.EventHandler(this.button_stop_Click);
             // 
             // button_play_pause
             // 
@@ -170,6 +194,7 @@
             this.button_play_pause.TabIndex = 37;
             this.button_play_pause.Text = "Play Animation";
             this.button_play_pause.UseVisualStyleBackColor = true;
+            this.button_play_pause.Click += new System.EventHandler(this.button_play_pause_Click);
             // 
             // groupBox2
             // 
@@ -180,7 +205,7 @@
             this.groupBox2.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.groupBox2.Size = new System.Drawing.Size(357, 135);
+            this.groupBox2.Size = new System.Drawing.Size(357, 157);
             this.groupBox2.TabIndex = 36;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Animation Speed: ";
@@ -191,7 +216,7 @@
             this.label_animation_speed.Location = new System.Drawing.Point(252, 35);
             this.label_animation_speed.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label_animation_speed.Name = "label_animation_speed";
-            this.label_animation_speed.Size = new System.Drawing.Size(28, 16);
+            this.label_animation_speed.Size = new System.Drawing.Size(37, 20);
             this.label_animation_speed.TabIndex = 2;
             this.label_animation_speed.Text = "1.0";
             // 
@@ -201,7 +226,7 @@
             this.label_realtimeanim_speed.Location = new System.Drawing.Point(7, 84);
             this.label_realtimeanim_speed.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label_realtimeanim_speed.Name = "label_realtimeanim_speed";
-            this.label_realtimeanim_speed.Size = new System.Drawing.Size(309, 16);
+            this.label_realtimeanim_speed.Size = new System.Drawing.Size(410, 20);
             this.label_realtimeanim_speed.TabIndex = 1;
             this.label_realtimeanim_speed.Text = "1 second in real time = 1 second in Animation";
             // 
@@ -214,28 +239,13 @@
             this.button_animation_speed.TabIndex = 0;
             this.button_animation_speed.Text = "Animation Speed";
             this.button_animation_speed.UseVisualStyleBackColor = true;
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(28, 258);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(146, 16);
-            this.label2.TabIndex = 19;
-            this.label2.Text = "Displacement Scale: ";
-            // 
-            // trackBar1
-            // 
-            this.trackBar1.Location = new System.Drawing.Point(31, 286);
-            this.trackBar1.Name = "trackBar1";
-            this.trackBar1.Size = new System.Drawing.Size(219, 45);
-            this.trackBar1.TabIndex = 20;
+            this.button_animation_speed.Click += new System.EventHandler(this.button_animation_speed_Click);
             // 
             // rsltoption_frm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 18F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(724, 436);
+            this.ClientSize = new System.Drawing.Size(724, 426);
             this.Controls.Add(this.label_status);
             this.Controls.Add(this.button_stop);
             this.Controls.Add(this.button_play_pause);
@@ -244,15 +254,17 @@
             this.Controls.Add(this.groupBox1);
             this.Font = new System.Drawing.Font("Verdana", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.MinimumSize = new System.Drawing.Size(740, 475);
+            this.Margin = new System.Windows.Forms.Padding(4);
+            this.MinimumSize = new System.Drawing.Size(740, 465);
             this.Name = "rsltoption_frm";
+            this.Opacity = 0.85D;
             this.Text = "Result Options";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.rsltoption_frm_FormClosing);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBar_deformation_scale)).EndInit();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -275,7 +287,7 @@
         private System.Windows.Forms.Label label_animation_speed;
         private System.Windows.Forms.Label label_realtimeanim_speed;
         private System.Windows.Forms.Button button_animation_speed;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.TrackBar trackBar1;
+        private System.Windows.Forms.TrackBar trackBar_deformation_scale;
+        private System.Windows.Forms.Label label_deformation_scale;
     }
 }

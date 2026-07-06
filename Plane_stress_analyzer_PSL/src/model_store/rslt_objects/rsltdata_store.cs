@@ -433,14 +433,17 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
 
             rsltmeshShader.SetMatrix4("uMVP", uMVP);
             rsltmeshShader.SetFloat("geomscale", gvariables_static.geom_size);
-            rsltmeshShader.SetFloat("modelpercent", gvariables_static.displacement_scale);
+
+            float model_percent = (float)(gvariables_static.displacement_scale / 1000.0);
+
+            rsltmeshShader.SetFloat("modelpercent", model_percent);
 
             rsltmeshShader.SetFloat("vertexTransparency", gvariables_static.rslt_transparency);
 
 
             rsltmeshwireframeShader.SetMatrix4("uMVP", uMVP);
             rsltmeshwireframeShader.SetFloat("geomscale", gvariables_static.geom_size);
-            rsltmeshwireframeShader.SetFloat("modelpercent", gvariables_static.displacement_scale);
+            rsltmeshwireframeShader.SetFloat("modelpercent", model_percent);
 
             // rsltmeshwireframeShader.SetFloat("vertexTransparency", gvariables_static.rslt_transparency);
 

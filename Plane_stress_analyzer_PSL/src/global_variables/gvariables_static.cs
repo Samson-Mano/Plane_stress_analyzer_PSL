@@ -3,6 +3,7 @@ using Plane_stress_analyzer_PSL.src.opentk_control.opentk_buffer;
 using src.opentk_control.opentk_buffer;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -135,12 +136,17 @@ namespace Plane_stress_analyzer_PSL.src.global_variables
         public static bool is_paint_resultmesh = true;
         public static bool is_paint_result_shrunk_triangle = false;
 
+        public static bool is_paint_result_contourlines = true;
+        public static int contourline_level = Properties.Settings.Default.Sett_contourlevel_option; // 0 = 5, 1 = 10, 2 = 20, 3 = 40, 4 = 80
+
         public static bool is_paint_result_displacement = true;
         public static bool is_paint_result_stressX = false;
         public static bool is_paint_result_stressY = false;
         public static bool is_paint_result_tauXY = false;
 
 
+        public static double displacement_scale = Properties.Settings.Default.Sett_displ_scale;
+        public static double resp_animation_speed = Properties.Settings.Default.Sett_resp_animation_speed; // real-time speed
 
 
         public static float mesh_shrink_factor = 0.8f;
@@ -148,7 +154,7 @@ namespace Plane_stress_analyzer_PSL.src.global_variables
         public static bool is_RectangleSelection = true; // true = Rectangle selection, false = Circle Selection
 
         public static float geom_size = 0.0f;
-        public static float displacement_scale = 0.01f;
+
 
         public static float PointSize = 1.0f;
         public static float LineWidth = 1.0f;

@@ -7,6 +7,7 @@ using Plane_stress_analyzer_PSL.src.global_variables;
 using Plane_stress_analyzer_PSL.src.model_store.fe_objects;
 using Plane_stress_analyzer_PSL.src.model_store.geom_objects;
 using Plane_stress_analyzer_PSL.src.model_store.rslt_objects;
+using src.model_store.geom_objects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,6 +33,9 @@ namespace Plane_stress_analyzer_PSL.src.model_store
 
         public selectrectangle_store selection_rectangle; // { get; }
         public selectcircle_store selection_circle; // { get; }
+
+        public axisdata_store axisdata;
+
 
         // To control the drawing events
         public drawing_events graphic_events_control { get; private set; }
@@ -70,6 +74,8 @@ namespace Plane_stress_analyzer_PSL.src.model_store
             // Set the selection rectangle  & selection circle
             selection_rectangle = new selectrectangle_store();
             selection_circle = new selectcircle_store();
+
+            axisdata = new axisdata_store();
 
             fe_data = new fedata_store();
             rslt_data = new rsltdata_store();
@@ -141,6 +147,8 @@ namespace Plane_stress_analyzer_PSL.src.model_store
             if (!IsModelSet)
                 return;
 
+            axisdata.draw_axis_rectangle();
+
             fe_data.paint_model();
 
             if (isMaterialUpdateInProgress == true || isLoadUpdateInProgress == true || isConstraintUpdateInProgress == true)
@@ -190,8 +198,14 @@ namespace Plane_stress_analyzer_PSL.src.model_store
 
         public void update_openTK_uniforms()
         {
+
             if (!IsModelSet)
                 return;
+
+            // Axis data size
+            axisdata.UpdateAxisBoundaryRectangle(graphic_events_control.window_width, graphic_events_control.window_height);  
+
+
 
             fe_data.update_openTK_uniforms(graphic_events_control);
             rslt_data.update_openTK_uniforms(graphic_events_control);
@@ -226,7 +240,27 @@ namespace Plane_stress_analyzer_PSL.src.model_store
 
         }
 
+        public void start_animation()
+        {
+            // Start the animation
 
+
+        }
+
+
+        public void pause_animation()
+        {
+            // Pause the animation
+
+
+        }
+
+
+        public void stop_animation()
+        {
+            // Stop the animation
+
+        }
 
 
     }

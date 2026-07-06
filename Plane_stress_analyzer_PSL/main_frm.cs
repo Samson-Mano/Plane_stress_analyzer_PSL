@@ -3,6 +3,7 @@ using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Input;
+using other_windows;
 using Plane_stress_analyzer_PSL.other_windows;
 using Plane_stress_analyzer_PSL.src.global_variables;
 using Plane_stress_analyzer_PSL.src.model_store;
@@ -40,6 +41,8 @@ namespace Plane_stress_analyzer_PSL
         private load_frm load_Form;
         private constraint_frm constraint_Form;
         private solver_frm solver_Form;
+        private rsltoption_frm rsltoption_Form;
+
 
         public main_frm()
         {
@@ -619,13 +622,6 @@ namespace Plane_stress_analyzer_PSL
 
         }
 
-
-        private void resultOptionToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
-
-        }
-
         #endregion
 
 
@@ -750,6 +746,44 @@ namespace Plane_stress_analyzer_PSL
 
         }
 
+
+
+        private void resultOptionToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (modeldata.IsModelSet == false && modeldata.IsResultSet == false)
+                return;
+
+            // Check if rsltoption_Form is null or disposed
+            if (rsltoption_Form == null || rsltoption_Form.IsDisposed)
+            {
+                rsltoption_Form = new rsltoption_frm(ref modeldata);
+
+                // Make it behave like a tool window
+                rsltoption_Form.FormBorderStyle = FormBorderStyle.SizableToolWindow;
+                rsltoption_Form.ShowInTaskbar = false;
+                rsltoption_Form.TopLevel = true;
+                rsltoption_Form.Owner = this;
+
+                // Manually center the form on the parent
+                int x = this.Location.X + (this.Width - rsltoption_Form.Width) / 2;
+                int y = this.Location.Y + (this.Height - rsltoption_Form.Height) / 2;
+                rsltoption_Form.StartPosition = FormStartPosition.Manual;
+                rsltoption_Form.Location = new Point(Math.Max(x, 0), Math.Max(y, 0)); // avoid negative positions
+
+            }
+
+            //// Turn on Flag Material update form is open
+            //fedata.meshdata.isMaterialUpdateInProgress = true;
+            //fedata.meshdata.clear_selected_mesh();
+
+ 
+            // Show the form
+            rsltoption_Form.Show(this);
+            rsltoption_Form.BringToFront();
+
+            glControl_main_panel.Invalidate();
+
+        }
 
         #endregion
 
