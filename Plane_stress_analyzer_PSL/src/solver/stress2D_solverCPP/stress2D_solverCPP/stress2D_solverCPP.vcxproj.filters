@@ -36,12 +36,6 @@
     <ClCompile Include="solver\polynomial_2dmesh_store.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="solver\integration_rules.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="solver\shape_functions.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="solver\element_formulation\quadelement_formulation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -72,12 +66,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="solver\polynomial_2dmesh_store.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="solver\integration_rules.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="solver\shape_functions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="solver\element_formulation\quadelement_formulation.h">

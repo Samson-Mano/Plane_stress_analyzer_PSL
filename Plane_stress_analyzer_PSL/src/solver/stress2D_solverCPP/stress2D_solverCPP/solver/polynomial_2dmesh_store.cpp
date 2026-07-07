@@ -54,6 +54,14 @@ void polynomial_2dmesh_store::copy_mesh_nodes()
 		p_node.node_id = nd.second.node_id;
 		p_node.x_coord = nd.second.x_coord;
 		p_node.y_coord = nd.second.y_coord;
+
+		// Set results to zero
+		p_node.displ_x = 0.0;
+		p_node.displ_y = 0.0;
+		p_node.reaction_x = 0.0;
+		p_node.reaction_y = 0.0;
+
+
 		p_node.is_internal = false;
 
 		this->polynomial_node_list.insert({ nd.first, p_node });
@@ -127,6 +135,13 @@ void polynomial_2dmesh_store::create_edge_internal_nodes()
 			p_node.node_id = node_id;
 			p_node.x_coord = x_coord;
 			p_node.y_coord = y_coord;
+
+			// Set results to zero
+			p_node.displ_x = 0.0;
+			p_node.displ_y = 0.0;
+			p_node.reaction_x = 0.0;
+			p_node.reaction_y = 0.0;
+
 			p_node.is_internal = true;
 
 			this->polynomial_node_list.insert({ node_id, p_node });
@@ -352,6 +367,13 @@ std::vector<int> polynomial_2dmesh_store::create_tri_internal_nodes(int nd1, int
 			p_node.node_id = node_id;
 			p_node.x_coord = x;
 			p_node.y_coord = y;
+
+			// Set results to zero
+			p_node.displ_x = 0.0;
+			p_node.displ_y = 0.0;
+			p_node.reaction_x = 0.0;
+			p_node.reaction_y = 0.0;
+
 			p_node.is_internal = true;
 
 			this->polynomial_node_list.insert({ node_id, p_node });
@@ -415,6 +437,13 @@ std::vector<int> polynomial_2dmesh_store::create_quad_internal_nodes(int nd1, in
 			p_node.node_id = node_id;
 			p_node.x_coord = x;
 			p_node.y_coord = y;
+			
+			// Set results to zero
+			p_node.displ_x = 0.0;
+			p_node.displ_y = 0.0;
+			p_node.reaction_x = 0.0;
+			p_node.reaction_y = 0.0;
+
 			p_node.is_internal = true;
 
 			this->polynomial_node_list.insert({ node_id, p_node });

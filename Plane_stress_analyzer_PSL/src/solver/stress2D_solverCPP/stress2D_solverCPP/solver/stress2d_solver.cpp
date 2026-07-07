@@ -148,6 +148,20 @@ bool stress2d_solver::perform_solve()
 	}
 
 	// Map the results back to the original node IDs and store them in the polynomial_2dmesh structure
+	for (int i = 0; i < static_cast<int>(polynomial_2dmesh.polynomial_node_list.size()); ++i)
+	{
+		polynomial_2dmesh.polynomial_node_list[i].displ_x = this->global_displacement_vector(i * 2);
+		polynomial_2dmesh.polynomial_node_list[i].displ_y = this->global_displacement_vector(i * 2 + 1);
+
+		polynomial_2dmesh.polynomial_node_list[i].reaction_x = this->global_reaction_vector(i * 2);
+		polynomial_2dmesh.polynomial_node_list[i].reaction_y = this->global_reaction_vector(i * 2 + 1);
+	}
+
+
+	// Set the element stress and strain results based on the computed displacements
+	set_element_results();
+
+
 	for (int i = 0; i < static_cast<int>(polynomial_2dmesh.renderer_node_points.size()); ++i)
 	{
 		polynomial_2dmesh.renderer_node_points[i].x_displ = this->global_displacement_vector(i * 2);
@@ -713,6 +727,188 @@ bool stress2d_solver::check_valid_results(const Eigen::VectorXd& results, const 
 
 	return true;
 }
+
+
+void stress2d_solver::set_element_results()
+{
+
+	if (!polynomial_2dmesh.polynomial_trielement_list.empty())
+	{
+		// Triangle elements
+		for (const auto& tri_elm_m : polynomial_2dmesh.polynomial_trielement_list)
+		{
+			// Get the element
+			const polynomial_trielement_store& tri_elm = tri_elm_m.second;
+
+			// Get the material Elasticity matrix
+			const material_store& element_material = polynomial_2dmesh.get_material_data().at(tri_elm.materialid);
+			const Eigen::Matrix3d& C = element_material.get_elasticity_matrix();
+
+			std::vector<Eigen::Vector2d> node_coords;
+			std::vector<Eigen::Vector2d> node_displacements;
+
+			for (int nd_id : tri_elm.ordered_node_ids)
+			{
+				double x_coord = polynomial_2dmesh.polynomial_node_list[nd_id].x_coord;
+				double y_coord = polynomial_2dmesh.polynomial_node_list[nd_id].y_coord;
+				
+				double u_disp = polynomial_2dmesh.polynomial_node_list[nd_id].displ_x;
+				double v_disp = polynomial_2dmesh.polynomial_node_list[nd_id].displ_y;
+
+				node_coords.push_back({ x_coord, y_coord });
+				node_displacements.push_back({ u_disp, v_disp });
+			}
+
+			// Calculate the element strain results
+			std::vector<Eigen::Vector3d> element_strain = tri_elem_formulation.compute_trielement_strain(node_coords, node_displacements);
+			
+			for (const auto& strain : element_strain)
+			{
+				// Calculate the element stress results using the material Elasticity matrix
+				Eigen::Vector3d stress = C * strain;
+
+				element_results elem_results = compute_element_result_at_ip(stress, strain);
+
+				polynomial_2dmesh.polynomial_trielement_list[tri_elm.tri_id].results_at_ip.push_back(elem_results);
+			}
+
+		}
+	}
+
+
+	if (!polynomial_2dmesh.polynomial_quadelement_list.empty())
+	{
+		// Quadrilateral elements
+		for (const auto& quad_elm_m : polynomial_2dmesh.polynomial_quadelement_list)
+		{
+			// Get the element
+			const polynomial_quadelement_store& quad_elm = quad_elm_m.second;
+
+			// Get the material Elasticity matrix
+			const material_store& element_material = polynomial_2dmesh.get_material_data().at(quad_elm.materialid);
+			const Eigen::Matrix3d& C = element_material.get_elasticity_matrix();
+
+			std::vector<Eigen::Vector2d> node_coords;
+			std::vector<Eigen::Vector2d> node_displacements;
+
+			for (int nd_id : quad_elm.ordered_node_ids)
+			{
+				double x_coord = polynomial_2dmesh.polynomial_node_list[nd_id].x_coord;
+				double y_coord = polynomial_2dmesh.polynomial_node_list[nd_id].y_coord;
+
+				double u_disp = polynomial_2dmesh.polynomial_node_list[nd_id].displ_x;
+				double v_disp = polynomial_2dmesh.polynomial_node_list[nd_id].displ_y;
+
+
+				node_coords.push_back({ x_coord, y_coord });
+				node_displacements.push_back({ u_disp, v_disp });
+			}
+
+			// Calculate the element strain results
+			std::vector<Eigen::Vector3d> element_strain = quad_elem_formulation.compute_quadelement_strain(node_coords, node_displacements);
+
+			for (const auto& strain : element_strain)
+			{
+				// Calculate the element stress results using the material Elasticity matrix
+				Eigen::Vector3d stress = C * strain;
+
+				element_results elem_results = compute_element_result_at_ip(stress, strain);
+
+				polynomial_2dmesh.polynomial_quadelement_list[quad_elm.quad_id].results_at_ip.push_back(elem_results);
+			}
+
+		}
+	}
+
+
+}
+
+element_results stress2d_solver::compute_element_result_at_ip(const Eigen::Vector3d& stress_at_ip,
+	const Eigen::Vector3d& strain_at_ip)
+{
+	// Stress results at integration point
+	double sigma_x = stress_at_ip(0);
+	double sigma_y = stress_at_ip(1);
+	double tau_xy = stress_at_ip(2);
+
+
+	// Average stress (hydrostatic)
+	double sig_avg = (sigma_x + sigma_y) / 2.0;
+
+	// Half difference
+	double sig_diff = (sigma_x - sigma_y) / 2.0;
+
+	// Radius of Mohr's circle
+	double R = std::sqrt((sig_diff * sig_diff) + (tau_xy * tau_xy));
+
+	// Principal stresses
+	double sigma_1 = sig_avg + R;
+	double sigma_2 = sig_avg - R;
+
+	// von Mises stress (2D)
+	double von_mises = std::sqrt((sigma_x * sigma_x) + (sigma_y * sigma_y) -
+		(sigma_x * sigma_y) + 3.0 * (tau_xy * tau_xy));
+
+	// Maximum shear stress
+	double max_shear = R;
+
+	// Principal angle (from x-axis)
+	double theta_p = 0.0;
+	if (std::abs(sig_diff) > 1e-10 || std::abs(tau_xy) > 1e-10) 
+	{
+		theta_p = 0.5 * std::atan2(2.0 * tau_xy, sigma_x - sigma_y) * 180.0 / M_PI;
+	}
+	
+
+	// Strain results at integration point
+	double epsilon_x = strain_at_ip(0);
+	double epsilon_y = strain_at_ip(1);
+	double gamma_xy = strain_at_ip(2);
+
+	double eps_avg = (epsilon_x + epsilon_y) / 2.0;
+	double eps_diff = (epsilon_x - epsilon_y) / 2.0;
+	R = std::sqrt((eps_diff * eps_diff) + (gamma_xy * gamma_xy));
+
+	double epsilon_1 = eps_avg + R;
+	double epsilon_2 = eps_avg - R;
+
+	// von Mises strain (2D)
+	double von_mises_strain = std::sqrt((epsilon_x * epsilon_x) + (epsilon_y * epsilon_y) -
+		(epsilon_x * epsilon_y) + 3.0 * (gamma_xy * gamma_xy));
+
+	double max_shear_strain = R;
+
+
+
+	element_results elem_results;
+	
+	// Stress results
+	elem_results.sigma_x = sigma_x; // Stress in x direction
+	elem_results.sigma_y = sigma_y; // Stress in y direction
+	elem_results.tau_xy = tau_xy;   // Shear stress in xy plane
+
+	elem_results.sigma_1 = sigma_1; // Principal stress 1
+	elem_results.sigma_2 = sigma_2; // Principal stress 2
+	elem_results.von_mises = von_mises; // Von Mises stress
+	elem_results.max_shear = max_shear; // Maximum shear stress
+	elem_results.theta_p = theta_p; // Principal stress angle
+
+	// Strain results
+	elem_results.epsilon_x = epsilon_x; // Strain in x direction
+	elem_results.epsilon_y = epsilon_y; // Strain in y direction
+	elem_results.gamma_xy = gamma_xy;   // Shear strain in xy plane
+
+	elem_results.epsilon_1 = epsilon_1; // Principal strain 1
+	elem_results.epsilon_2 = epsilon_2; // Principal strain 2
+	elem_results.von_mises_strain = von_mises_strain; // Von Mises strain
+	elem_results.max_shear_strain = max_shear_strain; // Maximum shear strain
+
+	return elem_results;
+
+}
+
+
+
 
 
 

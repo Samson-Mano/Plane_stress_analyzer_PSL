@@ -23,6 +23,10 @@ public:
 		const material_store& element_material);
 
 
+	std::vector<Eigen::Vector3d> compute_quadelement_strain(const std::vector<Eigen::Vector2d>& node_coords,
+		const std::vector<Eigen::Vector2d>& node_displacements);
+
+
 	const int& get_element_dof() const { return element_dof; }
 
 private:
@@ -30,7 +34,7 @@ private:
 	int nodes_per_element = 0;
 	int element_dof = 0;
 
-	shapefunction_store sf_store;
+	shapefunction_store quad_sf_store;
 
 
 	Eigen::Matrix2d compute_jacobian(const std::vector<Eigen::Vector2d>& node_coords,

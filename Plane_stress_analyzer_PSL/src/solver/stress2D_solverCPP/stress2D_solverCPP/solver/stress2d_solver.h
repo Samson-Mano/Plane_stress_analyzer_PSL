@@ -118,6 +118,10 @@ private:
 
 	bool check_valid_results(const Eigen::VectorXd& results, const std::string& result_name);
 
+	void set_element_results();
+
+	element_results compute_element_result_at_ip(const Eigen::Vector3d& stress_at_ip,
+		const Eigen::Vector3d& strain_at_ip);
 
 	void report(const char* msg);
 

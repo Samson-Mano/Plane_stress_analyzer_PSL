@@ -35,8 +35,34 @@ struct renderer_node
 	double principal_stress_1, principal_stress_2; // Principal stress data
 	double von_mises_stress; // Von Mises stress data
 	double max_shear_stress; // Maximum shear stress data
+	double principal_stress_angle; // Principal stress angle
 };
 
+
+struct element_results
+{
+	// Stress results
+	double sigma_x = 0.0; // Stress in x direction
+	double sigma_y = 0.0; // Stress in y direction
+	double tau_xy = 0.0;   // Shear stress in xy plane
+
+	double sigma_1 = 0.0; // Principal stress 1
+	double sigma_2 = 0.0; // Principal stress 2
+	double von_mises = 0.0; // Von Mises stress
+	double max_shear = 0.0; // Maximum shear stress
+	double theta_p = 0.0; // Principal stress angle
+
+	// Strain results
+	double epsilon_x = 0.0; // Strain in x direction
+	double epsilon_y = 0.0; // Strain in y direction
+	double gamma_xy = 0.0;   // Shear strain in xy plane
+
+	double epsilon_1 = 0.0; // Principal strain 1
+	double epsilon_2 = 0.0; // Principal strain 2
+	double von_mises_strain = 0.0; // Von Mises strain
+	double max_shear_strain = 0.0; // Maximum shear strain
+
+};
 
 
 struct polynomial_node_store
@@ -44,6 +70,12 @@ struct polynomial_node_store
 	int node_id = 0;
 	double x_coord = 0.0;
 	double y_coord = 0.0;
+
+	double displ_x = 0.0; // Displacement in x direction
+	double displ_y = 0.0; // Displacement in y direction
+
+	double reaction_x = 0.0; // Reaction force in x direction
+	double reaction_y = 0.0; // Reaction force in y direction
 
 	bool is_internal = false;
 
@@ -82,6 +114,9 @@ struct polynomial_trielement_store
 
 	int materialid = 0;
 
+	// Element results
+	std::vector<element_results> results_at_ip; // Stress and strain results at integration points
+
 };
 
 
@@ -99,6 +134,9 @@ struct polynomial_quadelement_store
 	std::vector<int> ordered_node_ids; // Ordered node ids of the quadrilateral element
 
 	int materialid = 0;
+	
+	// Element results
+	std::vector<element_results> results_at_ip; // Stress and strain results at integration points
 
 };
 
@@ -171,6 +209,7 @@ private:
 	void create_quadmesh_renderer_elements();
 
 	void create_renderer_edges();
+
 
 };
 

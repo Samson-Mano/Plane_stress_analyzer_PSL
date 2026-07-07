@@ -1,10 +1,10 @@
 #include "quadelement_formulation.h"
 
 quadelement_formulation::quadelement_formulation(int order) : polynomial_order(order),
-			sf_store(QUAD, order)
+	quad_sf_store(QUAD, order)
 {
 	
-	this->nodes_per_element = sf_store.get_nodes_per_element();
+	this->nodes_per_element = quad_sf_store.get_nodes_per_element();
 	this->element_dof = 2 * this->nodes_per_element;
 
 }
@@ -20,16 +20,16 @@ Eigen::MatrixXd quadelement_formulation::compute_quadelement_stiffness_matrix(
 	Eigen::MatrixXd K = Eigen::MatrixXd::Zero(this->element_dof, this->element_dof);
 	Eigen::Matrix3d C = element_material.get_elasticity_matrix();
 
-	const auto& sf_datas_all = sf_store.get_data();
+	const auto& quad_sf_datas_all = quad_sf_store.get_data();
 
 
-	for (int idx = 0; idx < static_cast<int>(sf_datas_all.size()); ++idx)
+	for (int idx = 0; idx < static_cast<int>(quad_sf_datas_all.size()); ++idx)
 	{
-		const auto& sf_data = sf_datas_all[idx];
-		const integration_point& ip = sf_data.ip;
+		const auto& quad_sf_data = quad_sf_datas_all[idx];
+		const integration_point& ip = quad_sf_data.ip;
 
 		// Compute Jacobian
-		Eigen::Matrix2d J = compute_jacobian(node_coords, sf_data.dN);
+		Eigen::Matrix2d J = compute_jacobian(node_coords, quad_sf_data.dN);
 		double detJ = J.determinant();
 
 		// // Validate Jacobian
@@ -39,7 +39,7 @@ Eigen::MatrixXd quadelement_formulation::compute_quadelement_stiffness_matrix(
 		Eigen::Matrix2d J_inv = J.inverse();
 
 		// Compute B matrix
-		Eigen::MatrixXd B = compute_B_matrix(J_inv, sf_data.dN);
+		Eigen::MatrixXd B = compute_B_matrix(J_inv, quad_sf_data.dN);
 
 		// Accumulate stiffness
 		Eigen::MatrixXd BT_C_B = B.transpose() * C * B;
@@ -62,23 +62,23 @@ Eigen::MatrixXd quadelement_formulation::compute_quadelement_mass_matrix(
 	Eigen::MatrixXd M = Eigen::MatrixXd::Zero(this->element_dof, this->element_dof);
 	double density_thickness = element_material.matdensity * element_material.thickness;
 
-	const auto& sf_datas_all = sf_store.get_data();
+	const auto& quad_sf_datas_all = quad_sf_store.get_data();
 
 
-	for (int idx = 0; idx < static_cast<int>(sf_datas_all.size()); ++idx)
+	for (int idx = 0; idx < static_cast<int>(quad_sf_datas_all.size()); ++idx)
 	{
-		const auto& sf_data = sf_datas_all[idx];
-		const integration_point& ip = sf_data.ip;
+		const auto& quad_sf_data = quad_sf_datas_all[idx];
+		const integration_point& ip = quad_sf_data.ip;
 
 		// Compute Jacobian
-		Eigen::Matrix2d J = compute_jacobian(node_coords, sf_data.dN);
+		Eigen::Matrix2d J = compute_jacobian(node_coords, quad_sf_data.dN);
 		double detJ = J.determinant();
 
 		// // Validate Jacobian
 		// validate_jacobian(detJ, ip.xi, ip.eta);
 
 		// Accumulate mass matrix
-		const Eigen::MatrixXd& N_mat = sf_data.N_mat;
+		const Eigen::MatrixXd& N_mat = quad_sf_data.N_mat;
 		M += N_mat.transpose() * N_mat * (density_thickness * detJ * ip.weight);
 
 	}
@@ -147,6 +147,59 @@ Eigen::MatrixXd quadelement_formulation::compute_B_matrix(const Eigen::Matrix2d&
 	return B;
 
 }
+
+
+
+
+std::vector<Eigen::Vector3d> quadelement_formulation::compute_quadelement_strain(
+	const std::vector<Eigen::Vector2d>& node_coords,
+	const std::vector<Eigen::Vector2d>& node_displacements)
+{
+	// Strain matrix E = B * d
+	// B is the strain-displacement matrix [ 3 x 2n], d is the nodal displacement vector [ 2n x 1]
+
+	std::vector<Eigen::Vector3d> strain_at_ips; // Strain at integration points
+
+	// Create a vector of nodal displacements (2n x 1)
+	Eigen::VectorXd displ(this->element_dof);
+
+	for (int i = 0; i < this->nodes_per_element; ++i)
+	{
+		displ(2 * i) = node_displacements[i].x();
+		displ(2 * i + 1) = node_displacements[i].y();
+	}
+
+	const auto& quad_sf_datas_all = quad_sf_store.get_data();
+
+	for (int idx = 0; idx < static_cast<int>(quad_sf_datas_all.size()); ++idx)
+	{
+		const auto& quad_sf_data = quad_sf_datas_all[idx];
+		const integration_point& ip = quad_sf_data.ip;
+
+		// Compute Jacobian
+		Eigen::Matrix2d J = compute_jacobian(node_coords, quad_sf_data.dN);
+		double detJ = J.determinant();
+
+		// // Validate Jacobian
+		// validate_jacobian(detJ, ip.xi, ip.eta);
+
+		// Compute inverse Jacobian
+		Eigen::Matrix2d J_inv = J.inverse();
+
+		// Compute B matrix
+		Eigen::MatrixXd B = compute_B_matrix(J_inv, quad_sf_data.dN);
+
+		// Compute strain at this integration point
+		Eigen::Vector3d strain = B * displ;
+
+		// Add to the vector of strains at integration points
+		strain_at_ips.push_back(strain);
+	}
+
+	return strain_at_ips;
+}
+
+
 
 
 
