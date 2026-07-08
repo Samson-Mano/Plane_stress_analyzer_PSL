@@ -196,14 +196,14 @@ namespace Plane_stress_analyzer_PSL.src.global_variables
         }
 
 
-        public static float get_text_height(float font_size)
-        {
-            char ch = 'A';
-            Character ch_data = gvariables_static.main_font.Glyphs[ch];
+        //public static float get_text_height(float font_size)
+        //{
+        //    char ch = 'A';
+        //    Character ch_data = gvariables_static.main_font.Glyphs[ch];
 
-            return ch_data.Size.Y * get_font_scale(font_size);
+        //    return ch_data.Size.Y * get_font_scale(font_size);
 
-        }
+        //}
 
 
         public static int error_tracker = 0;

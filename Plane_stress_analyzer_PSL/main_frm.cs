@@ -8,6 +8,7 @@ using Plane_stress_analyzer_PSL.other_windows;
 using Plane_stress_analyzer_PSL.src.global_variables;
 using Plane_stress_analyzer_PSL.src.model_store;
 using Plane_stress_analyzer_PSL.src.model_store.fe_objects;
+using src.model_store.geom_objects;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -43,6 +44,8 @@ namespace Plane_stress_analyzer_PSL
         private solver_frm solver_Form;
         private rsltoption_frm rsltoption_Form;
 
+        // Drawing area Axis data store
+        public axisdata_store axisdata;
 
         public main_frm()
         {
@@ -51,6 +54,8 @@ namespace Plane_stress_analyzer_PSL
 
 
             modeldata = new modeldata_store();
+            axisdata = new axisdata_store();
+
 
             zoomToFitTimer = new Timer();
             zoomToFitTimer.Interval = 10;
@@ -70,7 +75,11 @@ namespace Plane_stress_analyzer_PSL
 
             // Create the main font atlas
             modeldata.InitializeModelGeom();
+
             gvariables_static.main_font.CreateAtlas("Calibri");
+
+            axisdata.InitializeAxisData(glControl_main_panel.Width, glControl_main_panel.Height);
+
 
         }
 
@@ -113,6 +122,10 @@ namespace Plane_stress_analyzer_PSL
 
             modeldata.paint_model();
 
+            // Draw the axis arrows
+            axisdata.draw_axis_arrows();
+
+
             // OpenTK windows are what's known as "double-buffered". In essence, the window manages two buffers.
             // One is rendered to while the other is currently displayed by the window.
             // This avoids screen tearing, a visual artifact that can happen if the buffer is modified while being displayed.
@@ -142,6 +155,8 @@ namespace Plane_stress_analyzer_PSL
             // Update the size of the drawing area
             modeldata.graphic_events_control.update_drawing_area_size(glControl_main_panel.Width,
                 glControl_main_panel.Height);
+
+            axisdata.UpdateAxisArrowCenter(glControl_main_panel.Width, glControl_main_panel.Height);
 
             toolStripStatusLabel_zoom_value.Text = "Zoom: " + (gvariables_static.RoundOff((int)(1.0f * 100))).ToString() + "%";
 

@@ -43,7 +43,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.fe_objects
         private List<int> all_loadset_ids = new List<int>();
 
         // Load labels
-        private label_list_store load_label = new label_list_store();
+        private label_list_store load_label;
 
         // Load visualization
         private Shader loadShader;
@@ -63,7 +63,10 @@ namespace Plane_stress_analyzer_PSL.src.model_store.fe_objects
             InitializeShader();
             InitializeBuffers();
 
+            load_label = new label_list_store();
+
         }
+
 
         private void InitializeShader()
         {
@@ -194,7 +197,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.fe_objects
             loadShader.SetVector4("vertexColor", LoadColor);
 
             // Update the label uniforms
-            load_label.update_openTK_uniforms(graphic_events_control);
+            load_label.update_openTK_uniforms(uMVP, zoomscale, gvariables_static.geom_transparency);
 
         }
 
@@ -313,7 +316,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.fe_objects
             }
 
             // Update the label buffer
-            load_label.update_buffer();
+            load_label.update_buffer(gvariables_static.geom_size);
 
 
             // Clear and update buffers

@@ -35,9 +35,12 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
     public class label_list_store
     {
         public Dictionary<int, label_store> labelMap { get; } = new Dictionary<int, label_store>();
-        public int label_count = 0;
-        public int total_char_count = 0;
-        public float font_size = 14.0f;
+        private int label_count = 0;
+        private int total_char_count = 0;
+
+        private float font_size = 14.0f;
+        private float geom_size = 1.0f;
+
 
         private VertexArray _labelVAO;
         private VertexBuffer _labelVBO;
@@ -129,8 +132,11 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
         }
 
 
-        public void update_buffer()
+        public void update_buffer(float geom_size)
         {
+            this.geom_size = geom_size;
+
+
             // Set the buffer for index (6 indices to form a two triangle, quadrilateral )
             List<int> label_indices = new List<int>();
 
@@ -179,19 +185,15 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
         }
 
 
-        public void update_openTK_uniforms(drawing_events graphic_events_control)
+        public void update_openTK_uniforms(Matrix4 uMVP, float zoomscale, float transparency)
         {
             // Update the openGl uniform matrices
-            Matrix4 uMVP = graphic_events_control.projectionMatrix *
-    graphic_events_control.viewMatrix * graphic_events_control.modelMatrix;
-
             _labelshader.SetMatrix4("uMVP", uMVP);
 
-            float zoomscale = (float)graphic_events_control.zoom_val;
             _labelshader.SetFloat("zoomscale", zoomscale);
 
             // Set the transparency float
-            _labelshader.SetFloat("vertexTransparency", gvariables_static.geom_transparency);
+            _labelshader.SetFloat("vertexTransparency", transparency);
 
         }
 
@@ -226,7 +228,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.geom_objects
         private void get_label_vertex_buffer(label_store lb, ref List<float> label_vertices)
         {
 
-            float font_scale = gvariables_static.get_font_scale(font_size) * 0.025f;
+            float font_scale = this.geom_size * 0.01f * (this.font_size / 12.0f) * 0.025f; 
 
             // Find the label total width and total height of the label
             float total_label_width = 0.0f;

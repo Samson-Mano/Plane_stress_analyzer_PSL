@@ -34,9 +34,6 @@ namespace Plane_stress_analyzer_PSL.src.model_store
         public selectrectangle_store selection_rectangle; // { get; }
         public selectcircle_store selection_circle; // { get; }
 
-        public axisdata_store axisdata;
-
-
         // To control the drawing events
         public drawing_events graphic_events_control { get; private set; }
 
@@ -45,15 +42,12 @@ namespace Plane_stress_analyzer_PSL.src.model_store
         public bool isLoadUpdateInProgress = false;
         public bool isMaterialUpdateInProgress = false;
 
-
         public bool IsModelSet = false;
         public bool IsResultSet = false;
 
 
         public modeldata_store()
         {
-            // Initialize the model
-            // fe_data = new fedata_store();
 
             // To control the drawing graphics
             graphic_events_control = new drawing_events(this);
@@ -74,13 +68,12 @@ namespace Plane_stress_analyzer_PSL.src.model_store
             // Set the selection rectangle  & selection circle
             selection_rectangle = new selectrectangle_store();
             selection_circle = new selectcircle_store();
-
-            axisdata = new axisdata_store();
-
+ 
             fe_data = new fedata_store();
             rslt_data = new rsltdata_store();
 
             IsResultSet = false;
+
         }
 
 
@@ -144,10 +137,10 @@ namespace Plane_stress_analyzer_PSL.src.model_store
 
         public void paint_model()
         {
+
             if (!IsModelSet)
                 return;
 
-            axisdata.draw_axis_rectangle();
 
             fe_data.paint_model();
 
@@ -165,7 +158,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store
                 }
             }
 
-            if(IsResultSet == true)
+            if (IsResultSet == true)
             {
                 // Paint the result mesh
                 if (gvariables_static.is_paint_result_displacement == true ||
@@ -177,7 +170,6 @@ namespace Plane_stress_analyzer_PSL.src.model_store
                     rslt_data.paint_results();
                 }
             }
-
 
         }
 
@@ -202,11 +194,6 @@ namespace Plane_stress_analyzer_PSL.src.model_store
             if (!IsModelSet)
                 return;
 
-            // Axis data size
-            axisdata.UpdateAxisBoundaryRectangle(graphic_events_control.window_width, graphic_events_control.window_height);  
-
-
-
             fe_data.update_openTK_uniforms(graphic_events_control);
             rslt_data.update_openTK_uniforms(graphic_events_control);
 
@@ -228,7 +215,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store
             {
                 // Select the points for load update
                 fe_data.select_nodes(o_pt, c_pt, isRightButton, graphic_events_control);
-                
+
             }
 
             if (isConstraintUpdateInProgress == true)

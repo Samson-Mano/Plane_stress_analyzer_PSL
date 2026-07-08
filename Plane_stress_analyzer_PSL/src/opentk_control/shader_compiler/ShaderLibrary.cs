@@ -17,7 +17,8 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
             LoadShader,
             RsltMeshShader,
             RsltWireframeShader,
-            SelectionShader
+            SelectionShader,
+            DrawingAxisShader,
         }
 
 
@@ -497,6 +498,56 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
 
 
 
+        #region "Drawing Axis Shader"
+
+        private static string drawingaxis_vert_shader()
+        {
+            return @"
+
+            #version 330 core
+
+            layout(location = 0) in vec2 node_position;
+            layout(location = 1) in vec3 node_color;
+
+            out vec4 v_Color;
+
+            void main()
+            {
+	            v_Color = vec4(node_color, 1.0f);
+
+	            // Final position passed to fragment shader
+	            gl_Position = vec4(node_position,0.0f,1.0f);
+            }
+
+                    ";
+
+        }
+
+
+
+        private static string drawingaxis_frag_shader()
+        {
+            return @"
+
+            #version 330 core
+
+            in vec4 v_Color;
+
+            out vec4 f_Color; // fragment's final color (out to the fragment shader)
+
+            void main()
+            {
+	            f_Color = v_Color;
+            }
+
+                    ";
+
+        }
+
+
+        #endregion
+
+
 
         public static string get_vertex_shader(ShaderType type)
         {
@@ -517,6 +568,8 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
                     return load_vert_shader();
                 case ShaderType.TextShader:
                     return text_vert_shader();
+                case ShaderType.DrawingAxisShader:
+                    return drawingaxis_vert_shader();
                 default:
                     throw new ArgumentOutOfRangeException(nameof(type), "Unknown shader type");
 
@@ -542,6 +595,8 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
                     return load_frag_shader();
                 case ShaderType.TextShader:
                     return text_frag_shader();
+                case ShaderType.DrawingAxisShader:
+                    return drawingaxis_frag_shader();
                 default:
                     throw new ArgumentOutOfRangeException(nameof(type), "Unknown shader type");
 
