@@ -19,6 +19,7 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
             RsltWireframeShader,
             SelectionShader,
             DrawingAxisShader,
+            ContourBarShader
         }
 
 
@@ -132,7 +133,7 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
 
             vec3 jetHeatmap(float value) 
             {
-                float t = (value + 1.0) * 0.5;
+                float t = value; // (value + 1.0) * 0.5;
                 return clamp(vec3(1.5) - abs(4.0 * vec3(t) + vec3(-3, -2, -1)), vec3(0), vec3(1));
             }
 
@@ -195,7 +196,7 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
     
             vec3 jetHeatmap(float value) 
             {
-                float t = (value + 1.0) * 0.5;
+                float t = value; // (value + 1.0) * 0.5;
                 return clamp(vec3(1.5) - abs(4.0 * vec3(t) + vec3(-3, -2, -1)), vec3(0), vec3(1));
             }
     
@@ -496,8 +497,6 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
         #endregion
 
 
-
-
         #region "Drawing Axis Shader"
 
         private static string drawingaxis_vert_shader()
@@ -549,6 +548,66 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
 
 
 
+        #region "Contour Bar Shader"
+
+        private static string contourbar_vert_shader()
+        {
+            return @"
+
+            #version 330 core
+
+            layout(location = 0) in vec2 node_position;
+            layout(location = 1) in float node_value; // Value for the contour level between 0.0 and 1.0
+
+            out float v_node_value;
+
+            void main()
+            {
+	            // Map the node_value to a color (e.g., from blue to red)
+	            v_node_value = node_value;
+
+	            // Final position passed to fragment shader
+	            gl_Position = vec4(node_position,0.0f,1.0f);
+            }
+
+                    ";
+
+        }
+
+
+
+        private static string contourbar_frag_shader()
+        {
+            return @"
+
+            #version 330 core
+
+            in float v_node_value;
+
+            out vec4 f_Color; // fragment's final color (out to the fragment shader)
+            
+             vec3 jetHeatmap(float value) 
+            {
+                float t = value; // (value + 1.0) * 0.5;
+                return clamp(vec3(1.5) - abs(4.0 * vec3(t) + vec3(-3, -2, -1)), vec3(0), vec3(1));
+            }
+
+
+            void main()
+            {
+	            f_Color = vec4(jetHeatmap(v_node_value), 1.0f);
+            }
+
+                    ";
+
+        }
+
+
+        #endregion
+
+
+
+
         public static string get_vertex_shader(ShaderType type)
         {
             // Returns the vertex shader
@@ -570,6 +629,8 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
                     return text_vert_shader();
                 case ShaderType.DrawingAxisShader:
                     return drawingaxis_vert_shader();
+                case ShaderType.ContourBarShader:
+                    return contourbar_vert_shader();
                 default:
                     throw new ArgumentOutOfRangeException(nameof(type), "Unknown shader type");
 
@@ -597,6 +658,8 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
                     return text_frag_shader();
                 case ShaderType.DrawingAxisShader:
                     return drawingaxis_frag_shader();
+                case ShaderType.ContourBarShader:
+                    return contourbar_frag_shader();
                 default:
                     throw new ArgumentOutOfRangeException(nameof(type), "Unknown shader type");
 

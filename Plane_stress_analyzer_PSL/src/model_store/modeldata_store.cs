@@ -25,6 +25,11 @@ namespace Plane_stress_analyzer_PSL.src.model_store
         // Result data store
         public rsltdata_store rslt_data;
 
+
+        // Contour bar data for results visualization
+        private contourlevelbar_store contour_bar_data;
+
+
         // Drawing bound data
         public Vector3 min_bounds = new Vector3(-1);
         public Vector3 max_bounds = new Vector3(1);
@@ -72,6 +77,9 @@ namespace Plane_stress_analyzer_PSL.src.model_store
             fe_data = new fedata_store();
             rslt_data = new rsltdata_store();
 
+
+            contour_bar_data = new contourlevelbar_store();
+
             IsResultSet = false;
 
         }
@@ -118,6 +126,9 @@ namespace Plane_stress_analyzer_PSL.src.model_store
 
 
             fe_data.set_meshdrawing_data();
+
+            // Initialize contour bar data
+            contour_bar_data.InitializeContourLevelBarData(graphic_events_control.window_width, graphic_events_control.window_height);
 
             update_openTK_uniforms();
 
@@ -168,6 +179,8 @@ namespace Plane_stress_analyzer_PSL.src.model_store
                 {
 
                     rslt_data.paint_results();
+
+                    contour_bar_data.draw_contour_bar();
                 }
             }
 
@@ -188,6 +201,18 @@ namespace Plane_stress_analyzer_PSL.src.model_store
         }
 
 
+        public void update_contour_bar_position(int window_width, int window_height)
+        {
+            if (!IsModelSet)
+                return;
+            if (IsResultSet == false)
+                return;
+
+            contour_bar_data.UpdateContourLevelBarPosition(window_width, window_height, 0.0f, 100.0f);
+        }
+
+
+
         public void update_openTK_uniforms()
         {
 
@@ -197,6 +222,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store
             fe_data.update_openTK_uniforms(graphic_events_control);
             rslt_data.update_openTK_uniforms(graphic_events_control);
 
+ 
         }
 
 

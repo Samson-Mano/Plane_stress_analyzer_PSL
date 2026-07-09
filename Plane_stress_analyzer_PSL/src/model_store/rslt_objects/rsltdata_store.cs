@@ -6,6 +6,7 @@ using Plane_stress_analyzer_PSL.src.global_variables;
 using Plane_stress_analyzer_PSL.src.model_store.geom_objects;
 using Plane_stress_analyzer_PSL.src.opentk_control.opentk_buffer;
 using Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler;
+using src.model_store.geom_objects;
 using System;
 using System.Collections.Generic;
 using System.Linq;

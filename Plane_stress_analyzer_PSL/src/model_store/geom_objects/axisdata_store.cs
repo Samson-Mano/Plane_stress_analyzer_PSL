@@ -24,7 +24,7 @@ namespace src.model_store.geom_objects
         private const int VERTEX_COUNT = 8; // 4 points for single arrow, 8 points total, 
         private const int LINE_INDEX_COUNT = 12;  // 6 lines * 2 indices
 
-        // Rectangle state
+        // Drawing area rectangle point
         private Vector2 _leftCornerPoint = Vector2.Zero;
 
 

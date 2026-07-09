@@ -157,6 +157,7 @@ namespace Plane_stress_analyzer_PSL
                 glControl_main_panel.Height);
 
             axisdata.UpdateAxisArrowCenter(glControl_main_panel.Width, glControl_main_panel.Height);
+            modeldata.update_contour_bar_position(glControl_main_panel.Width, glControl_main_panel.Height);
 
             toolStripStatusLabel_zoom_value.Text = "Zoom: " + (gvariables_static.RoundOff((int)(1.0f * 100))).ToString() + "%";
 
