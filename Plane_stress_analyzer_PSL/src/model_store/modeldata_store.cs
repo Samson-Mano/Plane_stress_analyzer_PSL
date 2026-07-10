@@ -175,7 +175,12 @@ namespace Plane_stress_analyzer_PSL.src.model_store
                 if (gvariables_static.is_paint_result_displacement == true ||
                     gvariables_static.is_paint_result_stressX == true ||
                     gvariables_static.is_paint_result_stressY == true ||
-                    gvariables_static.is_paint_result_tauXY == true)
+                    gvariables_static.is_paint_result_tauXY == true ||
+                    gvariables_static.is_paint_result_vonMises == true ||
+                    gvariables_static.is_paint_result_principalStress1 == true ||
+                    gvariables_static.is_paint_result_principalStress2 == true ||
+                    gvariables_static.is_paint_result_maxShearStress == true ||
+                    gvariables_static.is_paint_result_PSL == true )
                 {
 
                     rslt_data.paint_results();
@@ -196,8 +201,51 @@ namespace Plane_stress_analyzer_PSL.src.model_store
                 return;
 
 
-            // Switch the result option
+            int option = gvariables_static.result_option;
 
+
+            // Switch the result option
+            switch (option)
+            {
+                case 1:
+                    contour_bar_data.UpdateContourLevelBarPosition(graphic_events_control.window_width,
+                        graphic_events_control.window_height, 0.0f, 100.0f, "Displacement");
+                    break;
+                case 2:
+                    contour_bar_data.UpdateContourLevelBarPosition(graphic_events_control.window_width,
+                        graphic_events_control.window_height, -100.0f, 100.0f, "Stress X");
+                    break;
+                case 3:
+                    contour_bar_data.UpdateContourLevelBarPosition(graphic_events_control.window_width,
+                        graphic_events_control.window_height, -200.0f, 200.0f, "Stress Y");
+                    break;
+                case 4:
+                    contour_bar_data.UpdateContourLevelBarPosition(graphic_events_control.window_width,
+                        graphic_events_control.window_height, -300.0f, 300.0f, "Shear Stress XY");
+                    break;
+                case 5:
+                    contour_bar_data.UpdateContourLevelBarPosition(graphic_events_control.window_width,
+                        graphic_events_control.window_height, -400.0f, 400.0f, "Von Mises Stress");
+                    break;
+                case 6:
+                    contour_bar_data.UpdateContourLevelBarPosition(graphic_events_control.window_width,
+                        graphic_events_control.window_height, -500.0f, 500.0f, "Principal Stress 1");
+                    break;
+                case 7:
+                    contour_bar_data.UpdateContourLevelBarPosition(graphic_events_control.window_width,
+                        graphic_events_control.window_height, -600.0f, 600.0f, "Principal Stress 2"); 
+                    break;
+                case 8:
+                    contour_bar_data.UpdateContourLevelBarPosition(graphic_events_control.window_width,
+                        graphic_events_control.window_height, -700.0f, 700.0f, "Max Shear Stress");
+                    break;
+                case 9:
+                    contour_bar_data.UpdateContourLevelBarPosition(graphic_events_control.window_width,
+                        graphic_events_control.window_height, -800.0f, 800.0f, "PSL"); 
+                    break;
+
+
+            }
         }
 
 
@@ -208,7 +256,8 @@ namespace Plane_stress_analyzer_PSL.src.model_store
             if (IsResultSet == false)
                 return;
 
-            contour_bar_data.UpdateContourLevelBarPosition(window_width, window_height, 0.0f, 100.0f);
+            switch_result_option();
+
         }
 
 

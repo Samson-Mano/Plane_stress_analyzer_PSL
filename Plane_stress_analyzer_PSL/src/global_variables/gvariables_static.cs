@@ -139,10 +139,20 @@ namespace Plane_stress_analyzer_PSL.src.global_variables
         public static bool is_paint_result_contourlines = true;
         public static int contourline_level = Properties.Settings.Default.Sett_contourlevel_option; // 0 = 5, 1 = 10, 2 = 20, 3 = 40, 4 = 80
 
-        public static bool is_paint_result_displacement = true;
-        public static bool is_paint_result_stressX = false;
-        public static bool is_paint_result_stressY = false;
-        public static bool is_paint_result_tauXY = false;
+        public static int result_option = 0; 
+        // 1 = displacement, 2 = stressX, 3 = stressY, 4 = tauXY, 5 = vonMises,
+        // 6 = principalStress1, 7 = principalStress2, 8 = maxShearStress, 9 = PSL
+
+        public static bool is_paint_result_displacement = false; // option 1
+        public static bool is_paint_result_stressX = false; // option 2
+        public static bool is_paint_result_stressY = false; // option 3
+        public static bool is_paint_result_tauXY = false; // option 4
+        public static bool is_paint_result_vonMises = false; // option 5
+        public static bool is_paint_result_principalStress1 = false; // option 6
+        public static bool is_paint_result_principalStress2 = false; // option 7
+        public static bool is_paint_result_maxShearStress = false; // option 8
+        public static bool is_paint_result_PSL = false; // option 9
+
 
 
         public static double displacement_scale = Properties.Settings.Default.Sett_displ_scale;

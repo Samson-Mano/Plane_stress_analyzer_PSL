@@ -44,9 +44,6 @@
             this.finiteElementSolverToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.resultOptionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
-            this.toolStripStatusLabel_zoom_value = new System.Windows.Forms.ToolStripStatusLabel();
-            this.glControl_main_panel = new OpenTK.GLControl();
             this.resultsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.displacementToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.stressXToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -54,6 +51,14 @@
             this.tauXYToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.hideResultsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.toolStripStatusLabel_zoom_value = new System.Windows.Forms.ToolStripStatusLabel();
+            this.glControl_main_panel = new OpenTK.GLControl();
+            this.vonMisesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.principalStress1ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.principalStress2ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.maxShearStressToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.pSLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -180,43 +185,6 @@
             this.resultOptionToolStripMenuItem.Text = "Result Option";
             this.resultOptionToolStripMenuItem.Click += new System.EventHandler(this.resultOptionToolStripMenuItem_Click);
             // 
-            // statusStrip1
-            // 
-            this.statusStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
-            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripStatusLabel_zoom_value});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 428);
-            this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(800, 22);
-            this.statusStrip1.TabIndex = 1;
-            this.statusStrip1.Text = "statusStrip1";
-            // 
-            // toolStripStatusLabel_zoom_value
-            // 
-            this.toolStripStatusLabel_zoom_value.Name = "toolStripStatusLabel_zoom_value";
-            this.toolStripStatusLabel_zoom_value.Size = new System.Drawing.Size(73, 17);
-            this.toolStripStatusLabel_zoom_value.Text = "Zoom: 100%";
-            // 
-            // glControl_main_panel
-            // 
-            this.glControl_main_panel.BackColor = System.Drawing.Color.Black;
-            this.glControl_main_panel.Location = new System.Drawing.Point(163, 143);
-            this.glControl_main_panel.Margin = new System.Windows.Forms.Padding(4);
-            this.glControl_main_panel.Name = "glControl_main_panel";
-            this.glControl_main_panel.Size = new System.Drawing.Size(258, 150);
-            this.glControl_main_panel.TabIndex = 2;
-            this.glControl_main_panel.VSync = false;
-            this.glControl_main_panel.Load += new System.EventHandler(this.glControl_main_panel_Load);
-            this.glControl_main_panel.SizeChanged += new System.EventHandler(this.glControl_main_panel_SizeChanged);
-            this.glControl_main_panel.Paint += new System.Windows.Forms.PaintEventHandler(this.glControl_main_panel_Paint);
-            this.glControl_main_panel.KeyDown += new System.Windows.Forms.KeyEventHandler(this.glControl_main_panel_KeyDown);
-            this.glControl_main_panel.KeyUp += new System.Windows.Forms.KeyEventHandler(this.glControl_main_panel_KeyUp);
-            this.glControl_main_panel.MouseDown += new System.Windows.Forms.MouseEventHandler(this.glControl_main_panel_MouseDown);
-            this.glControl_main_panel.MouseEnter += new System.EventHandler(this.glControl_main_panel_MouseEnter);
-            this.glControl_main_panel.MouseMove += new System.Windows.Forms.MouseEventHandler(this.glControl_main_panel_MouseMove);
-            this.glControl_main_panel.MouseUp += new System.Windows.Forms.MouseEventHandler(this.glControl_main_panel_MouseUp);
-            this.glControl_main_panel.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.glControl_main_panel_MouseWheel);
-            // 
             // resultsToolStripMenuItem
             // 
             this.resultsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -224,6 +192,11 @@
             this.stressXToolStripMenuItem,
             this.stressYToolStripMenuItem,
             this.tauXYToolStripMenuItem,
+            this.vonMisesToolStripMenuItem,
+            this.principalStress1ToolStripMenuItem,
+            this.principalStress2ToolStripMenuItem,
+            this.maxShearStressToolStripMenuItem,
+            this.pSLToolStripMenuItem,
             this.toolStripSeparator2,
             this.hideResultsToolStripMenuItem});
             this.resultsToolStripMenuItem.Name = "resultsToolStripMenuItem";
@@ -269,6 +242,78 @@
             this.hideResultsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.hideResultsToolStripMenuItem.Text = "Hide Results";
             this.hideResultsToolStripMenuItem.Click += new System.EventHandler(this.hideResultsToolStripMenuItem_Click);
+            // 
+            // statusStrip1
+            // 
+            this.statusStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
+            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripStatusLabel_zoom_value});
+            this.statusStrip1.Location = new System.Drawing.Point(0, 428);
+            this.statusStrip1.Name = "statusStrip1";
+            this.statusStrip1.Size = new System.Drawing.Size(800, 22);
+            this.statusStrip1.TabIndex = 1;
+            this.statusStrip1.Text = "statusStrip1";
+            // 
+            // toolStripStatusLabel_zoom_value
+            // 
+            this.toolStripStatusLabel_zoom_value.Name = "toolStripStatusLabel_zoom_value";
+            this.toolStripStatusLabel_zoom_value.Size = new System.Drawing.Size(73, 17);
+            this.toolStripStatusLabel_zoom_value.Text = "Zoom: 100%";
+            // 
+            // glControl_main_panel
+            // 
+            this.glControl_main_panel.BackColor = System.Drawing.Color.Black;
+            this.glControl_main_panel.Location = new System.Drawing.Point(163, 143);
+            this.glControl_main_panel.Margin = new System.Windows.Forms.Padding(4);
+            this.glControl_main_panel.Name = "glControl_main_panel";
+            this.glControl_main_panel.Size = new System.Drawing.Size(258, 150);
+            this.glControl_main_panel.TabIndex = 2;
+            this.glControl_main_panel.VSync = false;
+            this.glControl_main_panel.Load += new System.EventHandler(this.glControl_main_panel_Load);
+            this.glControl_main_panel.SizeChanged += new System.EventHandler(this.glControl_main_panel_SizeChanged);
+            this.glControl_main_panel.Paint += new System.Windows.Forms.PaintEventHandler(this.glControl_main_panel_Paint);
+            this.glControl_main_panel.KeyDown += new System.Windows.Forms.KeyEventHandler(this.glControl_main_panel_KeyDown);
+            this.glControl_main_panel.KeyUp += new System.Windows.Forms.KeyEventHandler(this.glControl_main_panel_KeyUp);
+            this.glControl_main_panel.MouseDown += new System.Windows.Forms.MouseEventHandler(this.glControl_main_panel_MouseDown);
+            this.glControl_main_panel.MouseEnter += new System.EventHandler(this.glControl_main_panel_MouseEnter);
+            this.glControl_main_panel.MouseMove += new System.Windows.Forms.MouseEventHandler(this.glControl_main_panel_MouseMove);
+            this.glControl_main_panel.MouseUp += new System.Windows.Forms.MouseEventHandler(this.glControl_main_panel_MouseUp);
+            this.glControl_main_panel.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.glControl_main_panel_MouseWheel);
+            // 
+            // vonMisesToolStripMenuItem
+            // 
+            this.vonMisesToolStripMenuItem.Name = "vonMisesToolStripMenuItem";
+            this.vonMisesToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.vonMisesToolStripMenuItem.Text = "Von Mises";
+            this.vonMisesToolStripMenuItem.Click += new System.EventHandler(this.vonMisesToolStripMenuItem_Click);
+            // 
+            // principalStress1ToolStripMenuItem
+            // 
+            this.principalStress1ToolStripMenuItem.Name = "principalStress1ToolStripMenuItem";
+            this.principalStress1ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.principalStress1ToolStripMenuItem.Text = "Principal Stress 1";
+            this.principalStress1ToolStripMenuItem.Click += new System.EventHandler(this.principalStress1ToolStripMenuItem_Click);
+            // 
+            // principalStress2ToolStripMenuItem
+            // 
+            this.principalStress2ToolStripMenuItem.Name = "principalStress2ToolStripMenuItem";
+            this.principalStress2ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.principalStress2ToolStripMenuItem.Text = "Principal Stress 2";
+            this.principalStress2ToolStripMenuItem.Click += new System.EventHandler(this.principalStress2ToolStripMenuItem_Click);
+            // 
+            // maxShearStressToolStripMenuItem
+            // 
+            this.maxShearStressToolStripMenuItem.Name = "maxShearStressToolStripMenuItem";
+            this.maxShearStressToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.maxShearStressToolStripMenuItem.Text = "Max Shear Stress";
+            this.maxShearStressToolStripMenuItem.Click += new System.EventHandler(this.maxShearStressToolStripMenuItem_Click);
+            // 
+            // pSLToolStripMenuItem
+            // 
+            this.pSLToolStripMenuItem.Name = "pSLToolStripMenuItem";
+            this.pSLToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.pSLToolStripMenuItem.Text = "PSL";
+            this.pSLToolStripMenuItem.Click += new System.EventHandler(this.pSLToolStripMenuItem_Click);
             // 
             // main_frm
             // 
@@ -319,6 +364,11 @@
         private System.Windows.Forms.ToolStripMenuItem tauXYToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripMenuItem hideResultsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem vonMisesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem principalStress1ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem principalStress2ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem maxShearStressToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem pSLToolStripMenuItem;
     }
 }
 

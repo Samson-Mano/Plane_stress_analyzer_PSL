@@ -30,6 +30,8 @@ namespace src.model_store.geom_objects
         const float CONTOUR_LEVELTRI_WIDTH = 0.038f; // Width of the contour level triangle in pixels
         const int CONTOUR_LEVELS = 10;
 
+        Vector3 ResultLabelColor = new Vector3(0.65f, 0.25f, 0.25f); // Brown color for the result label
+
         // Rendering resources
         private VertexArray _contourbarVAO;
         private VertexBuffer _contourbarVBO;
@@ -67,7 +69,7 @@ namespace src.model_store.geom_objects
             contourResultLabel = new label_list_store();
             contourLevelLabel = new label_list_store();
 
-            UpdateContourLevelBarPosition(window_width, window_height, 0.0f, 1.0f);
+            UpdateContourLevelBarPosition(window_width, window_height, 0.0f, 1.0f, "Dummy");
         }
 
 
@@ -138,7 +140,8 @@ namespace src.model_store.geom_objects
         }
 
 
-        public void UpdateContourLevelBarPosition(int window_width, int window_height, float contour_min, float contour_max)
+        public void UpdateContourLevelBarPosition(int window_width, int window_height, float contour_min, float contour_max,
+            string resultLabel)
         {
             if (!IsInitialized)
                 return;
@@ -165,7 +168,7 @@ namespace src.model_store.geom_objects
             this._RightBottomCornerPoint = new Vector2(rightBotX, rightBotY);
             this._RightTopCornerPoint = new Vector2(rightTopX, rightTopY);
 
-            UpdateVertexBuffers(contour_min, contour_max);
+            UpdateVertexBuffers(contour_min, contour_max, resultLabel);
 
             // Update the label shader uniforms for the new window size
             Matrix4 uMVP = Matrix4.Identity;
@@ -177,7 +180,7 @@ namespace src.model_store.geom_objects
 
 
 
-        private void UpdateVertexBuffers(float contour_min, float contour_max)
+        private void UpdateVertexBuffers(float contour_min, float contour_max, string resultLabel)
         {
             // Define the 4 corners of the rectangle
             float[] vertices = new float[CONTOUR_LEVELS * 2 * 3];
@@ -268,6 +271,21 @@ namespace src.model_store.geom_objects
             contourLevelLabel.update_buffer(1.1f);
 
 
+
+            contourResultLabel.clear_labels();
+
+            // Add the result label
+            float resultLabelX = OriginX - CONTOUR_LEVELBAR_WIDTH; // - 0.07f;
+            float resultLabelY = OriginY + contour_bar_height + 0.07f; // Adjust the Y position as needed
+
+            float resultLabelWidth = resultLabel.Length * 0.01f; // Estimate string width based on character count
+
+            contourResultLabel.add_label(CONTOUR_LEVELS, resultLabel, 
+                new Vector2(resultLabelX - (resultLabelWidth * 0.4f), resultLabelY), ResultLabelColor);
+
+
+            contourResultLabel.update_buffer(1.3f);
+
         }
 
 
@@ -309,7 +327,8 @@ namespace src.model_store.geom_objects
             // Paint the contour level labels
             contourLevelLabel.paint_static_labels();
 
-            
+            // Paint the result label
+            contourResultLabel.paint_static_labels();   
         }
 
 

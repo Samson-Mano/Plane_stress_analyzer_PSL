@@ -47,23 +47,42 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
 
         private struct result_extremes
         {
+            // Displacement (option = 1)
             public float max_displacement;
 
-            // Stress extremes in X direction
+            // Stress extremes in X direction (option = 2)
             public float max_stressX;
             public float min_stressX;
 
-            // Stress extremes in Y direction
+            // Stress extremes in Y direction (option = 3)
             public float max_stressY; 
             public float min_stressY;
 
-            // Shear stress extremes
+            // Shear stress extremes (option = 4)
             public float max_tauXY; 
             public float min_tauXY;
 
+            // Von Mises stress extremes (option = 5)
+            public float max_vonMises;
+            public float min_vonMises;
 
+            // Principal stress 1 extremes (option = 6)
+            public float max_principalStress1;
+            public float min_principalStress1;
+
+            // Principal stress 2 extremes (option = 7)
+            public float max_principalStress2;
+            public float min_principalStress2;
+
+            // Max shear stress extremes (option = 8)
+            public float max_shearStress;
+            public float min_shearStress;
+
+            // PSL Lines (option = 9)
 
         }
+
+
 
         private Dictionary<int, point_store> points = new Dictionary<int, point_store>();
         private List<line_store> wireframe_lines = new List<line_store>();
@@ -263,6 +282,17 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
             }
 
         }
+
+
+        private void paint_result_contour_lines()
+        {
+            // This function is a placeholder for painting contour lines based on the result data.
+            // Implementation would depend on how contour lines are defined and stored.
+
+
+
+        }
+
 
 
         public void create_buffer_data()

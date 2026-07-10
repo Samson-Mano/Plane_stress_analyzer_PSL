@@ -689,6 +689,18 @@ namespace Plane_stress_analyzer_PSL
 
         private void tauXYToolStripMenuItem_Click(object sender, EventArgs e) => TrySetResultOption(4);
 
+        private void vonMisesToolStripMenuItem_Click(object sender, EventArgs e) => TrySetResultOption(5);
+
+        private void principalStress1ToolStripMenuItem_Click(object sender, EventArgs e) => TrySetResultOption(6);
+
+        private void principalStress2ToolStripMenuItem_Click(object sender, EventArgs e) => TrySetResultOption(7);
+
+        private void maxShearStressToolStripMenuItem_Click(object sender, EventArgs e) => TrySetResultOption(8);
+
+        private void pSLToolStripMenuItem_Click(object sender, EventArgs e) => TrySetResultOption(9);
+
+
+
         private void hideResultsToolStripMenuItem_Click(object sender, EventArgs e) => TrySetResultOption(0);
 
 
@@ -710,6 +722,11 @@ namespace Plane_stress_analyzer_PSL
             stressXToolStripMenuItem.Checked = (option == 2);
             stressYToolStripMenuItem.Checked = (option == 3);
             tauXYToolStripMenuItem.Checked = (option == 4);
+            vonMisesToolStripMenuItem.Checked = (option == 5);
+            principalStress1ToolStripMenuItem.Checked = (option == 6);
+            principalStress2ToolStripMenuItem.Checked = (option == 7);
+            maxShearStressToolStripMenuItem.Checked = (option == 8);
+            pSLToolStripMenuItem.Checked = (option == 9);
             hideResultsToolStripMenuItem.Checked = (option == 0);
 
             // Reset the result option flags in the modeldata_store
@@ -717,6 +734,11 @@ namespace Plane_stress_analyzer_PSL
             gvariables_static.is_paint_result_stressX =  false;
             gvariables_static.is_paint_result_stressY = false;
             gvariables_static.is_paint_result_tauXY = false;
+            gvariables_static.is_paint_result_vonMises = false;
+            gvariables_static.is_paint_result_principalStress1 = false;
+            gvariables_static.is_paint_result_principalStress2 = false;
+            gvariables_static.is_paint_result_maxShearStress = false;
+            gvariables_static.is_paint_result_PSL = false;
 
             // Transparency defaults
             gvariables_static.geom_transparency = 1.0f;
@@ -729,22 +751,56 @@ namespace Plane_stress_analyzer_PSL
             switch (option)
             {
                 case 1:
+                    // Displacement Result
                     gvariables_static.is_paint_result_displacement = true;
                     gvariables_static.geom_transparency = default_result_geom_transparency;
                     gvariables_static.rslt_transparency = default_result_rslt_transparency;
                     break;
                 case 2:
+                    // Stress X Result
                     gvariables_static.is_paint_result_stressX = true;
                     gvariables_static.geom_transparency = default_result_geom_transparency;
                     gvariables_static.rslt_transparency = default_result_rslt_transparency;
                     break;
                 case 3:
+                    // Stress Y Result
                     gvariables_static.is_paint_result_stressY = true;
                     gvariables_static.geom_transparency = default_result_geom_transparency;
                     gvariables_static.rslt_transparency = default_result_rslt_transparency;
                     break;
                 case 4:
+                    // Tau XY Result
                     gvariables_static.is_paint_result_tauXY = true;
+                    gvariables_static.geom_transparency = default_result_geom_transparency;
+                    gvariables_static.rslt_transparency = default_result_rslt_transparency;
+                    break;
+                case 5:
+                    // Von Mises Result
+                    gvariables_static.is_paint_result_vonMises = true;
+                    gvariables_static.geom_transparency = default_result_geom_transparency;
+                    gvariables_static.rslt_transparency = default_result_rslt_transparency;
+                    break;
+                case 6:
+                    // Principal Stress 1 Result
+                    gvariables_static.is_paint_result_principalStress1 = true;
+                    gvariables_static.geom_transparency = default_result_geom_transparency;
+                    gvariables_static.rslt_transparency = default_result_rslt_transparency;
+                    break;
+                case 7:
+                    // Principal Stress 2 Result
+                    gvariables_static.is_paint_result_principalStress2 = true;
+                    gvariables_static.geom_transparency = default_result_geom_transparency;
+                    gvariables_static.rslt_transparency = default_result_rslt_transparency;
+                    break;
+                case 8:
+                    // Max Shear Stress Result
+                    gvariables_static.is_paint_result_maxShearStress = true;
+                    gvariables_static.geom_transparency = default_result_geom_transparency;
+                    gvariables_static.rslt_transparency = default_result_rslt_transparency;
+                    break;
+                case 9:
+                    // PSL Result
+                    gvariables_static.is_paint_result_PSL = true;
                     gvariables_static.geom_transparency = default_result_geom_transparency;
                     gvariables_static.rslt_transparency = default_result_rslt_transparency;
                     break;
@@ -754,6 +810,7 @@ namespace Plane_stress_analyzer_PSL
             }
 
             // Switch the result option in the modeldata_store
+            gvariables_static.result_option = option;
             modeldata.switch_result_option();
 
             modeldata.update_openTK_uniforms();
@@ -801,8 +858,8 @@ namespace Plane_stress_analyzer_PSL
 
         }
 
-        #endregion
 
+        #endregion
 
     }
 }
