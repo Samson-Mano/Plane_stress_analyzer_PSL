@@ -115,10 +115,62 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
 
         }
 
-
-
-
         private static string rslt_mesh_frag_shader()
+        {
+
+            return @"
+
+            #version 330 core
+
+            uniform float vertexTransparency; // Transparency of the mesh
+            uniform float uNumContours = 10.0;      // number of contour bands
+            uniform float uLineWidth = 1.0;         // contour line thickness (in pixels, roughly)
+            uniform vec3  uLineColor = vec3(0.0);   // contour line color (black by default)
+            uniform float uLineOpacity = 1.0;       // how strongly lines blend over the heatmap
+      
+
+            in float v_deflscale;
+
+            out vec4 fColor;
+
+            vec3 jetHeatmap(float value) 
+            {
+                float t = value;
+                return clamp(vec3(1.5) - abs(4.0 * vec3(t) + vec3(-3, -2, -1)), vec3(0), vec3(1));
+            }
+
+            // Returns 1.0 exactly on a contour line, fading to 0.0 away from it
+            float contourLines(float value, float numContours, float lineWidth)
+            {
+                float scaled = value * numContours;
+                float distToLine = abs(fract(scaled + 0.5) - 0.5); // distance to nearest integer
+                float aa = fwidth(scaled) * lineWidth;              // pixel-based line width
+                return 1.0 - smoothstep(0.0, aa, distToLine);
+            }
+
+            void main()
+            {
+                vec3 baseColor = jetHeatmap(v_deflscale);
+                
+                float line = 0.0;
+
+                if (uLineOpacity > 0.1 && v_deflscale > 0.05)
+                {
+                    line = contourLines(v_deflscale, uNumContours, uLineWidth);
+                }
+
+                vec3 finalColor = mix(baseColor, uLineColor, line * uLineOpacity);
+
+                fColor = vec4(finalColor, vertexTransparency);
+            }
+
+
+                    ";
+
+        }
+
+
+        private static string rslt_mesh_frag_shader_default()
         {
 
             return @"

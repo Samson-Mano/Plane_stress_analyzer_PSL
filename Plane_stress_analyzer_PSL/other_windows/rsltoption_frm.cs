@@ -91,7 +91,28 @@ namespace other_windows
 
             // Contour levels selection
             // 0 = 5, 1 = 10, 2 = 20, 3 = 40, 4 = 80
-            comboBox_contourlevels.SelectedIndex = gvariables_static.contourline_level;
+            switch (gvariables_static.contourline_level)
+            {
+                case 0:
+                    comboBox_contourlevels.SelectedIndex = 0; // 5
+                    break;
+                case 1:
+                    comboBox_contourlevels.SelectedIndex = 1; // 10
+                    break;
+                case 2:
+                    comboBox_contourlevels.SelectedIndex = 2; // 20
+                    break;
+                case 3:
+                    comboBox_contourlevels.SelectedIndex = 3; // 40
+                    break;
+                case 4:
+                    comboBox_contourlevels.SelectedIndex = 4; // 80
+                    break;
+                default:
+                    comboBox_contourlevels.SelectedIndex = 1; // Default to 10 if out of range
+                    break;
+            }
+
 
 
             // === Track bar control ===
@@ -141,7 +162,6 @@ namespace other_windows
 
 
         }
-
 
 
         private void UpdateScale(TrackBar bar, Label label, string prefix, Action<double> setValue)
@@ -259,9 +279,36 @@ namespace other_windows
             }
         }
 
+
         private void comboBox_contourlevels_SelectedIndexChanged(object sender, EventArgs e)
         {
-            gvariables_static.contourline_level = comboBox_contourlevels.SelectedIndex;
+            switch (comboBox_contourlevels.SelectedIndex)
+            {
+                case 0:
+                    gvariables_static.contourline_level = 5; // 5
+                    break;
+                case 1:
+                    gvariables_static.contourline_level = 10; // 10
+                    break;
+                case 2:
+                    gvariables_static.contourline_level = 20; // 20
+                    break;
+                case 3:
+                    gvariables_static.contourline_level = 40; // 40
+                    break;
+                case 4:
+                    gvariables_static.contourline_level = 80; // 80
+                    break;
+                default:
+                    gvariables_static.contourline_level = 10; // Default to 10 if out of range
+                    break;
+            }
+
+            if (this.Owner is main_frm mainForm)
+            {
+                mainForm.CallFrom_option_frm();
+            }
+
         }
 
 
@@ -324,10 +371,14 @@ namespace other_windows
                 gvariables_static.animate_play = true;
                 gvariables_static.animate_pause = false;
 
+                // Start or resume the animation
+                modeldata.start_animation();
+
                 // Set the status label
                 label_status.Text = "Playing";
 
             }
+
 
             if (gvariables_static.animate_stop == true)
             {

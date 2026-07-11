@@ -177,12 +177,10 @@ namespace Plane_stress_analyzer_PSL.src.global_variables
 
 
         // Control Modal Animation
-        public static bool animate_play = true;
+        public static bool animate_play = false;
         public static bool animate_pause = false;
-        public static bool animate_stop = false;
+        public static bool animate_stop = true;
 
-        // Animation speed control
-        public static double modal_animation_speed = 1.0f; // real-time speed
 
 
         [System.Runtime.InteropServices.DllImport("user32.dll")]

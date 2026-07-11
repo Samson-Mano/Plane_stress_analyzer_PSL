@@ -284,16 +284,6 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
         }
 
 
-        private void paint_result_contour_lines()
-        {
-            // This function is a placeholder for painting contour lines based on the result data.
-            // Implementation would depend on how contour lines are defined and stored.
-
-
-
-        }
-
-
 
         public void create_buffer_data()
         {
@@ -472,6 +462,8 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
             rsltmeshShader.SetFloat("vertexTransparency", gvariables_static.rslt_transparency);
 
 
+            //____________________________________________________________________________________________
+
             rsltmeshwireframeShader.SetMatrix4("uMVP", uMVP);
             rsltmeshwireframeShader.SetFloat("geomscale", gvariables_static.geom_size);
             rsltmeshwireframeShader.SetFloat("modelpercent", model_percent);
@@ -483,7 +475,27 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
             // rsltmeshwireframeShader.SetVector3("wireframeColor", customColor);
             rsltmeshwireframeShader.SetFloat("wireframeAlpha", 0.5f);
 
+            //____________________________________________________________________________________________
+            // Contour data update
+            rsltmeshShader.SetFloat("uNumContours", gvariables_static.contourline_level);
+            rsltmeshShader.SetFloat("uLineOpacity", 0.0f);
+
+            if (gvariables_static.is_paint_result_contourlines)
+            {
+                rsltmeshShader.SetFloat("uLineOpacity", 1.0f);
+            }
+
         }
+
+        public void update_animation(float sine_oscillation)
+        {
+            // Update the sine oscillation value in the shader for animation
+            rsltmeshShader.SetFloat("sinevalue", sine_oscillation);
+
+            rsltmeshwireframeShader.SetFloat("sinevalue", sine_oscillation);
+
+        }
+
 
 
         public void Dispose()

@@ -311,7 +311,7 @@ namespace Plane_stress_analyzer_PSL
         {
             while (IsApplicationIdle())
             {
-                // fedata.resultmeshdata.update_modal_animation();   // Update animation
+                modeldata.update_result_animation();   // Update animation
                 glControl_main_panel.Invalidate(); // Redraw
             }
         }

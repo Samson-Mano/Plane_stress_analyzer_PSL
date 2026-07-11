@@ -51,6 +51,12 @@ namespace Plane_stress_analyzer_PSL.src.model_store
         public bool IsResultSet = false;
 
 
+        // Animation control data
+        public System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
+
+
+
+
         public modeldata_store()
         {
 
@@ -305,7 +311,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store
         public void start_animation()
         {
             // Start the animation
-
+            stopwatch.Start();
 
         }
 
@@ -313,15 +319,47 @@ namespace Plane_stress_analyzer_PSL.src.model_store
         public void pause_animation()
         {
             // Pause the animation
-
+            stopwatch.Stop();
 
         }
 
 
         public void stop_animation()
         {
-            // Stop the animation
+            // Reset the animation stopwatch and time step
+            stopwatch.Reset();
+            stopwatch.Stop();
 
+            // Set the animation sine value to 1.0f
+            rslt_data.update_animation(1.0f);
+
+        }
+
+
+        public void update_result_animation()
+        {
+            if (!IsModelSet || !IsResultSet)
+                return;
+
+
+            // Results are stored, animate the modal results
+            double elapsedRealTime = stopwatch.Elapsed.TotalSeconds;
+
+
+            if (gvariables_static.animate_play == true)
+            {
+                // Oscillation: -1 to 1
+                float oscillation = (float)Math.Sin(2.0 * Math.PI * elapsedRealTime * gvariables_static.resp_animation_speed);
+
+                // Convert to the range of 0 to 1
+                oscillation = (oscillation + 1.0f) / 2.0f;
+
+                rslt_data.update_animation(oscillation);
+
+            }
+
+
+            //
         }
 
 
