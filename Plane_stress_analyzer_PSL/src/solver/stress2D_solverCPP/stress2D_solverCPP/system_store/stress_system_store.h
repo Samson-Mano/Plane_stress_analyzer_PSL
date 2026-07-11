@@ -78,7 +78,7 @@ public:
 struct constraint_store
 {
 	int constraint_set_id = 0;
-	int constrainttype = -1;
+	int constrainttype = -1; // 0 = Pinned, 1 = Roller
 	double constraintangle = 0.0;
 	std::vector<int> node_ids;
 

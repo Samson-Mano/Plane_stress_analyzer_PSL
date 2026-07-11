@@ -162,13 +162,8 @@ bool stress2d_solver::perform_solve()
 	set_element_results();
 
 
-	for (int i = 0; i < static_cast<int>(polynomial_2dmesh.renderer_node_points.size()); ++i)
-	{
-		polynomial_2dmesh.renderer_node_points[i].x_displ = this->global_displacement_vector(i * 2);
-		polynomial_2dmesh.renderer_node_points[i].y_displ = this->global_displacement_vector(i * 2 + 1);
-		// polynomial_2dmesh.renderer_node_points[i].reaction_x = this->global_reaction_vector(i * 2);
-		// polynomial_2dmesh.renderer_node_points[i].reaction_y = this->global_reaction_vector(i * 2 + 1);
-	}
+	// Map the results to the renderer elements for visualization
+	map_results_to_rendererelements();
 
 
 	bool isResultStoreSuccessfully = store_results();
@@ -820,8 +815,10 @@ void stress2d_solver::set_element_results()
 		}
 	}
 
-
 }
+
+
+
 
 element_results stress2d_solver::compute_element_result_at_ip(const Eigen::Vector3d& stress_at_ip,
 	const Eigen::Vector3d& strain_at_ip)
@@ -908,7 +905,48 @@ element_results stress2d_solver::compute_element_result_at_ip(const Eigen::Vecto
 }
 
 
+void stress2d_solver::map_results_to_rendererelements()
+{
 
+	// Create the instance of the result extrapolator with the polynomial order and the element lists
+	ipresult_extrapolator extrapolator(polynomial_2dmesh.polynomial_trielement_list, 
+		polynomial_2dmesh.polynomial_quadelement_list,
+		polynomial_order);
+
+
+	extrapolator.extrapolate_results_to_nodes(polynomial_2dmesh.polynomial_node_list);
+
+
+	// Map the results to the renderer nodes for visualization
+
+	for (int i = 0; i < static_cast<int>(polynomial_2dmesh.renderer_node_points.size()); ++i)
+	{
+		const polynomial_node_store& node_data = polynomial_2dmesh.polynomial_node_list[i];
+
+		renderer_node& renderer_node_data = polynomial_2dmesh.renderer_node_points[i];
+
+		// Node displacements
+		renderer_node_data.displ_x = node_data.displ_x;
+		renderer_node_data.displ_y = node_data.displ_y;
+
+		// Node reactions
+		renderer_node_data.reaction_x = node_data.reaction_x;
+		renderer_node_data.reaction_y = node_data.reaction_y;
+
+		// Stress results at the node (averaged from connected elements)
+		renderer_node_data.sigma_x = node_data.sigma_x;
+		renderer_node_data.sigma_y = node_data.sigma_y;
+		renderer_node_data.tau_xy = node_data.tau_xy;
+
+		renderer_node_data.sigma_1 = node_data.sigma_1;
+		renderer_node_data.sigma_2 = node_data.sigma_2;
+		renderer_node_data.von_mises = node_data.von_mises;
+		renderer_node_data.max_shear = node_data.max_shear;
+		renderer_node_data.theta_p = node_data.theta_p;
+
+	}
+
+}
 
 
 
@@ -938,8 +976,26 @@ bool stress2d_solver::store_results()
 		// double rand_result = std::sin(node.x * 10.0) * std::cos(node.y * 10.0); // Random value between 0 and 1
 
 		// retrive the results
-		double displ_x = node.x_displ;
-		double displ_y = node.y_displ;
+		// Displacement at the node
+		double displ_x = node.displ_x;
+		double displ_y = node.displ_y;
+
+		// Reaction at the node
+		int constraint_type = node.constraint_type;
+		double reaction_x = node.reaction_x;
+		double reaction_y = node.reaction_y;
+
+		// Stress results at the node
+		double sigma_x = node.sigma_x;
+		double sigma_y = node.sigma_y;
+		double tau_xy = node.tau_xy;
+
+		double sigma_1 = node.sigma_1;
+		double sigma_2 = node.sigma_2;
+
+		double von_mises = node.von_mises;
+		double max_shear = node.max_shear;
+		double theta_p = node.theta_p;
 
 
 		bin_file.write(reinterpret_cast<const char*>(&nodeid), sizeof(int32_t));
@@ -947,6 +1003,17 @@ bool stress2d_solver::store_results()
 		bin_file.write(reinterpret_cast<const char*>(&node.y), sizeof(double));
 		bin_file.write(reinterpret_cast<const char*>(&displ_x), sizeof(double));
 		bin_file.write(reinterpret_cast<const char*>(&displ_y), sizeof(double));
+		bin_file.write(reinterpret_cast<const char*>(&constraint_type), sizeof(int32_t));
+		bin_file.write(reinterpret_cast<const char*>(&reaction_x), sizeof(double));
+		bin_file.write(reinterpret_cast<const char*>(&reaction_y), sizeof(double));
+		bin_file.write(reinterpret_cast<const char*>(&sigma_x), sizeof(double));
+		bin_file.write(reinterpret_cast<const char*>(&sigma_y), sizeof(double));
+		bin_file.write(reinterpret_cast<const char*>(&tau_xy), sizeof(double));
+		bin_file.write(reinterpret_cast<const char*>(&sigma_1), sizeof(double));
+		bin_file.write(reinterpret_cast<const char*>(&sigma_2), sizeof(double));
+		bin_file.write(reinterpret_cast<const char*>(&von_mises), sizeof(double));
+		bin_file.write(reinterpret_cast<const char*>(&max_shear), sizeof(double));
+		bin_file.write(reinterpret_cast<const char*>(&theta_p), sizeof(double));
 
 	}
 

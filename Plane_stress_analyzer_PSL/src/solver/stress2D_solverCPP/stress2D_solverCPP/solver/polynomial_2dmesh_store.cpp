@@ -58,9 +58,19 @@ void polynomial_2dmesh_store::copy_mesh_nodes()
 		// Set results to zero
 		p_node.displ_x = 0.0;
 		p_node.displ_y = 0.0;
+
 		p_node.reaction_x = 0.0;
 		p_node.reaction_y = 0.0;
+		
+		p_node.sigma_x = 0.0;
+		p_node.sigma_y = 0.0;
+		p_node.tau_xy = 0.0;
 
+		p_node.sigma_1 = 0.0;
+		p_node.sigma_2 = 0.0;
+		p_node.von_mises = 0.0;
+		p_node.max_shear = 0.0;
+		p_node.theta_p = 0.0;	
 
 		p_node.is_internal = false;
 
@@ -139,8 +149,19 @@ void polynomial_2dmesh_store::create_edge_internal_nodes()
 			// Set results to zero
 			p_node.displ_x = 0.0;
 			p_node.displ_y = 0.0;
+
 			p_node.reaction_x = 0.0;
 			p_node.reaction_y = 0.0;
+
+			p_node.sigma_x = 0.0;
+			p_node.sigma_y = 0.0;
+			p_node.tau_xy = 0.0;
+
+			p_node.sigma_1 = 0.0;
+			p_node.sigma_2 = 0.0;
+			p_node.von_mises = 0.0;
+			p_node.max_shear = 0.0;
+			p_node.theta_p = 0.0;
 
 			p_node.is_internal = true;
 
@@ -374,6 +395,16 @@ std::vector<int> polynomial_2dmesh_store::create_tri_internal_nodes(int nd1, int
 			p_node.reaction_x = 0.0;
 			p_node.reaction_y = 0.0;
 
+			p_node.sigma_x = 0.0;
+			p_node.sigma_y = 0.0;
+			p_node.tau_xy = 0.0;
+
+			p_node.sigma_1 = 0.0;
+			p_node.sigma_2 = 0.0;
+			p_node.von_mises = 0.0;
+			p_node.max_shear = 0.0;
+			p_node.theta_p = 0.0;
+
 			p_node.is_internal = true;
 
 			this->polynomial_node_list.insert({ node_id, p_node });
@@ -443,6 +474,16 @@ std::vector<int> polynomial_2dmesh_store::create_quad_internal_nodes(int nd1, in
 			p_node.displ_y = 0.0;
 			p_node.reaction_x = 0.0;
 			p_node.reaction_y = 0.0;
+
+			p_node.sigma_x = 0.0;
+			p_node.sigma_y = 0.0;
+			p_node.tau_xy = 0.0;
+
+			p_node.sigma_1 = 0.0;
+			p_node.sigma_2 = 0.0;
+			p_node.von_mises = 0.0;
+			p_node.max_shear = 0.0;
+			p_node.theta_p = 0.0;
 
 			p_node.is_internal = true;
 
@@ -538,17 +579,22 @@ void polynomial_2dmesh_store::create_renderer_mesh()
 		rd_node.y = nd.second.y_coord;
 
 		// Set the displacement data
-		rd_node.x_displ = 0.0;
-		rd_node.y_displ = 0.0;
+		rd_node.displ_x = 0.0;
+		rd_node.displ_y = 0.0;
+
+		rd_node.constraint_node_type = 0;
+		rd_node.reaction_x = 0.0;
+		rd_node.reaction_y = 0.0;
 
 		// Null Result data
 		rd_node.sigma_x = 0.0;
 		rd_node.sigma_y = 0.0;
 		rd_node.tau_xy = 0.0;
-		rd_node.principal_stress_1 = 0.0;
-		rd_node.principal_stress_2 = 0.0;
-		rd_node.von_mises_stress = 0.0;
-		rd_node.max_shear_stress = 0.0;
+		rd_node.sigma_1 = 0.0;
+		rd_node.sigma_2 = 0.0;
+		rd_node.von_mises = 0.0;
+		rd_node.max_shear = 0.0;
+		rd_node.theta_p = 0.0;
 
 		this->renderer_node_points.insert({ nd.second.node_id, rd_node });
 	}
@@ -564,6 +610,23 @@ void polynomial_2dmesh_store::create_renderer_mesh()
 	// Create the rendere element edges
 	this->renderer_edge_lines.clear();
 	create_renderer_edges();
+
+	// Update the constraint type to the renderer nodes
+	for (const auto& constr_m : this->stress_system.constraint_list)
+	{
+		// Get the constraint
+		const constraint_store& constr = constr_m.second;
+		int constraint_type = constr.constrainttype; // 0 = Pinned, 1 = Roller
+
+		for (const auto& node_id : constr.node_ids)
+		{
+			// Update the renderer node constraint type
+			renderer_node& rd_node = this->renderer_node_points[node_id];
+
+			rd_node.constraint_type = constraint_type + 1; // 1 = Pinned, 2 = Roller
+		}
+
+	}
 
 }
 

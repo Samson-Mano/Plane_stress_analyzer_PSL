@@ -7,14 +7,14 @@
 struct renderer_triangle
 {
 	// int tri_id;
-	int n1, n2, n3;
+	int n1 = -1, n2 = -1, n3 = -1;
 };
 
 
 // Renderer Edge
 struct renderer_edge
 {
-	int nstart, nend;
+	int nstart = -1, nend = -1;
 
 	bool operator==(const renderer_edge& other) const
 	{
@@ -26,16 +26,27 @@ struct renderer_edge
 // Renderer Node
 struct renderer_node
 {
-	int n_id;
-	double x, y;
-	double x_displ, y_displ; // Displacement data
+	int n_id = -1;
+	double x = 0.0, y = 0.0;
 
-	// Stress result data
-	double sigma_x, sigma_y, tau_xy; // Stress data
-	double principal_stress_1, principal_stress_2; // Principal stress data
-	double von_mises_stress; // Von Mises stress data
-	double max_shear_stress; // Maximum shear stress data
-	double principal_stress_angle; // Principal stress angle
+	double displ_x = 0.0; // Displacement in x direction
+	double displ_y = 0.0; // Displacement in y direction
+
+	int constraint_type = 0; // 0: Free, 1: Pinned, 2: Roller
+	double reaction_x = 0.0; // Reaction force in x direction
+	double reaction_y = 0.0; // Reaction force in y direction
+
+	// Averaged nodal values
+	double sigma_x = 0.0; // Stress in x direction
+	double sigma_y = 0.0; // Stress in y direction
+	double tau_xy = 0.0;   // Shear stress in xy plane
+
+	double sigma_1 = 0.0; // Principal stress 1
+	double sigma_2 = 0.0; // Principal stress 2
+	double von_mises = 0.0; // Von Mises stress
+	double max_shear = 0.0; // Maximum shear stress
+	double theta_p = 0.0; // Principal stress angle
+
 };
 
 
@@ -76,6 +87,18 @@ struct polynomial_node_store
 
 	double reaction_x = 0.0; // Reaction force in x direction
 	double reaction_y = 0.0; // Reaction force in y direction
+
+	// Averaged nodal values
+	double sigma_x = 0.0; // Stress in x direction
+	double sigma_y = 0.0; // Stress in y direction
+	double tau_xy = 0.0;   // Shear stress in xy plane
+
+	double sigma_1 = 0.0; // Principal stress 1
+	double sigma_2 = 0.0; // Principal stress 2
+	double von_mises = 0.0; // Von Mises stress
+	double max_shear = 0.0; // Maximum shear stress
+	double theta_p = 0.0; // Principal stress angle
+
 
 	bool is_internal = false;
 
@@ -179,6 +202,12 @@ public:
 	const std::unordered_map<int, material_store>& get_material_data() const { 
 		return stress_system.material_list; 
 	}
+
+	// Access polynomial order
+	const int get_polynomial_order() const {
+		return polynomial_order;
+	}
+
 
 private:
 	stress_system_store stress_system;

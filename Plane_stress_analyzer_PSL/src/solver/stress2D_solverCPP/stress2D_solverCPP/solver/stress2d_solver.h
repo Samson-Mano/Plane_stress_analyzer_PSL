@@ -34,6 +34,8 @@ typedef Eigen::SparseMatrix<double> SparseMatrix;
 #include "../solver/element_formulation/trielement_formulation.h"
 #include "../solver/element_formulation/quadelement_formulation.h"
 
+#include "../solver/utility/ipresult_extrapolator.h"
+
 #include <fstream>
 
 #include <iomanip> // to get std::setprecision()
@@ -119,6 +121,9 @@ private:
 	bool check_valid_results(const Eigen::VectorXd& results, const std::string& result_name);
 
 	void set_element_results();
+
+	void map_results_to_rendererelements();
+
 
 	element_results compute_element_result_at_ip(const Eigen::Vector3d& stress_at_ip,
 		const Eigen::Vector3d& strain_at_ip);
