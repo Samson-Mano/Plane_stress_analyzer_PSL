@@ -9,6 +9,7 @@ using Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler;
 using src.model_store.geom_objects;
 using System;
 using System.Collections.Generic;
+using System.Drawing.Text;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,12 +21,23 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
         private struct point_store
         {
             public int point_id;
-            public float x_coord;
-            public float y_coord;
+            public double x_coord;
+            public double y_coord;
 
-            public float displ_x;
-            public float displ_y;
-            public float displ_magnitude;
+            public double displ_x;
+            public double displ_y;
+            public double displ_magnitude;
+
+            public double sigma_x;
+            public double sigma_y;
+            public double tau_xy;
+
+            public double sigma_1;
+            public double sigma_2;
+
+            public double von_mises;
+            public double max_shear;
+            public double theta_p; // principal stress angle
 
         }
 
@@ -45,38 +57,53 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
 
         }
 
-        private struct result_extremes
+
+        private struct reaction_store
+        {
+            public int point_id;
+            public double x_coord;
+            public double y_coord;
+
+            public int constraint_type; // 0 = free, 1 = pinned, 2 = roller
+            public double constraint_angle;
+
+            public double reaction_x;
+            public double reaction_y;
+        }
+
+
+        public struct result_extremes
         {
             // Displacement (option = 1)
-            public float max_displacement;
+            public double max_displacement;
 
             // Stress extremes in X direction (option = 2)
-            public float max_stressX;
-            public float min_stressX;
+            public double max_stressX;
+            public double min_stressX;
 
             // Stress extremes in Y direction (option = 3)
-            public float max_stressY; 
-            public float min_stressY;
+            public double max_stressY; 
+            public double min_stressY;
 
             // Shear stress extremes (option = 4)
-            public float max_tauXY; 
-            public float min_tauXY;
+            public double max_tauXY; 
+            public double min_tauXY;
 
             // Von Mises stress extremes (option = 5)
-            public float max_vonMises;
-            public float min_vonMises;
+            public double max_vonMises;
+            public double min_vonMises;
 
             // Principal stress 1 extremes (option = 6)
-            public float max_principalStress1;
-            public float min_principalStress1;
+            public double max_principalStress1;
+            public double min_principalStress1;
 
             // Principal stress 2 extremes (option = 7)
-            public float max_principalStress2;
-            public float min_principalStress2;
+            public double max_principalStress2;
+            public double min_principalStress2;
 
             // Max shear stress extremes (option = 8)
-            public float max_shearStress;
-            public float min_shearStress;
+            public double max_shearStress;
+            public double min_shearStress;
 
             // PSL Lines (option = 9)
 
@@ -87,8 +114,11 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
         private Dictionary<int, point_store> points = new Dictionary<int, point_store>();
         private List<line_store> wireframe_lines = new List<line_store>();
         private List<tri_store> tris = new List<tri_store>();
+        private List<reaction_store> reactions = new List<reaction_store>();
 
-        private result_extremes rslt_extremes;
+
+        public result_extremes rslt_extremes {  get { return _rslt_extremes; } }
+        private result_extremes _rslt_extremes;
 
         // public bool isResultSet = false;
 
@@ -133,18 +163,51 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
 
 
 
-        public void add_point(int point_id, float x, float y, float displ_x, float displ_y)
+        public void add_point(int point_id, double x_coord, double y_coord, 
+            double displ_x, double displ_y,
+            int constraint_type,
+            double constraint_angle,
+            double reaction_x, double reaction_y,
+            double sigma_x, double sigma_y, 
+            double tau_xy, 
+            double sigma_1, double sigma_2, 
+            double von_mises, 
+            double max_shear, 
+            double theta_p)
         {
-            float displ_magnitude = (float)Math.Sqrt(displ_x * displ_x + displ_y * displ_y);    
+
+            if(constraint_type != 0)
+            {
+                reactions.Add(new reaction_store()
+                {
+                    point_id = point_id,
+                    x_coord = x_coord,
+                    y_coord = y_coord,
+                    constraint_type = constraint_type,
+                    constraint_angle = constraint_angle,
+                    reaction_x = reaction_x,
+                    reaction_y = reaction_y
+                });
+            }
+
+            double displ_magnitude = Math.Sqrt(displ_x * displ_x + displ_y * displ_y);
 
             points.Add(point_id, new point_store()
             {
                 point_id = point_id,
-                x_coord = x,
-                y_coord = y,
+                x_coord = x_coord,
+                y_coord = y_coord,
                 displ_x = displ_x,
                 displ_y = displ_y,
-                displ_magnitude = displ_magnitude
+                displ_magnitude = displ_magnitude,
+                sigma_x = sigma_x,
+                sigma_y = sigma_y,
+                tau_xy = tau_xy,
+                sigma_1 = sigma_1,
+                sigma_2 = sigma_2,
+                von_mises = von_mises,
+                max_shear = max_shear,
+                theta_p = theta_p
             });
 
         }
@@ -173,20 +236,101 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
         }
 
 
-        public void set_result_extremes()
+        public bool set_result_extremes()
         {
             // Result extremes are calculated based on the points data
-            rslt_extremes = new result_extremes();
-            rslt_extremes.max_displacement = 0.0f;
+            _rslt_extremes = new result_extremes();
+            _rslt_extremes.max_displacement = 0.0;
+            _rslt_extremes.max_stressX = double.MinValue;
+            _rslt_extremes.min_stressX = double.MaxValue;
+            _rslt_extremes.max_stressY = double.MinValue;
+            _rslt_extremes.min_stressY = double.MaxValue;
+            _rslt_extremes.max_tauXY = double.MinValue;
+            _rslt_extremes.min_tauXY = double.MaxValue;
+            _rslt_extremes.max_principalStress1 = double.MinValue;
+            _rslt_extremes.min_principalStress1 = double.MaxValue;
+            _rslt_extremes.max_principalStress2 = double.MinValue;
+            _rslt_extremes.min_principalStress2 = double.MaxValue;
+            _rslt_extremes.max_vonMises = double.MinValue;
+            _rslt_extremes.min_vonMises = double.MaxValue;
+            _rslt_extremes.max_shearStress = double.MinValue;
+            _rslt_extremes.min_shearStress = double.MaxValue;
+            
 
             foreach (var pt in points.Values)
             {
-                if (pt.displ_magnitude > rslt_extremes.max_displacement)
-                {
-                    rslt_extremes.max_displacement = pt.displ_magnitude;
-                }
+                // Maximum displacement magnitude
+                _rslt_extremes.max_displacement = Math.Max(_rslt_extremes.max_displacement, pt.displ_magnitude);
+
+                // Maximum and minimum stress in X and Y directions
+                _rslt_extremes.max_stressX = Math.Max(_rslt_extremes.max_stressX, pt.sigma_x);
+                _rslt_extremes.min_stressX = Math.Min(_rslt_extremes.min_stressX, pt.sigma_x);
+                _rslt_extremes.max_stressY = Math.Max(_rslt_extremes.max_stressY, pt.sigma_y);
+                _rslt_extremes.min_stressY = Math.Min(_rslt_extremes.min_stressY, pt.sigma_y);
+
+                // Maximum and minimum shear stress
+                _rslt_extremes.max_tauXY = Math.Max(_rslt_extremes.max_tauXY, pt.tau_xy);
+                _rslt_extremes.min_tauXY = Math.Min(_rslt_extremes.min_tauXY, pt.tau_xy);
+
+                // Maximum and minimum principal stresses
+                _rslt_extremes.max_principalStress1 = Math.Max(_rslt_extremes.max_principalStress1, pt.sigma_1);
+                _rslt_extremes.min_principalStress1 = Math.Min(_rslt_extremes.min_principalStress1, pt.sigma_1);
+                _rslt_extremes.max_principalStress2 = Math.Max(_rslt_extremes.max_principalStress2, pt.sigma_2);
+                _rslt_extremes.min_principalStress2 = Math.Min(_rslt_extremes.min_principalStress2, pt.sigma_2);
+
+                // Maximum and minimum von Mises stress
+                _rslt_extremes.max_vonMises = Math.Max(_rslt_extremes.max_vonMises, pt.von_mises);
+                _rslt_extremes.min_vonMises = Math.Min(_rslt_extremes.min_vonMises, pt.von_mises);
+
+                // Maximum and minimum shear stress
+                _rslt_extremes.max_shearStress = Math.Max(_rslt_extremes.max_shearStress, pt.max_shear);
+                _rslt_extremes.min_shearStress = Math.Min(_rslt_extremes.min_shearStress, pt.max_shear);
+
             }
 
+
+            // Validate the result extremes to ensure they are meaningful
+            if (_rslt_extremes.max_displacement <= 0 || !check_double(_rslt_extremes.max_displacement))
+            {
+                return false;
+            }
+            if (!check_double(_rslt_extremes.max_stressX) || !check_double(_rslt_extremes.min_stressX))
+            {
+                return false;
+            }
+            if (!check_double(_rslt_extremes.max_stressY) || !check_double(_rslt_extremes.min_stressY))
+            {
+                return false;
+            }
+            if (!check_double(_rslt_extremes.max_tauXY) || !check_double(_rslt_extremes.min_tauXY))
+            {
+                return false;
+            }
+            if (!check_double(_rslt_extremes.max_vonMises) || !check_double(_rslt_extremes.min_vonMises))
+            {
+                return false;
+            }
+            if (!check_double(_rslt_extremes.max_principalStress1) || !check_double(_rslt_extremes.min_principalStress1))
+            {
+                return false;
+            }
+            if (!check_double(_rslt_extremes.max_principalStress2) || !check_double(_rslt_extremes.min_principalStress2))
+            {
+                return false;
+            }
+            if (!check_double(_rslt_extremes.max_shearStress) || !check_double(_rslt_extremes.min_shearStress))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+
+        private bool check_double(double value)
+        {
+            // Check if the double value is valid (not NaN or Infinity)
+            return !double.IsNaN(value) && !double.IsInfinity(value);
         }
 
 
@@ -284,6 +428,72 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
         }
 
 
+        public void switch_result_option(int option)
+        {
+            // Switch the result option for visualization
+            // 1 = Displacement, 2 = StressX, 3 = StressY, 4 = Shear stress, 
+            // 5 = Von Mises stress, 6 = Principal stress 1, 7 = Principal stress 2, 
+            // 8 = Max shear stress
+
+            List<float> vertexData = new List<float>();
+
+            for (int i = 0; i < points.Count; i++)
+            {
+                point_store pt = points[i];
+                vertexData.Add((float)pt.x_coord);
+                vertexData.Add((float)pt.y_coord);
+
+                // Normalized displacement values for plotting
+                if (pt.displ_magnitude > 0)
+                {
+                    vertexData.Add((float)(pt.displ_x / pt.displ_magnitude));
+                    vertexData.Add((float)(pt.displ_y / pt.displ_magnitude));
+                }
+                else
+                {
+                    vertexData.Add(0);
+                    vertexData.Add(0);
+                }
+
+                vertexData.Add((float)(pt.displ_magnitude / _rslt_extremes.max_displacement));
+
+
+                switch (option)
+                {
+                    case 1: // Displacement
+                        vertexData.Add((float)(pt.displ_magnitude / _rslt_extremes.max_displacement));
+                        break;
+                    case 2: // StressX
+                        vertexData.Add((float)((pt.sigma_x - _rslt_extremes.min_stressX) / (_rslt_extremes.max_stressX - _rslt_extremes.min_stressX)));
+                        break;
+                    case 3: // StressY
+                        vertexData.Add((float)((pt.sigma_y - _rslt_extremes.min_stressY) / (_rslt_extremes.max_stressY - _rslt_extremes.min_stressY)));
+                        break; 
+                    case 4: // Shear stress
+                        vertexData.Add((float)((pt.tau_xy - _rslt_extremes.min_tauXY) / (_rslt_extremes.max_tauXY - _rslt_extremes.min_tauXY)));
+                        break;
+                    case 5: // Von Mises stress
+                        vertexData.Add((float)((pt.von_mises - _rslt_extremes.min_vonMises) / (_rslt_extremes.max_vonMises - _rslt_extremes.min_vonMises)));
+                        break; 
+                    case 6: // Principal stress 1
+                        vertexData.Add((float)((pt.sigma_1 - _rslt_extremes.min_principalStress1) / (_rslt_extremes.max_principalStress1 - _rslt_extremes.min_principalStress1)));
+                        break;
+                    case 7: // Principal stress 2
+                        vertexData.Add((float)((pt.sigma_2 - _rslt_extremes.min_principalStress2) / (_rslt_extremes.max_principalStress2 - _rslt_extremes.min_principalStress2)));
+                        break;
+                    case 8: // Max shear stress
+                        vertexData.Add((float)((pt.max_shear - _rslt_extremes.min_shearStress) / (_rslt_extremes.max_shearStress - _rslt_extremes.min_shearStress)));
+                        break;
+
+                }
+
+            }
+
+
+            point_vbo.updateVertexBuffer(vertexData.ToArray());
+
+        }
+
 
         public void create_buffer_data()
         {
@@ -296,8 +506,8 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
             for (int i = 0; i < points.Count; i++)
             {
                 point_store pt = points[i];
-                vertexData.Add(pt.x_coord);
-                vertexData.Add(pt.y_coord);
+                vertexData.Add((float)pt.x_coord);
+                vertexData.Add((float)pt.y_coord);
 
                 // Normalized displacement values for plotting
                 if(pt.displ_magnitude > 0)
@@ -312,7 +522,8 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
                 }
 
                 // Calculate the magnitude of the displacement vector for color mapping
-                vertexData.Add((float)(pt.displ_magnitude / rslt_extremes.max_displacement)); // normalized scalar value
+                vertexData.Add((float)(pt.displ_magnitude / _rslt_extremes.max_displacement)); // normalized scalar value
+                vertexData.Add((float)(pt.displ_magnitude / _rslt_extremes.max_displacement)); // Contour value for color mapping
 
                 pointIndexData.Add(i);
             }
@@ -327,7 +538,8 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
             VertexBufferLayout pointLayout = new VertexBufferLayout();
             pointLayout.AddFloat(2);  // x and y coordinates
             pointLayout.AddFloat(2); // displ_x and displ_y
-            pointLayout.AddFloat(1); // scalar value
+            pointLayout.AddFloat(1); // displacement magnitude
+            pointLayout.AddFloat(1); // Contour value
 
             point_vao.Add_vertexBuffer(point_vbo, pointLayout);
 
@@ -391,8 +603,8 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
                 var p3 = points[tri.pt_id3];
 
                 float[] pt1_values = new float[5];
-                pt1_values[0] = p1.x_coord;
-                pt1_values[1] = p1.y_coord;
+                pt1_values[0] = (float)p1.x_coord;
+                pt1_values[1] = (float)p1.y_coord;
                 if (p1.displ_magnitude > 0)
                 {
                     pt1_values[2] = (float)(p1.displ_x / p1.displ_magnitude);
@@ -403,12 +615,12 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
                     pt1_values[2] = 0;
                     pt1_values[3] = 0;
                 }
-                pt1_values[4] = (float)(p1.displ_magnitude / rslt_extremes.max_displacement);
+                pt1_values[4] = (float)(p1.displ_magnitude / _rslt_extremes.max_displacement);
 
 
                 float[] pt2_values = new float[5];
-                pt2_values[0] = p2.x_coord;
-                pt2_values[1] = p2.y_coord;
+                pt2_values[0] = (float)p2.x_coord;
+                pt2_values[1] = (float)p2.y_coord;
                 if (p2.displ_magnitude > 0)
                 {
                     pt2_values[2] = (float)(p2.displ_x / p2.displ_magnitude);
@@ -419,12 +631,12 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
                     pt2_values[2] = 0;
                     pt2_values[3] = 0;
                 }
-                pt2_values[4] = (float)(p2.displ_magnitude / rslt_extremes.max_displacement);
+                pt2_values[4] = (float)(p2.displ_magnitude / _rslt_extremes.max_displacement);
 
 
                 float[] pt3_values = new float[5];
-                pt3_values[0] = p3.x_coord;
-                pt3_values[1] = p3.y_coord;
+                pt3_values[0] = (float)p3.x_coord;
+                pt3_values[1] = (float)p3.y_coord;
                 if (p3.displ_magnitude > 0)
                 {
                     pt3_values[2] = (float)(p3.displ_x / p3.displ_magnitude);
@@ -435,7 +647,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
                     pt3_values[2] = 0;
                     pt3_values[3] = 0;
                 }
-                pt3_values[4] = (float)(p3.displ_magnitude / rslt_extremes.max_displacement);
+                pt3_values[4] = (float)(p3.displ_magnitude / _rslt_extremes.max_displacement);
 
                 shrunk_rsltmesh_data.add_shrunk_triangle(tri.tri_id, pt1_values, pt2_values, pt3_values);
             }

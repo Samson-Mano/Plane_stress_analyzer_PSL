@@ -811,7 +811,7 @@ namespace Plane_stress_analyzer_PSL
 
             // Switch the result option in the modeldata_store
             gvariables_static.result_option = option;
-            modeldata.switch_result_option();
+            modeldata.switch_result_option(true);
 
             modeldata.update_openTK_uniforms();
 

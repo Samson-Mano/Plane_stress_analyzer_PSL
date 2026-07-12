@@ -582,7 +582,9 @@ void polynomial_2dmesh_store::create_renderer_mesh()
 		rd_node.displ_x = 0.0;
 		rd_node.displ_y = 0.0;
 
-		rd_node.constraint_node_type = 0;
+		rd_node.constraint_type = 0;
+		rd_node.constraint_angle = 0.0;
+
 		rd_node.reaction_x = 0.0;
 		rd_node.reaction_y = 0.0;
 
@@ -617,6 +619,7 @@ void polynomial_2dmesh_store::create_renderer_mesh()
 		// Get the constraint
 		const constraint_store& constr = constr_m.second;
 		int constraint_type = constr.constrainttype; // 0 = Pinned, 1 = Roller
+		double constraint_angle = constr.constraintangle; // Constraint angle in degrees (for inclined supports)
 
 		for (const auto& node_id : constr.node_ids)
 		{
@@ -624,6 +627,7 @@ void polynomial_2dmesh_store::create_renderer_mesh()
 			renderer_node& rd_node = this->renderer_node_points[node_id];
 
 			rd_node.constraint_type = constraint_type + 1; // 1 = Pinned, 2 = Roller
+			rd_node.constraint_angle = constraint_angle;
 		}
 
 	}

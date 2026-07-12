@@ -982,6 +982,8 @@ bool stress2d_solver::store_results()
 
 		// Reaction at the node
 		int constraint_type = node.constraint_type;
+		double constraint_angle = node.constraint_angle;
+
 		double reaction_x = node.reaction_x;
 		double reaction_y = node.reaction_y;
 
@@ -1004,6 +1006,7 @@ bool stress2d_solver::store_results()
 		bin_file.write(reinterpret_cast<const char*>(&displ_x), sizeof(double));
 		bin_file.write(reinterpret_cast<const char*>(&displ_y), sizeof(double));
 		bin_file.write(reinterpret_cast<const char*>(&constraint_type), sizeof(int32_t));
+		bin_file.write(reinterpret_cast<const char*>(&constraint_angle), sizeof(double));
 		bin_file.write(reinterpret_cast<const char*>(&reaction_x), sizeof(double));
 		bin_file.write(reinterpret_cast<const char*>(&reaction_y), sizeof(double));
 		bin_file.write(reinterpret_cast<const char*>(&sigma_x), sizeof(double));

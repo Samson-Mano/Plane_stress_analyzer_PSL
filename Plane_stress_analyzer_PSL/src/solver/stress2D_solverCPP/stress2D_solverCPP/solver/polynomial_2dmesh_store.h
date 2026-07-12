@@ -33,6 +33,9 @@ struct renderer_node
 	double displ_y = 0.0; // Displacement in y direction
 
 	int constraint_type = 0; // 0: Free, 1: Pinned, 2: Roller
+	double constraint_angle = 0.0; // Constraint angle in degrees (for inclined supports)
+
+
 	double reaction_x = 0.0; // Reaction force in x direction
 	double reaction_y = 0.0; // Reaction force in y direction
 

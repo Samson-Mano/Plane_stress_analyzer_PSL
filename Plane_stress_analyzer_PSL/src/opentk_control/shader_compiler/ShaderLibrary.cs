@@ -97,16 +97,18 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
 
             layout(location = 0) in vec2 aPosition;
             layout(location = 1) in vec2 aDisplacement;
-            layout(location = 2) in float aScalarValue;
+            layout(location = 2) in float aDisplacementMagnitude;
+            layout(location = 3) in float aScalarValue;
                     
             out float v_deflscale;
                     
             void main()
             {
-                float scalevalue = geomscale * modelpercent * aScalarValue;
+                float scalevalue = geomscale * modelpercent * aDisplacementMagnitude;
                 vec2 scaledDisplacement = aDisplacement * scalevalue * sinevalue;
 
                 gl_Position = uMVP * vec4(aPosition + scaledDisplacement, 0.0, 1.0);
+
                 v_deflscale = aScalarValue * sinevalue;
             }
 
@@ -220,15 +222,17 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
     
             layout(location = 0) in vec2 aPosition;
             layout(location = 1) in vec2 aDisplacement;
-            layout(location = 2) in float aScalarValue;
+            layout(location = 2) in float aDisplacementMagnitude;
+            layout(location = 3) in float aScalarValue;
     
             out float v_deflscale;
         
             void main()
             {
-                float scalevalue = geomscale * modelpercent * aScalarValue;
+                float scalevalue = geomscale * modelpercent * aDisplacementMagnitude;
                 vec2 scaledDisplacement = aDisplacement * scalevalue * sinevalue;
                 gl_Position = uMVP * vec4(aPosition + scaledDisplacement, 0.0, 1.0);
+
                 v_deflscale = aScalarValue * sinevalue;
             }
             ";

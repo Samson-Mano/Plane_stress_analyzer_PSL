@@ -13,6 +13,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml.Linq;
 
 namespace Plane_stress_analyzer_PSL.other_windows
 {
@@ -271,14 +272,46 @@ namespace Plane_stress_analyzer_PSL.other_windows
                             int node_id = reader.ReadInt32();
                             double node_xcoord = reader.ReadDouble();
                             double node_ycoord = reader.ReadDouble();
+
+                            // Displacement at the node
                             double displ_x = reader.ReadDouble();
                             double displ_y = reader.ReadDouble();
 
+                            // Reaction at the node
+                            int constraint_type = reader.ReadInt32(); // 0 = free, 1 = pinned, 2 = roller
+                            double constraint_value = reader.ReadDouble();
+                            double reaction_x = reader.ReadDouble();
+                            double reaction_y = reader.ReadDouble();
+
+                            // Stress results at the node
+                            double sigma_x = reader.ReadDouble();
+                            double sigma_y = reader.ReadDouble();
+                            double tau_xy = reader.ReadDouble();
+
+                            double sigma_1 = reader.ReadDouble();
+                            double sigma_2 = reader.ReadDouble();
+
+                            double von_mises = reader.ReadDouble();
+                            double max_shear = reader.ReadDouble();
+                            double theta_p = reader.ReadDouble();
+
                             modeldata.rslt_data.add_point(node_id,
-                                (float)node_xcoord, 
-                                (float)node_ycoord,
-                                (float)displ_x,
-                                (float)displ_y
+                                node_xcoord, 
+                                node_ycoord,
+                                displ_x,
+                                displ_y,
+                                constraint_type,
+                                constraint_value,
+                                reaction_x,
+                                reaction_y,
+                                sigma_x,
+                                sigma_y,
+                                tau_xy,
+                                sigma_1,
+                                sigma_2,
+                                von_mises,
+                                max_shear,
+                                theta_p
                                 );
 
                         }
@@ -294,8 +327,8 @@ namespace Plane_stress_analyzer_PSL.other_windows
                             int start_nodeid = reader.ReadInt32();
                             int end_nodeid = reader.ReadInt32();
 
-                            modeldata.rslt_data.add_wireframe_line(i, start_nodeid, end_nodeid
-                                );
+                            modeldata.rslt_data.add_wireframe_line(i, start_nodeid, end_nodeid);
+
                         }
 
                         AppendStatus($"Reading results for {edge_lines_count} edges complete \n");
@@ -317,9 +350,20 @@ namespace Plane_stress_analyzer_PSL.other_windows
                         AppendStatus($"Reading results for {triangles_count} triangles complete \n");
 
                         // Set the Result mesh
-                        modeldata.rslt_data.set_result_extremes();
-                        modeldata.rslt_data.create_buffer_data();
+                        bool isValid = modeldata.rslt_data.set_result_extremes();
 
+                        if(!isValid)
+                        {
+                            modeldata.rslt_data = new rsltdata_store();
+
+                            AppendStatus("Error: Invalid result extremes detected.\n");
+                            MessageBox.Show("Error: Invalid result extremes detected. Please check the inputs.",
+                                "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return;
+                        }
+
+
+                        modeldata.rslt_data.create_buffer_data();
                         modeldata.IsResultSet = true;
 
                         // Call the main form

@@ -130,6 +130,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
                 shrunk_vertexData.Add(pt.displ_x);
                 shrunk_vertexData.Add(pt.displ_y);
                 shrunk_vertexData.Add(pt.displ_magnitude);
+                shrunk_vertexData.Add(pt.displ_magnitude);
             }
 
             // Create VAO and VBO for points
@@ -139,6 +140,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
             VertexBufferLayout pointLayout = new VertexBufferLayout();
             pointLayout.AddFloat(2);
             pointLayout.AddFloat(2);
+            pointLayout.AddFloat(1);
             pointLayout.AddFloat(1);
 
             shrunk_point_vao.Add_vertexBuffer(shrunk_point_vbo, pointLayout);
