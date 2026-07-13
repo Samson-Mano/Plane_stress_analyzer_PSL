@@ -93,7 +93,7 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
             uniform float geomscale = 1.0f; // Geometry scale factor
             uniform float sinevalue = 1.0f;                    
             uniform float modelpercent = 0.01; // default 1 % scale factor             
-            
+            uniform float rsltoption = 0.0; 
 
             layout(location = 0) in vec2 aPosition;
             layout(location = 1) in vec2 aDisplacement;
@@ -108,8 +108,14 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
                 vec2 scaledDisplacement = aDisplacement * scalevalue * sinevalue;
 
                 gl_Position = uMVP * vec4(aPosition + scaledDisplacement, 0.0, 1.0);
+                
+                float contourcolor = aScalarValue * sinevalue;  
 
-                v_deflscale = aScalarValue * sinevalue;
+                if(rsltoption != 0)
+                    contourcolor = (contourcolor + 1.0) * 0.5; // Normalize to [0,1] if option is set
+
+                v_deflscale = contourcolor;
+
             }
 
 
@@ -137,9 +143,11 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
 
             vec3 jetHeatmap(float value) 
             {
+                // values between 0.0 and 1.0 are mapped to the jet colormap
                 float t = value;
                 return clamp(vec3(1.5) - abs(4.0 * vec3(t) + vec3(-3, -2, -1)), vec3(0), vec3(1));
             }
+
 
             // Returns 1.0 exactly on a contour line, fading to 0.0 away from it
             float contourLines(float value, float numContours, float lineWidth)
@@ -150,13 +158,14 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
                 return 1.0 - smoothstep(0.0, aa, distToLine);
             }
 
+
             void main()
             {
                 vec3 baseColor = jetHeatmap(v_deflscale);
                 
                 float line = 0.0;
 
-                if (uLineOpacity > 0.1 && v_deflscale > 0.05)
+                if (uLineOpacity > 0.1 && abs(v_deflscale) > 0.05)
                 {
                     line = contourLines(v_deflscale, uNumContours, uLineWidth);
                 }
@@ -164,38 +173,6 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
                 vec3 finalColor = mix(baseColor, uLineColor, line * uLineOpacity);
 
                 fColor = vec4(finalColor, vertexTransparency);
-            }
-
-
-                    ";
-
-        }
-
-
-        private static string rslt_mesh_frag_shader_default()
-        {
-
-            return @"
-
-            #version 330 core
-            
-            uniform float vertexTransparency; // Transparency of the mesh
-            in float v_deflscale;
-
-            out vec4 fColor;
-    
-
-            vec3 jetHeatmap(float value) 
-            {
-                float t = value; // (value + 1.0) * 0.5;
-                return clamp(vec3(1.5) - abs(4.0 * vec3(t) + vec3(-3, -2, -1)), vec3(0), vec3(1));
-            }
-
-
-            void main()
-            {
-                // Simple color output without lighting
-                fColor = vec4(jetHeatmap(v_deflscale), vertexTransparency);
             }
 
 

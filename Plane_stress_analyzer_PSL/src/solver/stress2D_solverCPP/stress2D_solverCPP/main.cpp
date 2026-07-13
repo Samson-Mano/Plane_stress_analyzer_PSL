@@ -269,7 +269,7 @@ int main()
 	// Copy H Refined Mesh to the stress analyzer
 	stress_system_store stress_system;
 
-	int polynomial_order = 4;
+	int polynomial_order = 1;
 	stress_system.polynomial_order = polynomial_order; // 1, 2, 3, 4
 
 	stress_system.node_list = std::move(h_refinement_model.node_list);

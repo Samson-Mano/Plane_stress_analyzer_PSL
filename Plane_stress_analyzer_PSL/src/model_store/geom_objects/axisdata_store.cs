@@ -206,7 +206,7 @@ namespace src.model_store.geom_objects
              XY_label.add_label(0, "X", new Vector2(OriginX + 0.11f, OriginY - 0.001f), new Vector3(1.0f, 0.0f, 0.0f));
              XY_label.add_label(1, "Y", new Vector2(OriginX + 0.018f, OriginY + 0.135f), new Vector3(0.0f, 0.0f, 1.0f));
 
-            XY_label.update_buffer(2.0f);
+            XY_label.update_buffer(1.4f);
 
         }
 

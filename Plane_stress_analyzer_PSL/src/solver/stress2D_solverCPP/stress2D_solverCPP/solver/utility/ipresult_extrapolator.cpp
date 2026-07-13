@@ -24,7 +24,6 @@ void ipresult_extrapolator::create_element_natural_coordinates()
 	{
 		// p = 1 (Linear / Bilinear)
 		// No change - T3 + Q4
-		return;
 
 	}
 	else if (this->polynomial_order == 2)

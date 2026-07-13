@@ -270,7 +270,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store
             if(updateBuffer == true)
             {
                 // Update the OpenTK uniforms for contour bar
-                rslt_data.switch_result_option(option);
+                rslt_data.switch_result_option();
             }
 
 

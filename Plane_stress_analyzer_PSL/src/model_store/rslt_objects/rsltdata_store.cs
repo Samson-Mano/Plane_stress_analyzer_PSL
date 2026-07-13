@@ -428,12 +428,14 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
         }
 
 
-        public void switch_result_option(int option)
+        public void switch_result_option()
         {
             // Switch the result option for visualization
             // 1 = Displacement, 2 = StressX, 3 = StressY, 4 = Shear stress, 
             // 5 = Von Mises stress, 6 = Principal stress 1, 7 = Principal stress 2, 
             // 8 = Max shear stress
+
+            int option =  gvariables_static.result_option;
 
             List<float> vertexData = new List<float>();
 
@@ -456,7 +458,8 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
                 }
 
                 vertexData.Add((float)(pt.displ_magnitude / _rslt_extremes.max_displacement));
-
+                float normalized_contourValue = 0.0f;
+                float scaled_contourValue = 0.0f;
 
                 switch (option)
                 {
@@ -464,25 +467,39 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
                         vertexData.Add((float)(pt.displ_magnitude / _rslt_extremes.max_displacement));
                         break;
                     case 2: // StressX
-                        vertexData.Add((float)((pt.sigma_x - _rslt_extremes.min_stressX) / (_rslt_extremes.max_stressX - _rslt_extremes.min_stressX)));
+                            normalized_contourValue = (float)((pt.sigma_x - _rslt_extremes.min_stressX) / (_rslt_extremes.max_stressX - _rslt_extremes.min_stressX));
+                        scaled_contourValue = (normalized_contourValue * 2.0f) - 1.0f; // Scale to [-1, 1]
+                        vertexData.Add(scaled_contourValue);
                         break;
                     case 3: // StressY
-                        vertexData.Add((float)((pt.sigma_y - _rslt_extremes.min_stressY) / (_rslt_extremes.max_stressY - _rslt_extremes.min_stressY)));
+                        normalized_contourValue = (float)((pt.sigma_y - _rslt_extremes.min_stressY) / (_rslt_extremes.max_stressY - _rslt_extremes.min_stressY));
+                        scaled_contourValue = (normalized_contourValue * 2.0f) - 1.0f; // Scale to [-1, 1]
+                        vertexData.Add(scaled_contourValue);
                         break; 
                     case 4: // Shear stress
-                        vertexData.Add((float)((pt.tau_xy - _rslt_extremes.min_tauXY) / (_rslt_extremes.max_tauXY - _rslt_extremes.min_tauXY)));
+                        normalized_contourValue = (float)((pt.tau_xy - _rslt_extremes.min_tauXY) / (_rslt_extremes.max_tauXY - _rslt_extremes.min_tauXY));
+                        scaled_contourValue = (normalized_contourValue * 2.0f) - 1.0f; // Scale to [-1, 1]
+                        vertexData.Add(scaled_contourValue);
                         break;
                     case 5: // Von Mises stress
-                        vertexData.Add((float)((pt.von_mises - _rslt_extremes.min_vonMises) / (_rslt_extremes.max_vonMises - _rslt_extremes.min_vonMises)));
+                        normalized_contourValue = (float)((pt.von_mises - _rslt_extremes.min_vonMises) / (_rslt_extremes.max_vonMises - _rslt_extremes.min_vonMises));
+                        scaled_contourValue = (normalized_contourValue * 2.0f) - 1.0f; // Scale to [-1, 1]
+                        vertexData.Add(scaled_contourValue);
                         break; 
                     case 6: // Principal stress 1
-                        vertexData.Add((float)((pt.sigma_1 - _rslt_extremes.min_principalStress1) / (_rslt_extremes.max_principalStress1 - _rslt_extremes.min_principalStress1)));
+                        normalized_contourValue = (float)((pt.sigma_1 - _rslt_extremes.min_principalStress1) / (_rslt_extremes.max_principalStress1 - _rslt_extremes.min_principalStress1));
+                        scaled_contourValue = (normalized_contourValue * 2.0f) - 1.0f; // Scale to [-1, 1]
+                        vertexData.Add(scaled_contourValue);
                         break;
                     case 7: // Principal stress 2
-                        vertexData.Add((float)((pt.sigma_2 - _rslt_extremes.min_principalStress2) / (_rslt_extremes.max_principalStress2 - _rslt_extremes.min_principalStress2)));
+                        normalized_contourValue = (float)((pt.sigma_2 - _rslt_extremes.min_principalStress2) / (_rslt_extremes.max_principalStress2 - _rslt_extremes.min_principalStress2));
+                        scaled_contourValue = (normalized_contourValue * 2.0f) - 1.0f; // Scale to [-1, 1]
+                        vertexData.Add(scaled_contourValue);
                         break;
                     case 8: // Max shear stress
-                        vertexData.Add((float)((pt.max_shear - _rslt_extremes.min_shearStress) / (_rslt_extremes.max_shearStress - _rslt_extremes.min_shearStress)));
+                        normalized_contourValue = (float)((pt.max_shear - _rslt_extremes.min_shearStress) / (_rslt_extremes.max_shearStress - _rslt_extremes.min_shearStress));
+                        scaled_contourValue = (normalized_contourValue * 2.0f) - 1.0f; // Scale to [-1, 1]
+                        vertexData.Add(scaled_contourValue);
                         break;
 
                 }
@@ -673,6 +690,12 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
 
             rsltmeshShader.SetFloat("vertexTransparency", gvariables_static.rslt_transparency);
 
+            rsltmeshShader.SetFloat("rsltoption", 0);
+
+            if(gvariables_static.result_option != 1)
+            {
+                rsltmeshShader.SetFloat("rsltoption", 1);
+            }
 
             //____________________________________________________________________________________________
 
