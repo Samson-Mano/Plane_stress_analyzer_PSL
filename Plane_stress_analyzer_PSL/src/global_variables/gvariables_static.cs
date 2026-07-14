@@ -131,8 +131,9 @@ namespace Plane_stress_analyzer_PSL.src.global_variables
         public static bool is_paint_shrunk_triangle = false;
 
 
+        public static bool is_show_transparent_model_mesh = true;
         public static bool is_paint_resultmeshpoints = false;
-        public static bool is_paint_resultmesh_boundaries = true;
+        public static bool is_paint_resultmesh_boundaries = false;
         public static bool is_paint_resultmesh = true;
         public static bool is_paint_result_shrunk_triangle = false;
 
@@ -188,6 +189,19 @@ namespace Plane_stress_analyzer_PSL.src.global_variables
                             uint messageFilterMin, uint messageFilterMax, uint flags);
 
 
+
+        public static bool is_paint_result()
+        {
+          return gvariables_static.is_paint_result_displacement == true ||
+                    gvariables_static.is_paint_result_stressX == true ||
+                    gvariables_static.is_paint_result_stressY == true ||
+                    gvariables_static.is_paint_result_tauXY == true ||
+                    gvariables_static.is_paint_result_vonMises == true ||
+                    gvariables_static.is_paint_result_principalStress1 == true ||
+                    gvariables_static.is_paint_result_principalStress2 == true ||
+                    gvariables_static.is_paint_result_maxShearStress == true ||
+                    gvariables_static.is_paint_result_PSL == true;
+        }
 
 
         public static int RoundOff(this int i)

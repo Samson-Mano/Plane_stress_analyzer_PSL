@@ -2,15 +2,15 @@
 
 ipresult_extrapolator::ipresult_extrapolator(const std::unordered_map<int, polynomial_trielement_store>& polynomial_trielement_list,
 	const std::unordered_map<int, polynomial_quadelement_store>& polynomial_quadelement_list, const int polynomial_order)
-	: polynomial_trielement_list(polynomial_trielement_list), 
-	polynomial_quadelement_list(polynomial_quadelement_list), 
+	: polynomial_trielement_list(polynomial_trielement_list),
+	polynomial_quadelement_list(polynomial_quadelement_list),
 	polynomial_order(polynomial_order)
 {
 	// Create element natural coordinates for extrapolation
 	create_element_natural_coordinates();
 
-	// Create shape function weights for triangle and quadrilateral element at natural coordinates
-	create_shape_function_weights_at_nodes();
+	// Create interpolation weights for triangle and quadrilateral element at natural coordinates
+	create_interpolation_weights_at_nodes();
 
 }
 
@@ -58,7 +58,7 @@ void ipresult_extrapolator::create_element_natural_coordinates()
 	create_tri_element_natural_coordinates(node_spacing);
 
 	// Create natural coordinates for quadrilateral elements
-	create_quad_element_natural_coordinates(node_spacing);	
+	create_quad_element_natural_coordinates(node_spacing);
 
 }
 
@@ -99,7 +99,7 @@ void ipresult_extrapolator::create_tri_element_natural_coordinates(const std::ve
 	{
 		// T15: 3 internal nodes
 		// Using area coordinates: 
-			std::vector<std::pair<double, double>> internal_points =
+		std::vector<std::pair<double, double>> internal_points =
 		{
 			{1.0 / 2.0, 1.0 / 4.0},
 			{1.0 / 4.0, 1.0 / 2.0},
@@ -192,11 +192,23 @@ void ipresult_extrapolator::create_quad_element_natural_coordinates(const std::v
 
 
 
-void ipresult_extrapolator::create_shape_function_weights_at_nodes()
+void ipresult_extrapolator::create_interpolation_weights_at_nodes()
 {
 
 	//_________________________________________________________________________________________________________________________________
 	// === TRIANGLE ELEMENTS ===
+	create_tri_least_squares_extrapolation_weights();
+
+
+	//_________________________________________________________________________________________________________________________________
+	// === QUADRILATERAL ELEMENTS ===
+	create_quad_least_squares_interpolation_weights();
+
+}
+
+
+void ipresult_extrapolator::create_tri_least_squares_extrapolation_weights()
+{
 
 	// Get the integration points for triangle elements based on the polynomial order
 	std::vector<integration_point> tri_integration_points = integration_rules::get_tri_dunavant_points(this->polynomial_order);
@@ -204,170 +216,170 @@ void ipresult_extrapolator::create_shape_function_weights_at_nodes()
 	const int num_nodes_per_tri_element = ((this->polynomial_order + 1) * (this->polynomial_order + 2)) / 2;
 	const int num_tri_integration_points = static_cast<int>(tri_integration_points.size());
 
-	// Pre-compute shape functions at integration points
-	std::vector<std::vector<double>> tri_shape_functions_at_ip;
+	// For triangles, we use area coordinates (L1, L2, L3) or (xi, eta) with L3 = 1 - xi - eta
+	const int poly_order = this->polynomial_order;
+	const int num_terms = ((poly_order + 1) * (poly_order + 2)) / 2; // Complete 2D polynomial
 
-	// For each integration point, evaluate the shape functions
-	for (const auto& ip : tri_integration_points)
+	// Build polynomial basis matrix A (size: num_integration_points x num_polynomial_terms)
+	Eigen::MatrixXd A(num_tri_integration_points, num_terms);
+	A.setZero();
+
+
+	for (int ip_idx = 0; ip_idx < num_tri_integration_points; ++ip_idx)
 	{
-		double xi = ip.xi;
-		double eta = ip.eta;
+		const auto& ip = tri_integration_points[ip_idx];
+		double xi = ip.xi;      // L1
+		double eta = ip.eta;    // L2
+		double zeta = 1.0 - xi - eta; // L3
 
-		// Shape function at the integration point
-		std::vector<double> N_ip = shape_functions::get_tri_shape_functions(this->polynomial_order, xi, eta);
-
-		tri_shape_functions_at_ip.push_back(N_ip);
-		
+		// Complete polynomial basis in area coordinates
+		// 1, xi, eta, xi², xi*eta, eta², xi³, xi²*eta, xi*eta², eta³, ...
+		int term_idx = 0;
+		for (int p = 0; p <= poly_order; ++p)
+		{
+			for (int q = 0; q <= p; ++q)
+			{
+				// Using (xi, eta) coordinates with zeta = 1 - xi - eta
+				// The complete polynomial basis is: xi^(p-q) * eta^q
+				A(ip_idx, term_idx++) = pow(xi, p - q) * pow(eta, q);
+			}
+		}
 	}
 
+	// Compute pseudo-inverse with regularization
+	Eigen::MatrixXd ATA = A.transpose() * A;
+	Eigen::MatrixXd I = Eigen::MatrixXd::Identity(num_terms, num_terms);
+	double regularization_factor = 1e-10;
 
-	// Initialize a 2D vector to store shape function weights at nodes for each integration point
-	std::vector<std::vector<double>> tri_shape_function_weights_at_nodes(num_nodes_per_tri_element,
+	Eigen::MatrixXd pseudo_inv = (ATA + regularization_factor * I).ldlt().solve(A.transpose());
+
+
+	// Initialize interpolation weights
+	std::vector<std::vector<double>> tri_interpolation_weights_at_nodes(
+		num_nodes_per_tri_element,
 		std::vector<double>(num_tri_integration_points, 0.0));
 
 	for (int nd_id = 0; nd_id < num_nodes_per_tri_element; ++nd_id)
 	{
 		const std::pair<double, double>& node_nat_coords = tri_element_natural_coordinates[nd_id];
+		double xi_n = node_nat_coords.first;
+		double eta_n = node_nat_coords.second;
+		double zeta_n = 1.0 - xi_n - eta_n;
 
-		double xi = node_nat_coords.first;
-		double eta = node_nat_coords.second;
+		// Evaluate polynomial basis at node
+		Eigen::RowVectorXd basis_at_node(num_terms);
+		basis_at_node.setZero();
 
-		std::vector<double> N_at_node = shape_functions::get_tri_shape_functions(this->polynomial_order, xi, eta);
-
-		// Use shape function values directly
-		double total_weight = 0.0;
-		std::vector<double> shape_function_weights_at_ip(num_tri_integration_points, 0.0);
-
-		for (int ip_idx = 0; ip_idx < num_tri_integration_points; ++ip_idx)
+		int term_idx = 0;
+		for (int p = 0; p <= poly_order; ++p)
 		{
-			// Get the shape function value at the integration point for the current node
-			const std::vector<double>& N_ip = tri_shape_functions_at_ip[ip_idx];
-
-			// Calculate weight using dot product
-			// This preserves the shape function properties
-			double weight = 0.0;
-			for (int i = 0; i < num_nodes_per_tri_element; ++i)
+			for (int q = 0; q <= p; ++q)
 			{
-				if (std::abs(N_ip[i]) > 1e-10)
-				{
-					// Simplified: N_at_node[i] * N_ip[i] / (N_ip[i] * N_ip[i]) = N_at_node[i] / N_ip[i]
-
-					weight += (N_at_node[i]  /  N_ip[i]);
-				}
-			}
-
-			shape_function_weights_at_ip[ip_idx] = weight;
-
-			// Sum the weights for normalization
-			total_weight += weight;	
-		}
-
-		// Normalize the shape function weights
-		if (std::abs(total_weight) > 1e-12) 
-		{
-			for (auto& w : shape_function_weights_at_ip) 
-			{
-				w /= total_weight;
+				basis_at_node[term_idx++] = pow(xi_n, p - q) * pow(eta_n, q);
 			}
 		}
 
-		
-		tri_shape_function_weights_at_nodes[nd_id] = shape_function_weights_at_ip;
+		// Compute weights: W_row = basis * pseudo_inv
+		Eigen::RowVectorXd W_row = basis_at_node * pseudo_inv;
+
+		for (int ip = 0; ip < num_tri_integration_points; ++ip)
+		{
+			tri_interpolation_weights_at_nodes[nd_id][ip] = W_row(ip);
+		}
 	}
 
-	// shape functions weights for triangle at natural coordinates
-	tri_element_shape_function_weights.clear();
-	tri_element_shape_function_weights = std::move(tri_shape_function_weights_at_nodes);
 
+	tri_element_interpolation_weights.clear();
+	tri_element_interpolation_weights = std::move(tri_interpolation_weights_at_nodes);
 
-	//_________________________________________________________________________________________________________________________________
-	// === QUADRILATERAL ELEMENTS ===
+}
+	
+
+void ipresult_extrapolator::create_quad_least_squares_interpolation_weights()
+{
 
 	// Get the integration points for quadrilateral elements based on the polynomial order
 	std::vector<integration_point> quad_integration_points = integration_rules::get_quad_gauss_points(this->polynomial_order);
 
-
 	const int num_nodes_per_quad_element = (this->polynomial_order + 1) * (this->polynomial_order + 1);
 	const int num_quad_integration_points = static_cast<int>(quad_integration_points.size());
 
+	// Build polynomial basis matrix A (size: num_integration_points x num_polynomial_terms)
+	// For 2D, use complete polynomial basis: 1, x, y, x², xy, y², ...
+	const int poly_order = this->polynomial_order;
+	const int num_terms = ((poly_order + 1) * (poly_order + 2)) / 2; // Complete 2D polynomial
 
-	// Pre-compute shape functions at integration points
-	std::vector<std::vector<double>> quad_shape_functions_at_ip;
+	Eigen::MatrixXd A(num_quad_integration_points, num_terms);
+	A.setZero();
 
-	// For each integration point, evaluate the shape functions
-	for (const auto& ip : quad_integration_points)
+
+	for (int ip_idx = 0; ip_idx < num_quad_integration_points; ++ip_idx)
 	{
+		const auto& ip = quad_integration_points[ip_idx];
 		double xi = ip.xi;
 		double eta = ip.eta;
 
-		// Shape function at the integration point
-		std::vector<double> N_ip = shape_functions::get_quad_shape_functions(this->polynomial_order, xi, eta);
+		// Complete polynomial basis: 1, xi, eta, xi², xi*eta, eta², ...
+		int term_idx = 0;
+		for (int p = 0; p <= poly_order; ++p)
+		{
+			for (int q = 0; q <= p; ++q)
+			{
+				A(ip_idx, term_idx++) = pow(xi, p - q) * pow(eta, q);
 
-		quad_shape_functions_at_ip.push_back(N_ip);
+			}
+		}
 
 	}
 
-	// Initialize a 2D vector to store shape function weights at nodes for each integration point
-	std::vector<std::vector<double>> quad_shape_function_weights_at_nodes(num_nodes_per_quad_element,
+	// Compute pseudo-inverse: (A^T A)^-1 A^T
+	// Compute pseudo-inverse with regularization
+	Eigen::MatrixXd ATA = A.transpose() * A;
+	Eigen::MatrixXd I = Eigen::MatrixXd::Identity(num_terms, num_terms);
+	double regularization_factor = 1e-10; 
+
+	// Use LDLT for symmetric positive definite matrix
+	Eigen::MatrixXd pseudo_inv = (ATA + regularization_factor * I).ldlt().solve(A.transpose());
+
+
+	// Initialize a 2D vector to store interpolation weights at nodes for each natural coordinates
+	std::vector<std::vector<double>> quad_interpolation_weights_at_nodes(num_nodes_per_quad_element,
 		std::vector<double>(num_quad_integration_points, 0.0));
 
 
 	for (int nd_id = 0; nd_id < num_nodes_per_quad_element; ++nd_id)
 	{
 		const std::pair<double, double>& node_nat_coords = quad_element_natural_coordinates[nd_id];
+		double xi_n = node_nat_coords.first;
+		double eta_n = node_nat_coords.second;
 
-		double xi = node_nat_coords.first;
-		double eta = node_nat_coords.second;
+		// Evaluate polynomial basis at node
+		Eigen::RowVectorXd basis_at_node(num_terms);
+		basis_at_node.setZero();
 
-		std::vector<double> N_at_node = shape_functions::get_quad_shape_functions(this->polynomial_order, xi, eta);
-
-		// Use shape function values directly
-		double total_weight = 0.0;
-		std::vector<double> shape_function_weights_at_ip(num_quad_integration_points, 0.0);
-
-		for (int ip_idx = 0; ip_idx < num_quad_integration_points; ++ip_idx)
+		int term_idx = 0;
+		for (int p = 0; p <= poly_order; ++p) 
 		{
-			// Get the shape function value at the integration point for the current node
-			const std::vector<double>& N_ip = quad_shape_functions_at_ip[ip_idx];
-
-			// Calculate weight using dot product
-			// This preserves the shape function properties
-			double weight = 0.0;
-			for (int i = 0; i < num_nodes_per_quad_element; ++i)
+			for (int q = 0; q <= p; ++q) 
 			{
-				if (std::abs(N_ip[i]) > 1e-10)
-				{
-					// Simplified: N_at_node[i] * N_ip[i] / (N_ip[i] * N_ip[i]) = N_at_node[i] / N_ip[i]
-
-					weight += (N_at_node[i]  / N_ip[i]);
-				}
-			}
-
-			shape_function_weights_at_ip[ip_idx] = weight;
-
-			// Sum the weights for normalization
-			total_weight += weight;
-		}
-
-		// Normalize the shape function weights
-		if (std::abs(total_weight) > 1e-12)
-		{
-			for (auto& w : shape_function_weights_at_ip)
-			{
-				w /= total_weight;
+				basis_at_node[term_idx++] = pow(xi_n, p - q) * pow(eta_n, q);
 			}
 		}
 
+		// Compute weights: W_row = basis * pseudo_inv
+		Eigen::RowVectorXd W_row = basis_at_node * pseudo_inv;
 
-		quad_shape_function_weights_at_nodes[nd_id] = shape_function_weights_at_ip;
+		for (int ip = 0; ip < num_quad_integration_points; ++ip) 
+		{
+			quad_interpolation_weights_at_nodes[nd_id][ip] = W_row(ip);
+		}
 	}
 
-	// shape functions weights for quadrilateral at natural coordinates
-	quad_element_shape_function_weights.clear();
-	quad_element_shape_function_weights = std::move(quad_shape_function_weights_at_nodes);
+
+	quad_element_interpolation_weights.clear();
+	quad_element_interpolation_weights = std::move(quad_interpolation_weights_at_nodes);
 
 }
-
 
 
 
@@ -403,13 +415,13 @@ void ipresult_extrapolator::extrapolate_results_to_nodes(std::unordered_map<int,
 		{
 			polynomial_node_store& node = polynomial_node_list[nd_id];
 
-			const std::vector<double>& shape_function_weights = tri_element_shape_function_weights[local_id];
+			const std::vector<double>& interpolation_weights = tri_element_interpolation_weights[local_id];
 
 			// Extrapolate results from integration points to the node
 			for (int ip_idx = 0; ip_idx < static_cast<int>(tri_elm.results_at_ip.size()); ++ip_idx)
 			{
 				const element_results& ip_result = tri_elm.results_at_ip[ip_idx];
-				double weight = shape_function_weights[ip_idx];
+				double weight = interpolation_weights[ip_idx];
 				node.sigma_x += weight * ip_result.sigma_x;
 				node.sigma_y += weight * ip_result.sigma_y;
 				node.tau_xy += weight * ip_result.tau_xy;
@@ -439,13 +451,13 @@ void ipresult_extrapolator::extrapolate_results_to_nodes(std::unordered_map<int,
 		{
 			polynomial_node_store& node = polynomial_node_list[nd_id];
 
-			const std::vector<double>& shape_function_weights = quad_element_shape_function_weights[local_id];
+			const std::vector<double>& interpolation_weights = quad_element_interpolation_weights[local_id];
 
 			// Extrapolate results from integration points to the node
 			for (int ip_idx = 0; ip_idx < static_cast<int>(quad_elm.results_at_ip.size()); ++ip_idx)
 			{
 				const element_results& ip_result = quad_elm.results_at_ip[ip_idx];
-				double weight = shape_function_weights[ip_idx];
+				double weight = interpolation_weights[ip_idx];
 				node.sigma_x += weight * ip_result.sigma_x;
 				node.sigma_y += weight * ip_result.sigma_y;
 				node.tau_xy += weight * ip_result.tau_xy;

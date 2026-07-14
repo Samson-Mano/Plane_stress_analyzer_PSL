@@ -26,9 +26,9 @@ private:
 	std::vector<std::pair<double, double>> tri_element_natural_coordinates; // First double is xi, second double is eta
 	std::vector<std::pair<double, double>> quad_element_natural_coordinates; // First double is xi, second double is eta
 
-	// Store the shape function weights for each node in each element for extrapolation
-	std::vector<std::vector<double>> tri_element_shape_function_weights; // First vector is the node index (natural coordinate index), second vector is the shape function weight value	
-	std::vector<std::vector<double>> quad_element_shape_function_weights; // First vector is the node index (natural coordinate index), second vector is the shape function weight value	
+	// Store the interpolation weights for each node in each element for extrapolation
+	std::vector<std::vector<double>> tri_element_interpolation_weights; // First vector is the node index (natural coordinate index), second vector is the interpolation weight value	
+	std::vector<std::vector<double>> quad_element_interpolation_weights; // First vector is the node index (natural coordinate index), second vector is the interpolation weight value	
 
 
 	void create_element_natural_coordinates();
@@ -37,7 +37,11 @@ private:
 
 	void create_quad_element_natural_coordinates(const std::vector<double>& node_spacing);
 
-	void create_shape_function_weights_at_nodes();
+	void create_interpolation_weights_at_nodes();
+
+	void create_tri_least_squares_extrapolation_weights();
+
+	void create_quad_least_squares_interpolation_weights();
 
 };
 

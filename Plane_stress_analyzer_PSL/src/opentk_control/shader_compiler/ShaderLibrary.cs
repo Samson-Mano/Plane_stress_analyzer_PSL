@@ -135,7 +135,7 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
             uniform float uLineWidth = 1.0;         // contour line thickness (in pixels, roughly)
             uniform vec3  uLineColor = vec3(0.0);   // contour line color (black by default)
             uniform float uLineOpacity = 1.0;       // how strongly lines blend over the heatmap
-      
+            uniform float uMinContourValue = 0.01;  // minimum value for contour lines (smooth falloff)
 
             in float v_deflscale;
 
@@ -165,9 +165,14 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
                 
                 float line = 0.0;
 
-                if (uLineOpacity > 0.1 && abs(v_deflscale) > 0.05)
+                if (uLineOpacity > 0.1)
                 {
                     line = contourLines(v_deflscale, uNumContours, uLineWidth);
+            
+                    // Smoothly fade contour lines as value approaches zero
+                    float valueScale = abs(v_deflscale);
+                    float falloff = smoothstep(0.0, uMinContourValue, valueScale);
+                    line *= falloff;
                 }
 
                 vec3 finalColor = mix(baseColor, uLineColor, line * uLineOpacity);
@@ -243,7 +248,7 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
                 finalColor = vec3(1.0) - contourColor;
 
                 // Make it brighter for visibility
-                finalColor = mix(finalColor, vec3(1.0), 0.3);
+                finalColor = mix(finalColor, vec3(1.0), 0.1);
               
         
                 fColor = vec4(finalColor, wireframeAlpha);

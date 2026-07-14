@@ -79,7 +79,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store
             // Set the selection rectangle  & selection circle
             selection_rectangle = new selectrectangle_store();
             selection_circle = new selectcircle_store();
- 
+
             fe_data = new fedata_store();
             rslt_data = new rsltdata_store();
 
@@ -158,41 +158,36 @@ namespace Plane_stress_analyzer_PSL.src.model_store
             if (!IsModelSet)
                 return;
 
+            bool hasResults = IsResultSet && gvariables_static.is_paint_result();
+            bool showTransparentMesh = gvariables_static.is_show_transparent_model_mesh;
 
-            fe_data.paint_model();
-
-            if (isMaterialUpdateInProgress == true || isLoadUpdateInProgress == true || isConstraintUpdateInProgress == true)
+            // 1. Paint the model mesh FIRST (as background/underlay)
+            // Always paint model if we want transparent mesh OR if no results are shown
+            if (!hasResults || showTransparentMesh)
             {
-                if (gvariables_static.is_RectangleSelection == true)
+                fe_data.paint_model();
+
+                if (isMaterialUpdateInProgress == true || isLoadUpdateInProgress == true || isConstraintUpdateInProgress == true)
                 {
-                    // Paint the selection rectangle
-                    selection_rectangle.draw_selection_rectangle();
-                }
-                else
-                {
-                    // Paint the selection circle
-                    selection_circle.draw_selection_circle();
+                    if (gvariables_static.is_RectangleSelection == true)
+                    {
+                        // Paint the selection rectangle
+                        selection_rectangle.draw_selection_rectangle();
+                    }
+                    else
+                    {
+                        // Paint the selection circle
+                        selection_circle.draw_selection_circle();
+                    }
                 }
             }
 
-            if (IsResultSet == true)
+            // 2. Paint results ON TOP of the mesh
+            if (hasResults)
             {
-                // Paint the result mesh
-                if (gvariables_static.is_paint_result_displacement == true ||
-                    gvariables_static.is_paint_result_stressX == true ||
-                    gvariables_static.is_paint_result_stressY == true ||
-                    gvariables_static.is_paint_result_tauXY == true ||
-                    gvariables_static.is_paint_result_vonMises == true ||
-                    gvariables_static.is_paint_result_principalStress1 == true ||
-                    gvariables_static.is_paint_result_principalStress2 == true ||
-                    gvariables_static.is_paint_result_maxShearStress == true ||
-                    gvariables_static.is_paint_result_PSL == true )
-                {
+                rslt_data.paint_results();
 
-                    rslt_data.paint_results();
-
-                    contour_bar_data.draw_contour_bar();
-                }
+                contour_bar_data.draw_contour_bar();
             }
 
         }
@@ -215,59 +210,59 @@ namespace Plane_stress_analyzer_PSL.src.model_store
             {
                 case 1:
                     contour_bar_data.UpdateContourLevelBarPosition(graphic_events_control.window_width,
-                        graphic_events_control.window_height, 
+                        graphic_events_control.window_height,
                         0.0f, (float)rslt_data.rslt_extremes.max_displacement, "Displacement");
                     break;
                 case 2:
                     contour_bar_data.UpdateContourLevelBarPosition(graphic_events_control.window_width,
-                        graphic_events_control.window_height, 
-                        (float)rslt_data.rslt_extremes.min_stressX, 
+                        graphic_events_control.window_height,
+                        (float)rslt_data.rslt_extremes.min_stressX,
                         (float)rslt_data.rslt_extremes.max_stressX, "Stress X");
                     break;
                 case 3:
                     contour_bar_data.UpdateContourLevelBarPosition(graphic_events_control.window_width,
-                        graphic_events_control.window_height, 
-                        (float)rslt_data.rslt_extremes.min_stressY, 
+                        graphic_events_control.window_height,
+                        (float)rslt_data.rslt_extremes.min_stressY,
                         (float)rslt_data.rslt_extremes.max_stressY, "Stress Y");
                     break;
                 case 4:
                     contour_bar_data.UpdateContourLevelBarPosition(graphic_events_control.window_width,
-                        graphic_events_control.window_height, 
-                        (float)rslt_data.rslt_extremes.min_tauXY, 
+                        graphic_events_control.window_height,
+                        (float)rslt_data.rslt_extremes.min_tauXY,
                         (float)rslt_data.rslt_extremes.max_tauXY, "Shear Stress XY");
                     break;
                 case 5:
                     contour_bar_data.UpdateContourLevelBarPosition(graphic_events_control.window_width,
-                        graphic_events_control.window_height, 
-                        (float)rslt_data.rslt_extremes.min_vonMises, 
+                        graphic_events_control.window_height,
+                        (float)rslt_data.rslt_extremes.min_vonMises,
                         (float)rslt_data.rslt_extremes.max_vonMises, "Von Mises Stress");
                     break;
                 case 6:
                     contour_bar_data.UpdateContourLevelBarPosition(graphic_events_control.window_width,
-                        graphic_events_control.window_height, 
-                        (float)rslt_data.rslt_extremes.min_principalStress1, 
+                        graphic_events_control.window_height,
+                        (float)rslt_data.rslt_extremes.min_principalStress1,
                         (float)rslt_data.rslt_extremes.max_principalStress1, "Principal Stress 1");
                     break;
                 case 7:
                     contour_bar_data.UpdateContourLevelBarPosition(graphic_events_control.window_width,
-                        graphic_events_control.window_height, 
-                        (float)rslt_data.rslt_extremes.min_principalStress2, 
-                        (float)rslt_data.rslt_extremes.max_principalStress2, "Principal Stress 2"); 
+                        graphic_events_control.window_height,
+                        (float)rslt_data.rslt_extremes.min_principalStress2,
+                        (float)rslt_data.rslt_extremes.max_principalStress2, "Principal Stress 2");
                     break;
                 case 8:
                     contour_bar_data.UpdateContourLevelBarPosition(graphic_events_control.window_width,
-                        graphic_events_control.window_height, 
-                        (float)rslt_data.rslt_extremes.min_shearStress, 
+                        graphic_events_control.window_height,
+                        (float)rslt_data.rslt_extremes.min_shearStress,
                         (float)rslt_data.rslt_extremes.max_shearStress, "Max Shear Stress");
                     break;
                 case 9:
                     contour_bar_data.UpdateContourLevelBarPosition(graphic_events_control.window_width,
-                        graphic_events_control.window_height, -800.0f, 800.0f, "PSL"); 
+                        graphic_events_control.window_height, -800.0f, 800.0f, "PSL");
                     break;
 
             }
 
-            if(updateBuffer == true)
+            if (updateBuffer == true)
             {
                 // Update the OpenTK uniforms for contour bar
                 rslt_data.switch_result_option();
@@ -299,7 +294,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store
             fe_data.update_openTK_uniforms(graphic_events_control);
             rslt_data.update_openTK_uniforms(graphic_events_control);
 
- 
+
         }
 
 

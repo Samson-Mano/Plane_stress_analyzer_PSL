@@ -22,7 +22,8 @@ namespace other_windows
             ResultMeshPoints = 1,
             ResultMesh = 2,
             ResultMeshBoundaries = 3,
-            PaintContourLines = 4
+            PaintContourLines = 4,
+            ShowTransparentModelMesh = 5
         }
 
         private Panel panelPopup;
@@ -83,7 +84,7 @@ namespace other_windows
         private void LoadSettings()
         {
 
-
+            checkBox_showtransparentmesh.Checked = gvariables_static.is_show_transparent_model_mesh;
             checkBox_paintrsltmeshpoints.Checked = gvariables_static.is_paint_resultmeshpoints;
             checkBox_paintrsltmesh.Checked = gvariables_static.is_paint_resultmesh;
             checkBox_paintrsltmeshboundaries.Checked = gvariables_static.is_paint_resultmesh_boundaries;
@@ -233,6 +234,10 @@ namespace other_windows
         }
 
 
+
+        private void checkBox_showtransparentmesh_CheckedChanged(object sender, EventArgs e) =>
+                    SetPaintOption(PaintOption.ShowTransparentModelMesh, checkBox_showtransparentmesh.Checked);
+
         private void checkBox_paintrsltmeshpoints_CheckedChanged(object sender, EventArgs e) =>
                     SetPaintOption(PaintOption.ResultMeshPoints, checkBox_paintrsltmeshpoints.Checked);
         
@@ -265,6 +270,9 @@ namespace other_windows
                     break;
                 case PaintOption.PaintContourLines:
                     gvariables_static.is_paint_result_contourlines = isChecked;
+                    break;
+                case PaintOption.ShowTransparentModelMesh:
+                    gvariables_static.is_show_transparent_model_mesh = isChecked;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(option), option, null);
@@ -444,5 +452,8 @@ namespace other_windows
             Properties.Settings.Default.Save(); // Save the settings
 
         }
+
+
+
     }
 }
