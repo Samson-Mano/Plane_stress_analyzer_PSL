@@ -115,6 +115,10 @@ namespace other_windows
             }
 
 
+            // Contour limit range
+            textBox_contourmax.Text = gvariables_static.contourLevel_rangeMax.ToString(CultureInfo.InvariantCulture);
+            textBox_contourmin.Text = gvariables_static.contourLevel_rangeMin.ToString(CultureInfo.InvariantCulture);
+
 
             // === Track bar control ===
             trackBar_deformation_scale.Minimum = 0;
@@ -240,8 +244,8 @@ namespace other_windows
 
         private void checkBox_paintrsltmeshpoints_CheckedChanged(object sender, EventArgs e) =>
                     SetPaintOption(PaintOption.ResultMeshPoints, checkBox_paintrsltmeshpoints.Checked);
-        
-        
+
+
         private void checkBox_paintrsltmesh_CheckedChanged(object sender, EventArgs e) =>
                     SetPaintOption(PaintOption.ResultMesh, checkBox_paintrsltmesh.Checked);
 
@@ -454,6 +458,40 @@ namespace other_windows
         }
 
 
+        private void button_updaterange_Click(object sender, EventArgs e)
+        {
+            // Update the Contour range limits
+            // Validate the input values
+            if (textBox_contourmax.Text == "" || textBox_contourmin.Text == "")
+            {
+                return;
+            }
 
+            if (float.TryParse(textBox_contourmax.Text, NumberStyles.Float, CultureInfo.InvariantCulture, out float max) &&
+               float.TryParse(textBox_contourmin.Text, NumberStyles.Float, CultureInfo.InvariantCulture, out float min))
+            {
+                if (max > min && min >= 0.0f && max <= 1.0f)
+                {
+                    gvariables_static.contourLevel_rangeMax = max;
+                    gvariables_static.contourLevel_rangeMin = min;
+
+                    // Optional: Trigger immediate redraw
+                    if (this.Owner is main_frm mainForm)
+                    {
+                        mainForm.CallFrom_option_frm();
+                    }
+                }
+                else
+                {
+                    // MessageBox.Show("Contour max must be greater than contour min.", "Invalid Input", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+            }
+            else
+            {
+                // MessageBox.Show("Please enter valid numeric values for contour range.", "Invalid Input", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+        }
     }
 }

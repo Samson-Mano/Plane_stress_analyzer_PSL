@@ -728,6 +728,12 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
             rsltmeshShader.SetFloat("sinevalue", sine_oscillation);
 
             rsltmeshwireframeShader.SetFloat("sinevalue", sine_oscillation);
+            rsltmeshShader.SetFloat("uLineOpacity", 1.0f);
+
+            if (sine_oscillation < 0.1)
+            {
+                rsltmeshShader.SetFloat("uLineOpacity", 0.0f);
+            }
 
         }
 

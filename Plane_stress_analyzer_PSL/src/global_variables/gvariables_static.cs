@@ -140,6 +140,9 @@ namespace Plane_stress_analyzer_PSL.src.global_variables
         public static bool is_paint_result_contourlines = true;
         public static int contourline_level = Properties.Settings.Default.Sett_contourlevel_option; // 0 = 5, 1 = 10, 2 = 20, 3 = 40, 4 = 80
 
+        public static float contourLevel_rangeMax = 1.0f;
+        public static float contourLevel_rangeMin = 0.0f;
+
         public static int result_option = 0; 
         // 1 = displacement, 2 = stressX, 3 = stressY, 4 = tauXY, 5 = vonMises,
         // 6 = principalStress1, 7 = principalStress2, 8 = maxShearStress, 9 = PSL
