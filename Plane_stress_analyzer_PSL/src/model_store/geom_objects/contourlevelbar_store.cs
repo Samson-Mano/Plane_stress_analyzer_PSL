@@ -7,9 +7,12 @@ using Plane_stress_analyzer_PSL.src.opentk_control.opentk_buffer;
 using Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
 
 
 namespace src.model_store.geom_objects
@@ -248,14 +251,24 @@ namespace src.model_store.geom_objects
             _contourtriVBO.updateVertexBuffer(vertices);
 
             // Update the contour level labels
-            UpdateContourLevelLabels(contour_min, contour_max, resultLabel);
+            UpdateContourLevelLabels(contour_min, contour_max);
 
+
+            //_______________________________________________________________________________________________________
+            // Result label
+            contourResultLabel.clear_labels();
+
+            contourResultLabel.add_label(0, resultLabel,
+                 new Vector2(OriginX - (resultLabel.Length * 0.01f) * 0.5f, OriginY + contour_bar_height + 0.07f),
+                 new Vector3(0.0f, 0.0f, 0.0f));
+
+            contourResultLabel.update_buffer(1.3f);
 
         }
 
 
 
-        public void UpdateContourLevelLabels(float contour_min, float contour_max, string resultLabel)
+        public void UpdateContourLevelLabels(float contour_min, float contour_max)
         {
 
             float drawing_area_height = _RightTopCornerPoint.Y - _RightBottomCornerPoint.Y;
@@ -265,7 +278,6 @@ namespace src.model_store.geom_objects
             float OriginY = _RightBottomCornerPoint.Y + (drawing_area_height * 0.1f);
             float levelX = OriginX - CONTOUR_LEVELBAR_WIDTH;
 
-            contourLevelLabel.clear_labels();
 
             // Get zoom range
             float zoomMin = Math.Max(0.0f, Math.Min(1.0f, gvariables_static.contourLevel_rangeMin));
@@ -277,63 +289,108 @@ namespace src.model_store.geom_objects
                 zoomMax = 1.0f;
             }
 
+
+            // Calculate the actual values at zoom boundaries
+            float actualRangeMin = contour_min + (contour_max - contour_min) * zoomMin;
+            float actualRangeMax = contour_min + (contour_max - contour_min) * zoomMax;
+            float actualRangeSpan = actualRangeMax - actualRangeMin;
+
+
             bool isZoomed = (zoomMin > 0.001f || zoomMax < 0.999f);
+            bool isZoomedMin = (zoomMin > 0.001f);
+            bool isZoomedMax = (zoomMax < 0.999f);
+            bool isZoomedBoth = (isZoomedMin && isZoomedMax);
+
+
+            contourLevelLabel.clear_labels();
 
             for (int i = 0; i < CONTOUR_LEVELS; i++)
             {
-                float normalizedPosition = (float)i / (float)(CONTOUR_LEVELS - 1);
-                float levelY = OriginY + (contour_bar_height * normalizedPosition) + 0.015f;
-
-                float contour_value;
-                Vector3 color;
+         
+                float contour_value = 0.0f;
+                Vector3 color = new Vector3(0.0f, 0.0f, 0.0f);
 
                 if (isZoomed)
                 {
-                    if (normalizedPosition <= zoomMin)
+                    if(isZoomedBoth)
                     {
-                        // Clamped to minimum
-                        contour_value = contour_min;
-                        // Blend color slightly to show it's clamped
-                        float blend = (normalizedPosition / Math.Max(zoomMin, 0.001f));
-                        color = GetJetColor(0.0f);
+                        if (i == 0)
+                        {
+                            // Bottom: show actual minimum
+                            contour_value = contour_min;
+                            color = new Vector3(0.8f, 0.8f, 0.8f); // Light gray
+                        }  
+                        else if(i == (CONTOUR_LEVELS - 1))
+                        {
+                            // Top: show actual maximum
+                            contour_value = contour_max;
+                            color = new Vector3(0.8f, 0.8f, 0.8f); // Light gray
+                        }
+                        else
+                        {
+                            // Middle: map zoom range to [0,1]
+                            float remappedPos = (float)(i - 1.0f) / (float)(CONTOUR_LEVELS - 2);
+
+                            contour_value = actualRangeMin + actualRangeSpan * remappedPos;
+                            color = gvariables_static.GetJetColorClamped(remappedPos);
+
+                        }
+
                     }
-                    else if (normalizedPosition >= zoomMax)
+                    else if (isZoomedMin)
                     {
-                        // Clamped to maximum
-                        contour_value = contour_max;
-                        color = GetJetColor(1.0f);
+                        if( i == 0)
+                        {
+                            // Bottom: show actual minimum
+                            contour_value = contour_min;
+                            color = new Vector3(0.8f, 0.8f, 0.8f); // Light gray
+                        }
+                        else
+                        {
+                            // Rest: map zoom range to [0,1]
+                            float remappedPos = (float)(i - 1.0f) / (float)(CONTOUR_LEVELS - 2);
+                            contour_value = actualRangeMin + (contour_max - actualRangeMin) * remappedPos;
+                            color = gvariables_static.GetJetColorClamped(remappedPos);
+                        }
+
                     }
-                    else
+                    else if(isZoomedMax)
                     {
-                        // Zoomed region - full color spectrum
-                        float t = (normalizedPosition - zoomMin) / (zoomMax - zoomMin);
-                        contour_value = contour_min + (contour_max - contour_min) *
-                                       (zoomMin + t * (zoomMax - zoomMin));
-                        color = GetJetColor(t);
+                        if(i == (CONTOUR_LEVELS -1))
+                        {
+                            // Top: show actual maximum
+                            contour_value = contour_max;
+                            color = new Vector3(0.8f, 0.8f, 0.8f); // Light gray
+                        }
+                        else
+                        {
+                            // Rest: map zoom range to [0,1]
+                            float remappedPos = (float)i / (float)(CONTOUR_LEVELS - 2);
+                            contour_value = contour_min + (actualRangeMax - contour_min) * remappedPos;
+                            color = gvariables_static.GetJetColorClamped(remappedPos);
+                        }
                     }
                 }
                 else
                 {
-                    contour_value = contour_min + (contour_max - contour_min) * normalizedPosition;
-                    color = GetJetColor(normalizedPosition);
+                    // Full range - standard mapping
+                    float remappedPos = (float)i / (float)(CONTOUR_LEVELS - 1);
+                    contour_value = contour_min + (contour_max - contour_min) * remappedPos;
+                    color = GetJetColor(remappedPos);
                 }
 
+
+                float normalizedPosition = (float)i / (float)(CONTOUR_LEVELS - 1);
+                float levelY = OriginY + (contour_bar_height * normalizedPosition) + 0.015f;
+
                 string label = FormatContourValue(contour_value);
-                float string_width = EstimateStringWidth(label);
+                float string_width = label.Length * 0.01f;
 
                 contourLevelLabel.add_label(i, label,
                     new Vector2(levelX - string_width, levelY), color);
             }
 
-            //// Add zoom region highlight
-            //if (isZoomed)
-            //{
-            //    AddZoomRegionHighlight(zoomMin, zoomMax, OriginX, OriginY, contour_bar_height);
-            //}
-
-
-            contourResultLabel.update_buffer(1.3f);
-
+            contourLevelLabel.update_buffer(1.1f);
 
         }
 

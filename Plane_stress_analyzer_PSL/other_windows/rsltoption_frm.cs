@@ -475,6 +475,8 @@ namespace other_windows
                     gvariables_static.contourLevel_rangeMax = max;
                     gvariables_static.contourLevel_rangeMin = min;
 
+                    modeldata.switch_result_option(true);
+
                     // Optional: Trigger immediate redraw
                     if (this.Owner is main_frm mainForm)
                     {

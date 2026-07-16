@@ -357,6 +357,24 @@ namespace Plane_stress_analyzer_PSL.src.global_variables
             return value;
         }
 
+        // Manual clamp for .NET Framework 4.8
+        private static float Clamp(float value, float min, float max)
+        {
+            return (value < min) ? min : (value > max) ? max : value;
+        }
+
+        // Original jet colormap with clamping (for values in [0,1])
+        public static Vector3 GetJetColorClamped(float t)
+        {
+            float r = Clamp(1.5f - Math.Abs(4.0f * t - 3.0f), 0f, 1f);
+            float g = Clamp(1.5f - Math.Abs(4.0f * t - 2.0f), 0f, 1f);
+            float b = Clamp(1.5f - Math.Abs(4.0f * t - 1.0f), 0f, 1f);
+
+            return new Vector3(r, g, b);
+        }
+
+
+
         public static double UpdateZoom(double zoomVal, int eDelta, double zoomStep = 1.1f,
             double minZoom = 1e-3d, double maxZoom = 1e6d)
         {
