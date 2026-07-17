@@ -195,20 +195,24 @@ namespace src.model_store.geom_objects
             float OriginX = _RightBottomCornerPoint.X - 0.1f;
             float OriginY = _RightBottomCornerPoint.Y + (float)(drawing_area_height * 0.1f);
 
+            float levelY = 0.0f;
+            float colorValue = 0.0f;
 
             // Bottop point of the contour bar
+            colorValue = getColorAtContourLevel(0, contour_min, contour_max);
+
             vertices[0] = OriginX;
             vertices[1] = OriginY;
-            vertices[2] = 0.0f; 
+            vertices[2] = colorValue;
 
             vertices[3] = OriginX - CONTOUR_LEVELBAR_WIDTH;
             vertices[4] = OriginY;
-            vertices[5] = 0.0f; 
+            vertices[5] = colorValue;
 
-            for (int i = 1; i< CONTOUR_LEVELS; i++)
+            for (int i = 1; i< (CONTOUR_LEVELS - 1); i++)
             {
-                float levelY = ((contour_bar_height * i) / (CONTOUR_LEVELS - 1));
-                float colorValue = (float)i / (CONTOUR_LEVELS - 1);
+                levelY = ((contour_bar_height * i) / (CONTOUR_LEVELS - 1));
+                colorValue = getColorAtContourLevel(i, contour_min, contour_max);
 
                 vertices[(i*6) + 0] = OriginX;
                 vertices[(i*6) + 1] = OriginY + levelY;
@@ -220,23 +224,39 @@ namespace src.model_store.geom_objects
 
             }
 
+
+            colorValue = getColorAtContourLevel((CONTOUR_LEVELS - 1), contour_min, contour_max);
+
+            vertices[((CONTOUR_LEVELS - 1) * 6) + 0] = OriginX;
+            vertices[((CONTOUR_LEVELS - 1) * 6) + 1] = OriginY + contour_bar_height;
+            vertices[((CONTOUR_LEVELS - 1) * 6) + 2] = colorValue;
+
+            vertices[((CONTOUR_LEVELS - 1) * 6) + 3] = OriginX - CONTOUR_LEVELBAR_WIDTH;
+            vertices[((CONTOUR_LEVELS - 1) * 6) + 4] = OriginY + contour_bar_height;
+            vertices[((CONTOUR_LEVELS - 1) * 6) + 5] = colorValue;
+
+
             // Update both VBOs with the same vertices
             _contourbarVBO.updateVertexBuffer(vertices);
 
 
+
+            //________________________________________________________________________________________________________
             // Bottop point of the contour bar
+            colorValue = getColorAtContourLevel(0, contour_min, contour_max);
+
             vertices[0] = OriginX;
             vertices[1] = OriginY;
-            vertices[2] = 0.0f;
+            vertices[2] = colorValue;
 
             vertices[3] = OriginX - CONTOUR_LEVELTRI_WIDTH;
             vertices[4] = OriginY;
-            vertices[5] = 0.0f;
+            vertices[5] = colorValue;
 
-            for (int i = 1; i < CONTOUR_LEVELS; i++)
+            for (int i = 1; i < (CONTOUR_LEVELS - 1); i++)
             {
-                float levelY = ((contour_bar_height * i) / (CONTOUR_LEVELS - 1));
-                float colorValue = (float)i / (CONTOUR_LEVELS - 1);
+                levelY = ((contour_bar_height * i) / (CONTOUR_LEVELS - 1));
+                colorValue = getColorAtContourLevel(i, contour_min, contour_max);
 
                 vertices[(i * 6) + 0] = OriginX;
                 vertices[(i * 6) + 1] = OriginY + levelY;
@@ -247,6 +267,17 @@ namespace src.model_store.geom_objects
                 vertices[(i * 6) + 5] = colorValue;
 
             }
+
+            colorValue = getColorAtContourLevel((CONTOUR_LEVELS - 1), contour_min, contour_max);
+
+            vertices[((CONTOUR_LEVELS - 1) * 6) + 0] = OriginX;
+            vertices[((CONTOUR_LEVELS - 1) * 6) + 1] = OriginY + contour_bar_height;
+            vertices[((CONTOUR_LEVELS - 1) * 6) + 2] = colorValue;
+
+            vertices[((CONTOUR_LEVELS - 1) * 6) + 3] = OriginX - CONTOUR_LEVELTRI_WIDTH;
+            vertices[((CONTOUR_LEVELS - 1) * 6) + 4] = OriginY + contour_bar_height;
+            vertices[((CONTOUR_LEVELS - 1) * 6) + 5] = colorValue;
+
 
             _contourtriVBO.updateVertexBuffer(vertices);
 
@@ -266,6 +297,95 @@ namespace src.model_store.geom_objects
 
         }
 
+
+        public float getColorAtContourLevel(int level_i, float contour_min, float contour_max)
+        {
+
+            // Get zoom range
+            float zoomMin = Math.Max(0.0f, Math.Min(1.0f, gvariables_static.contourLevel_rangeMin));
+            float zoomMax = Math.Max(0.0f, Math.Min(1.0f, gvariables_static.contourLevel_rangeMax));
+
+            if (zoomMin >= zoomMax)
+            {
+                zoomMin = 0.0f;
+                zoomMax = 1.0f;
+            }
+
+
+            //// Calculate the actual values at zoom boundaries
+            //float actualRangeMin = contour_min + (contour_max - contour_min) * zoomMin;
+            //float actualRangeMax = contour_min + (contour_max - contour_min) * zoomMax;
+            //float actualRangeSpan = actualRangeMax - actualRangeMin;
+
+
+            bool isZoomed = (zoomMin > 0.001f || zoomMax < 0.999f);
+            bool isZoomedMin = (zoomMin > 0.001f);
+            bool isZoomedMax = (zoomMax < 0.999f);
+            bool isZoomedBoth = (isZoomedMin && isZoomedMax);
+
+
+            if (isZoomed)
+            {
+                if (isZoomedBoth)
+                {
+                    if (level_i == 0)
+                    {
+                        // Bottom: show actual minimum
+                        return -1.0f; // Light gray
+                    }
+                    else if (level_i == (CONTOUR_LEVELS - 1))
+                    {
+                        // Top: show actual maximum
+                        return 2.0f; // Light gray
+                      }
+                    else
+                    {
+                        // Middle: map zoom range to [0,1]
+                        return (float)(level_i - 1.0f) / (float)(CONTOUR_LEVELS - 3);
+
+                    }
+
+                }
+                else if (isZoomedMin)
+                {
+                    if (level_i == 0)
+                    {
+                        // Bottom: show actual minimum
+                        return -1.0f; // Light gray
+                    }
+                    else
+                    {
+                        // Rest: map zoom range to [0,1]
+                        return (float)(level_i - 1.0f) / (float)(CONTOUR_LEVELS - 2);
+                    }
+
+                }
+                else if (isZoomedMax)
+                {
+                    if (level_i == (CONTOUR_LEVELS - 1))
+                    {
+                        // Top: show actual maximum
+                        return 2.0f; // Light gray
+                    }
+                    else
+                    {
+                        // Rest: map zoom range to [0,1]
+                        return (float)(level_i) / (float)(CONTOUR_LEVELS - 2);
+                    }
+                }
+                else
+                {                     
+                    // Should not reach here, but fallback to standard mapping
+                    return (float)(level_i) / (float)(CONTOUR_LEVELS - 1);
+                }
+            }
+            else
+            {
+                // Full range - standard mapping
+                return (float)(level_i) / (float)(CONTOUR_LEVELS - 1);
+            }
+            //
+        }
 
 
         public void UpdateContourLevelLabels(float contour_min, float contour_max)
@@ -318,7 +438,7 @@ namespace src.model_store.geom_objects
                         {
                             // Bottom: show actual minimum
                             contour_value = contour_min;
-                            color = new Vector3(0.8f, 0.8f, 0.8f); // Light gray
+                            color = new Vector3(0.4f, 0.4f, 0.4f); // Dark gray
                         }  
                         else if(i == (CONTOUR_LEVELS - 1))
                         {
@@ -329,7 +449,7 @@ namespace src.model_store.geom_objects
                         else
                         {
                             // Middle: map zoom range to [0,1]
-                            float remappedPos = (float)(i - 1.0f) / (float)(CONTOUR_LEVELS - 2);
+                            float remappedPos = (float)(i - 1.0f) / (float)(CONTOUR_LEVELS - 3);
 
                             contour_value = actualRangeMin + actualRangeSpan * remappedPos;
                             color = gvariables_static.GetJetColorClamped(remappedPos);
@@ -343,7 +463,7 @@ namespace src.model_store.geom_objects
                         {
                             // Bottom: show actual minimum
                             contour_value = contour_min;
-                            color = new Vector3(0.8f, 0.8f, 0.8f); // Light gray
+                            color = new Vector3(0.4f, 0.4f, 0.4f); // Dark gray
                         }
                         else
                         {
@@ -376,7 +496,7 @@ namespace src.model_store.geom_objects
                     // Full range - standard mapping
                     float remappedPos = (float)i / (float)(CONTOUR_LEVELS - 1);
                     contour_value = contour_min + (contour_max - contour_min) * remappedPos;
-                    color = GetJetColor(remappedPos);
+                    color = gvariables_static.GetJetColorClamped(remappedPos);
                 }
 
 
@@ -394,50 +514,6 @@ namespace src.model_store.geom_objects
 
         }
 
-
-
-
-        // Helper methods
-        private Vector3 GetJetColor(float t)
-        {
-            // Jet colormap implementation
-            t = Math.Max(0.0f, Math.Min(1.0f, t));
-
-            float r, g, b;
-
-            if (t < 0.125f)
-            {
-                r = 0.0f;
-                g = 0.0f;
-                b = 0.5f + t * 4.0f;
-            }
-            else if (t < 0.375f)
-            {
-                r = 0.0f;
-                g = (t - 0.125f) * 4.0f;
-                b = 1.0f;
-            }
-            else if (t < 0.625f)
-            {
-                r = (t - 0.375f) * 4.0f;
-                g = 1.0f;
-                b = 1.0f - (t - 0.375f) * 4.0f;
-            }
-            else if (t < 0.875f)
-            {
-                r = 1.0f;
-                g = 1.0f - (t - 0.625f) * 4.0f;
-                b = 0.0f;
-            }
-            else
-            {
-                r = 1.0f - (t - 0.875f) * 4.0f;
-                g = 0.0f;
-                b = 0.0f;
-            }
-
-            return new Vector3(r, g, b);
-        }
 
         private string FormatContourValue(float value)
         {
@@ -459,37 +535,6 @@ namespace src.model_store.geom_objects
             else
                 return value.ToString("F0");
         }
-
-        private float EstimateStringWidth(string text)
-        {
-            // More accurate width estimation
-            float charWidth = 0.007f; // Approximate width per character
-            return text.Length * charWidth;
-        }
-
-
-
-        private void AddZoomRegionHighlight(float zoomMin, float zoomMax,
-                                   float originX, float originY, float barHeight)
-        {
-            // Draw a semi-transparent highlight rectangle on the zoom region
-            // (Implementation depends on your graphics API)
-
-            // For label purposes, add markers
-            float yMin = originY + barHeight * zoomMin;
-            float yMax = originY + barHeight * zoomMax;
-            float x = originX - CONTOUR_LEVELBAR_WIDTH - 0.01f;
-
-            // Add small triangle markers at zoom boundaries
-            Vector3 markerColor = new Vector3(0.0f, 1.0f, 0.0f); // Green
-
-            // You could use unicode symbols or custom drawing here
-            contourLevelLabel.add_label(-10, "◄",
-                new Vector2(x, yMin), markerColor);
-            contourLevelLabel.add_label(-11, "◄",
-                new Vector2(x, yMax), markerColor);
-        }
-
 
 
 

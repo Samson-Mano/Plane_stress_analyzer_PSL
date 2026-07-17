@@ -458,51 +458,54 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
                 }
 
                 vertexData.Add((float)(pt.displ_magnitude / _rslt_extremes.max_displacement));
-                float normalized_contourValue = 0.0f;
-                float scaled_contourValue = 0.0f;
 
-                switch (option)
-                {
-                    case 1: // Displacement
-                        vertexData.Add((float)(pt.displ_magnitude / _rslt_extremes.max_displacement));
-                        break;
-                    case 2: // StressX
-                            normalized_contourValue = (float)((pt.sigma_x - _rslt_extremes.min_stressX) / (_rslt_extremes.max_stressX - _rslt_extremes.min_stressX));
-                        scaled_contourValue = (normalized_contourValue * 2.0f) - 1.0f; // Scale to [-1, 1]
-                        vertexData.Add(scaled_contourValue);
-                        break;
-                    case 3: // StressY
-                        normalized_contourValue = (float)((pt.sigma_y - _rslt_extremes.min_stressY) / (_rslt_extremes.max_stressY - _rslt_extremes.min_stressY));
-                        scaled_contourValue = (normalized_contourValue * 2.0f) - 1.0f; // Scale to [-1, 1]
-                        vertexData.Add(scaled_contourValue);
-                        break; 
-                    case 4: // Shear stress
-                        normalized_contourValue = (float)((pt.tau_xy - _rslt_extremes.min_tauXY) / (_rslt_extremes.max_tauXY - _rslt_extremes.min_tauXY));
-                        scaled_contourValue = (normalized_contourValue * 2.0f) - 1.0f; // Scale to [-1, 1]
-                        vertexData.Add(scaled_contourValue);
-                        break;
-                    case 5: // Von Mises stress
-                        normalized_contourValue = (float)((pt.von_mises - _rslt_extremes.min_vonMises) / (_rslt_extremes.max_vonMises - _rslt_extremes.min_vonMises));
-                        scaled_contourValue = (normalized_contourValue * 2.0f) - 1.0f; // Scale to [-1, 1]
-                        vertexData.Add(scaled_contourValue);
-                        break; 
-                    case 6: // Principal stress 1
-                        normalized_contourValue = (float)((pt.sigma_1 - _rslt_extremes.min_principalStress1) / (_rslt_extremes.max_principalStress1 - _rslt_extremes.min_principalStress1));
-                        scaled_contourValue = (normalized_contourValue * 2.0f) - 1.0f; // Scale to [-1, 1]
-                        vertexData.Add(scaled_contourValue);
-                        break;
-                    case 7: // Principal stress 2
-                        normalized_contourValue = (float)((pt.sigma_2 - _rslt_extremes.min_principalStress2) / (_rslt_extremes.max_principalStress2 - _rslt_extremes.min_principalStress2));
-                        scaled_contourValue = (normalized_contourValue * 2.0f) - 1.0f; // Scale to [-1, 1]
-                        vertexData.Add(scaled_contourValue);
-                        break;
-                    case 8: // Max shear stress
-                        normalized_contourValue = (float)((pt.max_shear - _rslt_extremes.min_shearStress) / (_rslt_extremes.max_shearStress - _rslt_extremes.min_shearStress));
-                        scaled_contourValue = (normalized_contourValue * 2.0f) - 1.0f; // Scale to [-1, 1]
-                        vertexData.Add(scaled_contourValue);
-                        break;
+                float normalized_contourValue = scaled_contourColorValue(pt, option);
+                vertexData.Add(normalized_contourValue);
 
-                }
+                // float scaled_contourValue = 0.0f;
+
+                //switch (option)
+                //{
+                //    case 1: // Displacement
+                //        vertexData.Add((float)(pt.displ_magnitude / _rslt_extremes.max_displacement));
+                //        break;
+                //    case 2: // StressX
+                //            normalized_contourValue = (float)((pt.sigma_x - _rslt_extremes.min_stressX) / (_rslt_extremes.max_stressX - _rslt_extremes.min_stressX));
+                //        scaled_contourValue = (normalized_contourValue * 2.0f) - 1.0f; // Scale to [-1, 1]
+                //        vertexData.Add(scaled_contourValue);
+                //        break;
+                //    case 3: // StressY
+                //        normalized_contourValue = (float)((pt.sigma_y - _rslt_extremes.min_stressY) / (_rslt_extremes.max_stressY - _rslt_extremes.min_stressY));
+                //        scaled_contourValue = (normalized_contourValue * 2.0f) - 1.0f; // Scale to [-1, 1]
+                //        vertexData.Add(scaled_contourValue);
+                //        break; 
+                //    case 4: // Shear stress
+                //        normalized_contourValue = (float)((pt.tau_xy - _rslt_extremes.min_tauXY) / (_rslt_extremes.max_tauXY - _rslt_extremes.min_tauXY));
+                //        scaled_contourValue = (normalized_contourValue * 2.0f) - 1.0f; // Scale to [-1, 1]
+                //        vertexData.Add(scaled_contourValue);
+                //        break;
+                //    case 5: // Von Mises stress
+                //        normalized_contourValue = (float)((pt.von_mises - _rslt_extremes.min_vonMises) / (_rslt_extremes.max_vonMises - _rslt_extremes.min_vonMises));
+                //        scaled_contourValue = (normalized_contourValue * 2.0f) - 1.0f; // Scale to [-1, 1]
+                //        vertexData.Add(scaled_contourValue);
+                //        break; 
+                //    case 6: // Principal stress 1
+                //        normalized_contourValue = (float)((pt.sigma_1 - _rslt_extremes.min_principalStress1) / (_rslt_extremes.max_principalStress1 - _rslt_extremes.min_principalStress1));
+                //        scaled_contourValue = (normalized_contourValue * 2.0f) - 1.0f; // Scale to [-1, 1]
+                //        vertexData.Add(scaled_contourValue);
+                //        break;
+                //    case 7: // Principal stress 2
+                //        normalized_contourValue = (float)((pt.sigma_2 - _rslt_extremes.min_principalStress2) / (_rslt_extremes.max_principalStress2 - _rslt_extremes.min_principalStress2));
+                //        scaled_contourValue = (normalized_contourValue * 2.0f) - 1.0f; // Scale to [-1, 1]
+                //        vertexData.Add(scaled_contourValue);
+                //        break;
+                //    case 8: // Max shear stress
+                //        normalized_contourValue = (float)((pt.max_shear - _rslt_extremes.min_shearStress) / (_rslt_extremes.max_shearStress - _rslt_extremes.min_shearStress));
+                //        scaled_contourValue = (normalized_contourValue * 2.0f) - 1.0f; // Scale to [-1, 1]
+                //        vertexData.Add(scaled_contourValue);
+                //        break;
+
+                //}
 
             }
 
@@ -510,6 +513,282 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
             point_vbo.updateVertexBuffer(vertexData.ToArray());
 
         }
+
+
+        private float scaled_contourColorValue(point_store pt, int option)
+        {
+
+            const float EPSILON = 1e-6f;
+
+
+            // Get zoom range
+            float zoomMin = Math.Max(0.0f, Math.Min(1.0f, gvariables_static.contourLevel_rangeMin));
+            float zoomMax = Math.Max(0.0f, Math.Min(1.0f, gvariables_static.contourLevel_rangeMax));
+
+            if (zoomMin >= zoomMax)
+            {
+                zoomMin = 0.0f;
+                zoomMax = 1.0f;
+            }
+
+            switch (option)
+            {
+                case 1: // Displacement
+                    {
+                        // Calculate the actual values at zoom boundaries
+                        float actualRangeMin = 0.0f + ((float)_rslt_extremes.max_displacement - 0.0f) * zoomMin;
+                        float actualRangeMax = 0.0f + ((float)_rslt_extremes.max_displacement - 0.0f) * zoomMax;
+                        float actualRangeSpan = actualRangeMax - actualRangeMin;
+
+                        float normalizedValue = ((float)pt.displ_magnitude - actualRangeMin) / actualRangeSpan;
+
+                        if(normalizedValue < -EPSILON)
+                        {
+                            normalizedValue = -1.0f;
+                        }
+                        else if (normalizedValue > 1.0f + EPSILON)
+                        {
+                            normalizedValue = 2.0f;
+                        }
+                        else
+                        {
+                            // Clamp the normalized value to [0, 1] range
+                            normalizedValue = Math.Max(0.0f, Math.Min(1.0f, normalizedValue));
+                        }
+
+                        return normalizedValue;
+
+                    }
+                case 2: // StressX
+                    {
+                        // Calculate the actual values at zoom boundaries
+                        float actualRangeMin = (float)(_rslt_extremes.min_stressX + 
+                            ((_rslt_extremes.max_stressX - _rslt_extremes.min_stressX) * zoomMin));
+
+                        float actualRangeMax = (float)(_rslt_extremes.min_stressX + 
+                            ((_rslt_extremes.max_stressX - _rslt_extremes.min_stressX) * zoomMax));
+
+                        float actualRangeSpan = actualRangeMax - actualRangeMin;
+
+                        float normalizedValue = ((float)pt.sigma_x - actualRangeMin) / actualRangeSpan;
+
+                        if (normalizedValue < -EPSILON)
+                        {
+                            normalizedValue = -1.0f;
+                        }
+                        else if (normalizedValue > 1.0f + EPSILON)
+                        {
+                            normalizedValue = 2.0f;
+                        }
+                        else
+                        {
+                            // Clamp the normalized value to [0, 1] range
+                            normalizedValue = Math.Max(0.0f, Math.Min(1.0f, normalizedValue));
+                        }
+
+
+                        normalizedValue = (normalizedValue * 2.0f) - 1.0f; // Scale to [-1, 1]
+
+                        return normalizedValue;
+
+                    }
+                case 3: // StressY
+                    {
+                        // Calculate the actual values at zoom boundaries
+                        float actualRangeMin = (float)(_rslt_extremes.min_stressY +
+                            ((_rslt_extremes.max_stressY - _rslt_extremes.min_stressY) * zoomMin));
+
+                        float actualRangeMax = (float)(_rslt_extremes.min_stressY +
+                            ((_rslt_extremes.max_stressY - _rslt_extremes.min_stressY) * zoomMax));
+
+                        float actualRangeSpan = actualRangeMax - actualRangeMin;
+
+                        float normalizedValue = ((float)pt.sigma_y - actualRangeMin) / actualRangeSpan;
+
+                        if (normalizedValue < -EPSILON)
+                        {
+                            normalizedValue = -1.0f;
+                        }
+                        else if (normalizedValue > 1.0f + EPSILON)
+                        {
+                            normalizedValue = 2.0f;
+                        }
+                        else
+                        {
+                            // Clamp the normalized value to [0, 1] range
+                            normalizedValue = Math.Max(0.0f, Math.Min(1.0f, normalizedValue));
+                        }
+
+                        normalizedValue = (normalizedValue * 2.0f) - 1.0f; // Scale to [-1, 1]
+
+                        return normalizedValue;
+
+                    }
+                case 4: // Shear stress
+                    {
+                        // Calculate the actual values at zoom boundaries
+                        float actualRangeMin = (float)(_rslt_extremes.min_tauXY +
+                            ((_rslt_extremes.max_tauXY - _rslt_extremes.min_tauXY) * zoomMin));
+
+                        float actualRangeMax = (float)(_rslt_extremes.min_tauXY +
+                            ((_rslt_extremes.max_tauXY - _rslt_extremes.min_tauXY) * zoomMax));
+
+                        float actualRangeSpan = actualRangeMax - actualRangeMin;
+
+                        float normalizedValue = ((float)pt.tau_xy - actualRangeMin) / actualRangeSpan;
+
+                        if (normalizedValue < -EPSILON)
+                        {
+                            normalizedValue = -1.0f;
+                        }
+                        else if (normalizedValue > 1.0f + EPSILON)
+                        {
+                            normalizedValue = 2.0f;
+                        }
+                        else
+                        {
+                            // Clamp the normalized value to [0, 1] range
+                            normalizedValue = Math.Max(0.0f, Math.Min(1.0f, normalizedValue));
+                        }
+
+                        normalizedValue = (normalizedValue * 2.0f) - 1.0f; // Scale to [-1, 1]
+
+                        return normalizedValue;
+
+                    }
+                case 5: // Von Mises stress
+                    {
+                        // Calculate the actual values at zoom boundaries
+                        float actualRangeMin = (float)(_rslt_extremes.min_vonMises +
+                            ((_rslt_extremes.max_vonMises - _rslt_extremes.min_vonMises) * zoomMin));
+
+                        float actualRangeMax = (float)(_rslt_extremes.min_vonMises +
+                            ((_rslt_extremes.max_vonMises - _rslt_extremes.min_vonMises) * zoomMax));
+
+                        float actualRangeSpan = actualRangeMax - actualRangeMin;
+
+                        float normalizedValue = ((float)pt.von_mises - actualRangeMin) / actualRangeSpan;
+
+                        if (normalizedValue < -EPSILON)
+                        {
+                            normalizedValue = -1.0f;
+                        }
+                        else if (normalizedValue > 1.0f + EPSILON)
+                        {
+                            normalizedValue = 2.0f;
+                        }
+                        else
+                        {
+                            // Clamp the normalized value to [0, 1] range
+                            normalizedValue = Math.Max(0.0f, Math.Min(1.0f, normalizedValue));
+                        }
+
+                        normalizedValue = (normalizedValue * 2.0f) - 1.0f; // Scale to [-1, 1]
+
+                        return normalizedValue;
+
+                    }
+                case 6: // Principal stress 1
+                    {
+                        // Calculate the actual values at zoom boundaries
+                        float actualRangeMin = (float)(_rslt_extremes.min_principalStress1 +
+                            ((_rslt_extremes.max_principalStress1 - _rslt_extremes.min_principalStress1) * zoomMin));
+
+                        float actualRangeMax = (float)(_rslt_extremes.min_principalStress1 +
+                            ((_rslt_extremes.max_principalStress1 - _rslt_extremes.min_principalStress1) * zoomMax));
+
+                        float actualRangeSpan = actualRangeMax - actualRangeMin;
+
+                        float normalizedValue = ((float)pt.sigma_1 - actualRangeMin) / actualRangeSpan;
+
+                        if (normalizedValue < -EPSILON)
+                        {
+                            normalizedValue = -1.0f;
+                        }
+                        else if (normalizedValue > 1.0f + EPSILON)
+                        {
+                            normalizedValue = 2.0f;
+                        }
+                        else
+                        {
+                            // Clamp the normalized value to [0, 1] range
+                            normalizedValue = Math.Max(0.0f, Math.Min(1.0f, normalizedValue));
+                        }
+
+                        normalizedValue = (normalizedValue * 2.0f) - 1.0f; // Scale to [-1, 1]
+
+                        return normalizedValue;
+
+                    }
+                case 7: // Principal stress 2
+                    {
+                        // Calculate the actual values at zoom boundaries
+                        float actualRangeMin = (float)(_rslt_extremes.min_principalStress2 +
+                            ((_rslt_extremes.max_principalStress2 - _rslt_extremes.min_principalStress2) * zoomMin));
+
+                        float actualRangeMax = (float)(_rslt_extremes.min_principalStress2 +
+                            ((_rslt_extremes.max_principalStress2 - _rslt_extremes.min_principalStress2) * zoomMax));
+
+                        float actualRangeSpan = actualRangeMax - actualRangeMin;
+
+                        float normalizedValue = ((float)pt.sigma_2 - actualRangeMin) / actualRangeSpan;
+
+                        if (normalizedValue < -EPSILON)
+                        {
+                            normalizedValue = -1.0f;
+                        }
+                        else if (normalizedValue > 1.0f + EPSILON)
+                        {
+                            normalizedValue = 2.0f;
+                        }
+                        else
+                        {
+                            // Clamp the normalized value to [0, 1] range
+                            normalizedValue = Math.Max(0.0f, Math.Min(1.0f, normalizedValue));
+                        }
+
+                        normalizedValue = (normalizedValue * 2.0f) - 1.0f; // Scale to [-1, 1]
+
+                        return normalizedValue;
+
+                    }
+                case 8: // Max shear stress
+                    {
+                        // Calculate the actual values at zoom boundaries
+                        float actualRangeMin = (float)(_rslt_extremes.min_shearStress +
+                            ((_rslt_extremes.max_shearStress - _rslt_extremes.min_shearStress) * zoomMin));
+
+                        float actualRangeMax = (float)(_rslt_extremes.min_shearStress +
+                            ((_rslt_extremes.max_shearStress - _rslt_extremes.min_shearStress) * zoomMax));
+
+                        float actualRangeSpan = actualRangeMax - actualRangeMin;
+
+                        float normalizedValue = ((float)pt.max_shear - actualRangeMin) / actualRangeSpan;
+
+                        if (normalizedValue < -EPSILON)
+                        {
+                            normalizedValue = -1.0f;
+                        }
+                        else if (normalizedValue > 1.0f + EPSILON)
+                        {
+                            normalizedValue = 2.0f;
+                        }
+                        else
+                        {
+                            // Clamp the normalized value to [0, 1] range
+                            normalizedValue = Math.Max(0.0f, Math.Min(1.0f, normalizedValue));
+                        }
+
+                        normalizedValue = (normalizedValue * 2.0f) - 1.0f; // Scale to [-1, 1]
+
+                        return normalizedValue;
+
+                    }
+            }
+
+            return 0.0f; // Default case, should not reach here
+        }
+
 
 
         public void create_buffer_data()

@@ -161,11 +161,28 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
 
             void main()
             {
-                vec3 baseColor = jetHeatmap(v_deflscale);
+                vec3 baseColor = vec3(0.0); // jetHeatmap(v_deflscale);
                 
-                float line = 0.0;
+                float line = 0.2f;
 
-                if (uLineOpacity > 0.1)
+                // Contour bands
+                if (v_deflscale < 0.0f)
+                {
+                    baseColor = vec3(0.4f, 0.4f, 0.4f); // Dark gray for negative values
+                    line = 0.0f; // Disable contour lines for negative values
+                }
+                else if (v_deflscale > 1.0f)
+                {
+                    baseColor = vec3(0.8f, 0.8f, 0.8f); // Light gray for above 1.0 values
+                    line = 0.0f; // Disable contour lines for values above 1.0
+                }
+                else
+                {
+                    baseColor = jetHeatmap(v_deflscale);
+                }
+
+
+                if (uLineOpacity > 0.1 && line > 0.1f)
                 {
                     line = contourLines(v_deflscale, uNumContours, uLineWidth);
             
@@ -633,7 +650,17 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
 
             void main()
             {
-	            f_Color = vec4(jetHeatmap(v_node_value), 1.0f);
+                vec3 contourColor = vec3(0.0); 
+                
+                if(v_node_value < 0.0f)
+                    contourColor = vec3(0.4f, 0.4f, 0.4f); // Dark gray for negative values
+                else if(v_node_value > 1.0f)
+                    contourColor = vec3(0.8f, 0.8f, 0.8f); // Light gray for values greater than 1
+                else
+                    contourColor = jetHeatmap(v_node_value); // Use the heatmap for values between 0 and 1
+
+
+	            f_Color = vec4(contourColor, 1.0f);
             }
 
                     ";

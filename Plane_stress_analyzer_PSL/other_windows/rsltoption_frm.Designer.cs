@@ -218,6 +218,7 @@
             this.button_stop.TabIndex = 42;
             this.button_stop.Text = "Stop Animation";
             this.button_stop.UseVisualStyleBackColor = true;
+            this.button_stop.Click += new System.EventHandler(this.button_stop_Click);
             // 
             // button_play_pause
             // 
@@ -228,6 +229,7 @@
             this.button_play_pause.TabIndex = 41;
             this.button_play_pause.Text = "Play Animation";
             this.button_play_pause.UseVisualStyleBackColor = true;
+            this.button_play_pause.Click += new System.EventHandler(this.button_play_pause_Click);
             // 
             // groupBox2
             // 
@@ -272,6 +274,7 @@
             this.button_animation_speed.TabIndex = 0;
             this.button_animation_speed.Text = "Animation Speed";
             this.button_animation_speed.UseVisualStyleBackColor = true;
+            this.button_animation_speed.Click += new System.EventHandler(this.button_animation_speed_Click);
             // 
             // groupBox4
             // 

@@ -363,6 +363,7 @@ namespace other_windows
             label_realtimeanim_speed.Visible = true;
         }
 
+
         private void button_play_pause_Click(object sender, EventArgs e)
         {
             if (gvariables_static.animate_play)
@@ -402,8 +403,8 @@ namespace other_windows
 
             }
 
-
         }
+
 
         private void button_stop_Click(object sender, EventArgs e)
         {
@@ -418,6 +419,7 @@ namespace other_windows
             label_status.Text = "Stopped";
         }
 
+
         private void button_animation_speed_Click(object sender, EventArgs e)
         {
             // Position near the button
@@ -428,6 +430,8 @@ namespace other_windows
             label_realtimeanim_speed.Visible = false;
             textPopup.Focus();           // Focus for typing
         }
+
+
 
         private void trackBar_deformation_scale_Scroll(object sender, EventArgs e)
         {
@@ -486,12 +490,18 @@ namespace other_windows
                 else
                 {
                     // MessageBox.Show("Contour max must be greater than contour min.", "Invalid Input", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    textBox_contourmin.Text = gvariables_static.contourLevel_rangeMin.ToString(CultureInfo.InvariantCulture);
+                    textBox_contourmax.Text = gvariables_static.contourLevel_rangeMax.ToString(CultureInfo.InvariantCulture);
+
                     return;
                 }
             }
             else
             {
                 // MessageBox.Show("Please enter valid numeric values for contour range.", "Invalid Input", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                textBox_contourmin.Text = gvariables_static.contourLevel_rangeMin.ToString(CultureInfo.InvariantCulture);
+                textBox_contourmax.Text = gvariables_static.contourLevel_rangeMax.ToString(CultureInfo.InvariantCulture);
+
                 return;
             }
         }
