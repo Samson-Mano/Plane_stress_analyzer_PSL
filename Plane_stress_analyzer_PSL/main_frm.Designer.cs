@@ -49,16 +49,17 @@
             this.stressXToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.stressYToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tauXYToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-            this.hideResultsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
-            this.toolStripStatusLabel_zoom_value = new System.Windows.Forms.ToolStripStatusLabel();
-            this.glControl_main_panel = new OpenTK.GLControl();
             this.vonMisesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.principalStress1ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.principalStress2ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.maxShearStressToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pSLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.hideResultsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.toolStripStatusLabel_zoom_value = new System.Windows.Forms.ToolStripStatusLabel();
+            this.glControl_main_panel = new OpenTK.GLControl();
+            this.annotateResultsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -161,6 +162,7 @@
             this.finiteElementSolverToolStripMenuItem,
             this.toolStripSeparator1,
             this.resultOptionToolStripMenuItem,
+            this.annotateResultsToolStripMenuItem,
             this.resultsToolStripMenuItem});
             this.solveToolStripMenuItem.Name = "solveToolStripMenuItem";
             this.solveToolStripMenuItem.Size = new System.Drawing.Size(47, 20);
@@ -206,40 +208,75 @@
             // displacementToolStripMenuItem
             // 
             this.displacementToolStripMenuItem.Name = "displacementToolStripMenuItem";
-            this.displacementToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.displacementToolStripMenuItem.Size = new System.Drawing.Size(162, 22);
             this.displacementToolStripMenuItem.Text = "Displacement";
             this.displacementToolStripMenuItem.Click += new System.EventHandler(this.displacementToolStripMenuItem_Click);
             // 
             // stressXToolStripMenuItem
             // 
             this.stressXToolStripMenuItem.Name = "stressXToolStripMenuItem";
-            this.stressXToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.stressXToolStripMenuItem.Size = new System.Drawing.Size(162, 22);
             this.stressXToolStripMenuItem.Text = "Stress X";
             this.stressXToolStripMenuItem.Click += new System.EventHandler(this.stressXToolStripMenuItem_Click);
             // 
             // stressYToolStripMenuItem
             // 
             this.stressYToolStripMenuItem.Name = "stressYToolStripMenuItem";
-            this.stressYToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.stressYToolStripMenuItem.Size = new System.Drawing.Size(162, 22);
             this.stressYToolStripMenuItem.Text = "Stress Y";
             this.stressYToolStripMenuItem.Click += new System.EventHandler(this.stressYToolStripMenuItem_Click);
             // 
             // tauXYToolStripMenuItem
             // 
             this.tauXYToolStripMenuItem.Name = "tauXYToolStripMenuItem";
-            this.tauXYToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.tauXYToolStripMenuItem.Size = new System.Drawing.Size(162, 22);
             this.tauXYToolStripMenuItem.Text = "Tau XY";
             this.tauXYToolStripMenuItem.Click += new System.EventHandler(this.tauXYToolStripMenuItem_Click);
+            // 
+            // vonMisesToolStripMenuItem
+            // 
+            this.vonMisesToolStripMenuItem.Name = "vonMisesToolStripMenuItem";
+            this.vonMisesToolStripMenuItem.Size = new System.Drawing.Size(162, 22);
+            this.vonMisesToolStripMenuItem.Text = "Von Mises";
+            this.vonMisesToolStripMenuItem.Click += new System.EventHandler(this.vonMisesToolStripMenuItem_Click);
+            // 
+            // principalStress1ToolStripMenuItem
+            // 
+            this.principalStress1ToolStripMenuItem.Name = "principalStress1ToolStripMenuItem";
+            this.principalStress1ToolStripMenuItem.Size = new System.Drawing.Size(162, 22);
+            this.principalStress1ToolStripMenuItem.Text = "Principal Stress 1";
+            this.principalStress1ToolStripMenuItem.Click += new System.EventHandler(this.principalStress1ToolStripMenuItem_Click);
+            // 
+            // principalStress2ToolStripMenuItem
+            // 
+            this.principalStress2ToolStripMenuItem.Name = "principalStress2ToolStripMenuItem";
+            this.principalStress2ToolStripMenuItem.Size = new System.Drawing.Size(162, 22);
+            this.principalStress2ToolStripMenuItem.Text = "Principal Stress 2";
+            this.principalStress2ToolStripMenuItem.Click += new System.EventHandler(this.principalStress2ToolStripMenuItem_Click);
+            // 
+            // maxShearStressToolStripMenuItem
+            // 
+            this.maxShearStressToolStripMenuItem.Name = "maxShearStressToolStripMenuItem";
+            this.maxShearStressToolStripMenuItem.Size = new System.Drawing.Size(162, 22);
+            this.maxShearStressToolStripMenuItem.Text = "Max Shear Stress";
+            this.maxShearStressToolStripMenuItem.Click += new System.EventHandler(this.maxShearStressToolStripMenuItem_Click);
+            // 
+            // pSLToolStripMenuItem
+            // 
+            this.pSLToolStripMenuItem.Name = "pSLToolStripMenuItem";
+            this.pSLToolStripMenuItem.Size = new System.Drawing.Size(162, 22);
+            this.pSLToolStripMenuItem.Text = "PSL";
+            this.pSLToolStripMenuItem.Click += new System.EventHandler(this.pSLToolStripMenuItem_Click);
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(177, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(159, 6);
             // 
             // hideResultsToolStripMenuItem
             // 
             this.hideResultsToolStripMenuItem.Name = "hideResultsToolStripMenuItem";
-            this.hideResultsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.hideResultsToolStripMenuItem.Size = new System.Drawing.Size(162, 22);
             this.hideResultsToolStripMenuItem.Text = "Hide Results";
             this.hideResultsToolStripMenuItem.Click += new System.EventHandler(this.hideResultsToolStripMenuItem_Click);
             // 
@@ -280,40 +317,12 @@
             this.glControl_main_panel.MouseUp += new System.Windows.Forms.MouseEventHandler(this.glControl_main_panel_MouseUp);
             this.glControl_main_panel.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.glControl_main_panel_MouseWheel);
             // 
-            // vonMisesToolStripMenuItem
+            // annotateResultsToolStripMenuItem
             // 
-            this.vonMisesToolStripMenuItem.Name = "vonMisesToolStripMenuItem";
-            this.vonMisesToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.vonMisesToolStripMenuItem.Text = "Von Mises";
-            this.vonMisesToolStripMenuItem.Click += new System.EventHandler(this.vonMisesToolStripMenuItem_Click);
-            // 
-            // principalStress1ToolStripMenuItem
-            // 
-            this.principalStress1ToolStripMenuItem.Name = "principalStress1ToolStripMenuItem";
-            this.principalStress1ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.principalStress1ToolStripMenuItem.Text = "Principal Stress 1";
-            this.principalStress1ToolStripMenuItem.Click += new System.EventHandler(this.principalStress1ToolStripMenuItem_Click);
-            // 
-            // principalStress2ToolStripMenuItem
-            // 
-            this.principalStress2ToolStripMenuItem.Name = "principalStress2ToolStripMenuItem";
-            this.principalStress2ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.principalStress2ToolStripMenuItem.Text = "Principal Stress 2";
-            this.principalStress2ToolStripMenuItem.Click += new System.EventHandler(this.principalStress2ToolStripMenuItem_Click);
-            // 
-            // maxShearStressToolStripMenuItem
-            // 
-            this.maxShearStressToolStripMenuItem.Name = "maxShearStressToolStripMenuItem";
-            this.maxShearStressToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.maxShearStressToolStripMenuItem.Text = "Max Shear Stress";
-            this.maxShearStressToolStripMenuItem.Click += new System.EventHandler(this.maxShearStressToolStripMenuItem_Click);
-            // 
-            // pSLToolStripMenuItem
-            // 
-            this.pSLToolStripMenuItem.Name = "pSLToolStripMenuItem";
-            this.pSLToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.pSLToolStripMenuItem.Text = "PSL";
-            this.pSLToolStripMenuItem.Click += new System.EventHandler(this.pSLToolStripMenuItem_Click);
+            this.annotateResultsToolStripMenuItem.Name = "annotateResultsToolStripMenuItem";
+            this.annotateResultsToolStripMenuItem.Size = new System.Drawing.Size(184, 22);
+            this.annotateResultsToolStripMenuItem.Text = "Annotate Results";
+            this.annotateResultsToolStripMenuItem.Click += new System.EventHandler(this.annotateResultsToolStripMenuItem_Click);
             // 
             // main_frm
             // 
@@ -369,6 +378,7 @@
         private System.Windows.Forms.ToolStripMenuItem principalStress2ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem maxShearStressToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem pSLToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem annotateResultsToolStripMenuItem;
     }
 }
 

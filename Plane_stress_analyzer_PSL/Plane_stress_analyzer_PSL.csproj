@@ -83,6 +83,12 @@
     <Compile Include="main_frm.Designer.cs">
       <DependentUpon>main_frm.cs</DependentUpon>
     </Compile>
+    <Compile Include="other_windows\annotate_frm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="other_windows\annotate_frm.Designer.cs">
+      <DependentUpon>annotate_frm.cs</DependentUpon>
+    </Compile>
     <Compile Include="other_windows\constraint_frm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -161,6 +167,9 @@
     <Compile Include="src\solver\stress2DSolverInterop.cs" />
     <EmbeddedResource Include="main_frm.resx">
       <DependentUpon>main_frm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="other_windows\annotate_frm.resx">
+      <DependentUpon>annotate_frm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="other_windows\constraint_frm.resx">
       <DependentUpon>constraint_frm.cs</DependentUpon>

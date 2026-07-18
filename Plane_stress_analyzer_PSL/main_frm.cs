@@ -41,8 +41,10 @@ namespace Plane_stress_analyzer_PSL
         private matprop_frm matprop_Form;
         private load_frm load_Form;
         private constraint_frm constraint_Form;
+        
         private solver_frm solver_Form;
         private rsltoption_frm rsltoption_Form;
+        private annotate_frm annotate_Form;
 
         // Drawing area Axis data store
         public axisdata_store axisdata;
@@ -511,9 +513,15 @@ namespace Plane_stress_analyzer_PSL
             modeldata.fe_data.clear_selected_nodes();
 
             // Show the form
-            load_Form.update_dataGridView();
-            load_Form.update_selected_node_list();
-            load_Form.Show(this);
+            // Show or bring to front
+            if (!load_Form.Visible)
+            { 
+                load_Form.update_dataGridView();
+                load_Form.update_selected_node_list();
+                load_Form.Show(this);
+            }
+
+
             load_Form.BringToFront();
 
             glControl_main_panel.Invalidate();
@@ -549,9 +557,13 @@ namespace Plane_stress_analyzer_PSL
             modeldata.fe_data.clear_selected_nodes();
 
             // Show the form
-            constraint_Form.update_dataGridView();
-            constraint_Form.update_selected_node_list();
-            constraint_Form.Show(this);
+            if (!constraint_Form.Visible)
+            {
+                constraint_Form.update_dataGridView();
+                constraint_Form.update_selected_node_list();
+                constraint_Form.Show(this);
+            }
+
             constraint_Form.BringToFront();
 
             glControl_main_panel.Invalidate();
@@ -590,9 +602,12 @@ namespace Plane_stress_analyzer_PSL
             modeldata.fe_data.clear_selected_mesh();
 
             // Show the form
-            matprop_Form.update_material_data();
-            matprop_Form.update_selected_element_list();
-            matprop_Form.Show(this);
+            if (!matprop_Form.Visible)
+            {
+                matprop_Form.update_material_data();
+                matprop_Form.update_selected_element_list();
+                matprop_Form.Show(this);
+            }
             matprop_Form.BringToFront();
 
             glControl_main_panel.Invalidate();
@@ -624,14 +639,10 @@ namespace Plane_stress_analyzer_PSL
 
             }
 
-            // Turn on Flag Nodal Constraint update form is open
-            // modeldata.isConstraintUpdateInProgress = true;
-            // modeldata.fe_data.clear_selected_nodes();
-
-            // Show the form
-            // constraint_Form.update_dataGridView();
-            // constraint_Form.update_selected_node_list();
-            solver_Form.Show(this);
+            if(!solver_Form.Visible)
+            {
+                solver_Form.Show(this);
+            }
             solver_Form.BringToFront();
 
             glControl_main_panel.Invalidate();
@@ -845,13 +856,12 @@ namespace Plane_stress_analyzer_PSL
 
             }
 
-            //// Turn on Flag Material update form is open
-            //fedata.meshdata.isMaterialUpdateInProgress = true;
-            //fedata.meshdata.clear_selected_mesh();
 
- 
             // Show the form
-            rsltoption_Form.Show(this);
+            if(!rsltoption_Form.Visible)
+            {
+                rsltoption_Form.Show(this);
+            }
             rsltoption_Form.BringToFront();
 
             glControl_main_panel.Invalidate();
@@ -859,7 +869,44 @@ namespace Plane_stress_analyzer_PSL
         }
 
 
+        private void annotateResultsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (modeldata.IsModelSet == false && modeldata.IsResultSet == false)
+                return;
+
+            // Check if annotate_Form is null or disposed
+            if (annotate_Form == null || annotate_Form.IsDisposed)
+            {
+                annotate_Form = new annotate_frm();
+
+                // Make it behave like a tool window
+                annotate_Form.FormBorderStyle = FormBorderStyle.SizableToolWindow;
+                annotate_Form.ShowInTaskbar = false;
+                annotate_Form.TopLevel = true;
+                annotate_Form.Owner = this;
+
+                // Manually center the form on the parent
+                int x = this.Location.X + (this.Width - annotate_Form.Width) / 2;
+                int y = this.Location.Y + (this.Height - annotate_Form.Height) / 2;
+                annotate_Form.StartPosition = FormStartPosition.Manual;
+                annotate_Form.Location = new Point(Math.Max(x, 0), Math.Max(y, 0)); // avoid negative positions
+
+            }
+
+
+            // Show the form
+            if (!annotate_Form.Visible)
+            {
+                annotate_Form.Show(this);
+            }
+            annotate_Form.BringToFront();
+
+            glControl_main_panel.Invalidate();
+
+        }
+
         #endregion
+
 
     }
 }
