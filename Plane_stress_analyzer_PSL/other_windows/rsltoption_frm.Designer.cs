@@ -49,11 +49,11 @@
             this.label_realtimeanim_speed = new System.Windows.Forms.Label();
             this.button_animation_speed = new System.Windows.Forms.Button();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
-            this.textBox_contourmax = new System.Windows.Forms.TextBox();
-            this.textBox_contourmin = new System.Windows.Forms.TextBox();
             this.button_updaterange = new System.Windows.Forms.Button();
+            this.textBox_contourmin = new System.Windows.Forms.TextBox();
+            this.textBox_contourmax = new System.Windows.Forms.TextBox();
+            this.label3 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar_deformation_scale)).BeginInit();
             this.groupBox3.SuspendLayout();
@@ -63,7 +63,7 @@
             // 
             // button_ok
             // 
-            this.button_ok.Location = new System.Drawing.Point(271, 417);
+            this.button_ok.Location = new System.Drawing.Point(266, 422);
             this.button_ok.Name = "button_ok";
             this.button_ok.Size = new System.Drawing.Size(133, 52);
             this.button_ok.TabIndex = 5;
@@ -82,7 +82,7 @@
             this.groupBox1.Controls.Add(this.checkBox_paintcontourlines);
             this.groupBox1.Controls.Add(this.checkBox_paintrsltmeshboundaries);
             this.groupBox1.Controls.Add(this.checkBox_paintrsltmesh);
-            this.groupBox1.Location = new System.Drawing.Point(12, 12);
+            this.groupBox1.Location = new System.Drawing.Point(12, 18);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(315, 389);
             this.groupBox1.TabIndex = 4;
@@ -192,7 +192,7 @@
             this.groupBox3.Controls.Add(this.button_stop);
             this.groupBox3.Controls.Add(this.button_play_pause);
             this.groupBox3.Controls.Add(this.groupBox2);
-            this.groupBox3.Location = new System.Drawing.Point(333, 136);
+            this.groupBox3.Location = new System.Drawing.Point(333, 142);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(378, 265);
             this.groupBox3.TabIndex = 40;
@@ -283,46 +283,12 @@
             this.groupBox4.Controls.Add(this.textBox_contourmax);
             this.groupBox4.Controls.Add(this.label3);
             this.groupBox4.Controls.Add(this.label2);
-            this.groupBox4.Location = new System.Drawing.Point(333, 12);
+            this.groupBox4.Location = new System.Drawing.Point(333, 18);
             this.groupBox4.Name = "groupBox4";
             this.groupBox4.Size = new System.Drawing.Size(378, 118);
             this.groupBox4.TabIndex = 41;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Contour Range";
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(13, 39);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(101, 16);
-            this.label2.TabIndex = 0;
-            this.label2.Text = "Contour Max: ";
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(17, 75);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(97, 16);
-            this.label3.TabIndex = 1;
-            this.label3.Text = "Contour Min: ";
-            // 
-            // textBox_contourmax
-            // 
-            this.textBox_contourmax.Location = new System.Drawing.Point(120, 36);
-            this.textBox_contourmax.Name = "textBox_contourmax";
-            this.textBox_contourmax.Size = new System.Drawing.Size(65, 23);
-            this.textBox_contourmax.TabIndex = 2;
-            this.textBox_contourmax.Text = "1.0";
-            // 
-            // textBox_contourmin
-            // 
-            this.textBox_contourmin.Location = new System.Drawing.Point(120, 73);
-            this.textBox_contourmin.Name = "textBox_contourmin";
-            this.textBox_contourmin.Size = new System.Drawing.Size(65, 23);
-            this.textBox_contourmin.TabIndex = 3;
-            this.textBox_contourmin.Text = "0.0";
             // 
             // button_updaterange
             // 
@@ -334,11 +300,45 @@
             this.button_updaterange.UseVisualStyleBackColor = true;
             this.button_updaterange.Click += new System.EventHandler(this.button_updaterange_Click);
             // 
+            // textBox_contourmin
+            // 
+            this.textBox_contourmin.Location = new System.Drawing.Point(120, 73);
+            this.textBox_contourmin.Name = "textBox_contourmin";
+            this.textBox_contourmin.Size = new System.Drawing.Size(65, 23);
+            this.textBox_contourmin.TabIndex = 3;
+            this.textBox_contourmin.Text = "0.0";
+            // 
+            // textBox_contourmax
+            // 
+            this.textBox_contourmax.Location = new System.Drawing.Point(120, 36);
+            this.textBox_contourmax.Name = "textBox_contourmax";
+            this.textBox_contourmax.Size = new System.Drawing.Size(65, 23);
+            this.textBox_contourmax.TabIndex = 2;
+            this.textBox_contourmax.Text = "1.0";
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(17, 75);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(97, 16);
+            this.label3.TabIndex = 1;
+            this.label3.Text = "Contour Min: ";
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(13, 39);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(101, 16);
+            this.label2.TabIndex = 0;
+            this.label2.Text = "Contour Max: ";
+            // 
             // rsltoption_frm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(724, 481);
+            this.ClientSize = new System.Drawing.Size(724, 491);
             this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.button_ok);
@@ -346,7 +346,7 @@
             this.Font = new System.Drawing.Font("Verdana", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(4);
-            this.MinimumSize = new System.Drawing.Size(740, 520);
+            this.MinimumSize = new System.Drawing.Size(740, 530);
             this.Name = "rsltoption_frm";
             this.Opacity = 0.85D;
             this.Text = "Result Options";

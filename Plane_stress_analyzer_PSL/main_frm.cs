@@ -249,6 +249,14 @@ namespace Plane_stress_analyzer_PSL
 
             }
 
+            // Update the Result Annotation Form data
+            if (modeldata.isAnnotateResultInProgress == true)
+            {
+                // Update the selected result points
+                annotate_Form.updateSelectedResultPointsDataGridView();
+
+            }
+
         }
 
         private void glControl_main_panel_KeyDown(object sender, KeyEventArgs e)
@@ -687,6 +695,13 @@ namespace Plane_stress_analyzer_PSL
         }
 
 
+        public void callFrom_annotate_frm()
+        {
+            modeldata.update_openTK_uniforms();
+
+            glControl_main_panel.Invalidate();
+        }
+
         #endregion
 
 
@@ -877,7 +892,7 @@ namespace Plane_stress_analyzer_PSL
             // Check if annotate_Form is null or disposed
             if (annotate_Form == null || annotate_Form.IsDisposed)
             {
-                annotate_Form = new annotate_frm();
+                annotate_Form = new annotate_frm(ref modeldata);
 
                 // Make it behave like a tool window
                 annotate_Form.FormBorderStyle = FormBorderStyle.SizableToolWindow;
@@ -893,6 +908,9 @@ namespace Plane_stress_analyzer_PSL
 
             }
 
+            // Turn on Flag Nodal Constraint update form is open
+            modeldata.isAnnotateResultInProgress = true;
+            modeldata.fe_data.clear_selected_nodes();
 
             // Show the form
             if (!annotate_Form.Visible)

@@ -46,6 +46,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store
         public bool isConstraintUpdateInProgress = false;
         public bool isLoadUpdateInProgress = false;
         public bool isMaterialUpdateInProgress = false;
+        public bool isAnnotateResultInProgress = false;
 
         public bool IsModelSet = false;
         public bool IsResultSet = false;
@@ -188,6 +189,21 @@ namespace Plane_stress_analyzer_PSL.src.model_store
                 rslt_data.paint_results();
 
                 contour_bar_data.draw_contour_bar();
+
+                if (isAnnotateResultInProgress == true)
+                {
+                    if (gvariables_static.is_RectangleSelection == true)
+                    {
+                        // Paint the selection rectangle
+                        selection_rectangle.draw_selection_rectangle();
+                    }
+                    else
+                    {
+                        // Paint the selection circle
+                        selection_circle.draw_selection_circle();
+                    }
+                }
+
             }
 
         }
@@ -321,6 +337,12 @@ namespace Plane_stress_analyzer_PSL.src.model_store
                 // Select the points for constraint update
                 fe_data.select_nodes(o_pt, c_pt, isRightButton, graphic_events_control);
 
+            }
+
+            if(isAnnotateResultInProgress == true)
+            {
+                // Select the points for result annotation
+                rslt_data.select_result_nodes(o_pt, c_pt, isRightButton, graphic_events_control);
             }
 
         }

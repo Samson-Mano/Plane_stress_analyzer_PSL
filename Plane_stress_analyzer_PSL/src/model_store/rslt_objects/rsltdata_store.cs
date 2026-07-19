@@ -1,8 +1,10 @@
 ﻿using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
+using OpenTK.Input;
 using Plane_stress_analyzer_PSL.src.events_handler;
 using Plane_stress_analyzer_PSL.src.global_variables;
+using Plane_stress_analyzer_PSL.src.model_store.fe_objects;
 using Plane_stress_analyzer_PSL.src.model_store.geom_objects;
 using Plane_stress_analyzer_PSL.src.opentk_control.opentk_buffer;
 using Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler;
@@ -137,6 +139,8 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
 
         // Shrunk mesh data
         private shrunkrsltdata_store shrunk_rsltmesh_data = new shrunkrsltdata_store();
+
+        public HashSet<int> selected_resultpoint_ids { get; } = new HashSet<int>();
 
 
         private bool buffersInitialized = false;
@@ -462,51 +466,6 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
                 float normalized_contourValue = scaled_contourColorValue(pt, option);
                 vertexData.Add(normalized_contourValue);
 
-                // float scaled_contourValue = 0.0f;
-
-                //switch (option)
-                //{
-                //    case 1: // Displacement
-                //        vertexData.Add((float)(pt.displ_magnitude / _rslt_extremes.max_displacement));
-                //        break;
-                //    case 2: // StressX
-                //            normalized_contourValue = (float)((pt.sigma_x - _rslt_extremes.min_stressX) / (_rslt_extremes.max_stressX - _rslt_extremes.min_stressX));
-                //        scaled_contourValue = (normalized_contourValue * 2.0f) - 1.0f; // Scale to [-1, 1]
-                //        vertexData.Add(scaled_contourValue);
-                //        break;
-                //    case 3: // StressY
-                //        normalized_contourValue = (float)((pt.sigma_y - _rslt_extremes.min_stressY) / (_rslt_extremes.max_stressY - _rslt_extremes.min_stressY));
-                //        scaled_contourValue = (normalized_contourValue * 2.0f) - 1.0f; // Scale to [-1, 1]
-                //        vertexData.Add(scaled_contourValue);
-                //        break; 
-                //    case 4: // Shear stress
-                //        normalized_contourValue = (float)((pt.tau_xy - _rslt_extremes.min_tauXY) / (_rslt_extremes.max_tauXY - _rslt_extremes.min_tauXY));
-                //        scaled_contourValue = (normalized_contourValue * 2.0f) - 1.0f; // Scale to [-1, 1]
-                //        vertexData.Add(scaled_contourValue);
-                //        break;
-                //    case 5: // Von Mises stress
-                //        normalized_contourValue = (float)((pt.von_mises - _rslt_extremes.min_vonMises) / (_rslt_extremes.max_vonMises - _rslt_extremes.min_vonMises));
-                //        scaled_contourValue = (normalized_contourValue * 2.0f) - 1.0f; // Scale to [-1, 1]
-                //        vertexData.Add(scaled_contourValue);
-                //        break; 
-                //    case 6: // Principal stress 1
-                //        normalized_contourValue = (float)((pt.sigma_1 - _rslt_extremes.min_principalStress1) / (_rslt_extremes.max_principalStress1 - _rslt_extremes.min_principalStress1));
-                //        scaled_contourValue = (normalized_contourValue * 2.0f) - 1.0f; // Scale to [-1, 1]
-                //        vertexData.Add(scaled_contourValue);
-                //        break;
-                //    case 7: // Principal stress 2
-                //        normalized_contourValue = (float)((pt.sigma_2 - _rslt_extremes.min_principalStress2) / (_rslt_extremes.max_principalStress2 - _rslt_extremes.min_principalStress2));
-                //        scaled_contourValue = (normalized_contourValue * 2.0f) - 1.0f; // Scale to [-1, 1]
-                //        vertexData.Add(scaled_contourValue);
-                //        break;
-                //    case 8: // Max shear stress
-                //        normalized_contourValue = (float)((pt.max_shear - _rslt_extremes.min_shearStress) / (_rslt_extremes.max_shearStress - _rslt_extremes.min_shearStress));
-                //        scaled_contourValue = (normalized_contourValue * 2.0f) - 1.0f; // Scale to [-1, 1]
-                //        vertexData.Add(scaled_contourValue);
-                //        break;
-
-                //}
-
             }
 
 
@@ -790,7 +749,6 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
         }
 
 
-
         public void create_buffer_data()
         {
 
@@ -1016,6 +974,150 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
 
         }
 
+
+
+        public void select_result_nodes(Vector2 corner_pt1, Vector2 corner_pt2, bool isRightButton, drawing_events graphic_events_control)
+        {
+            // Select the result nodes for load or constraint update
+            List<int> selected_result_point_ids = new List<int>();
+
+            // Pre-compute MVP matrix
+            Matrix4 mvp = graphic_events_control.projectionMatrix *
+                          graphic_events_control.viewMatrix *
+                          graphic_events_control.modelMatrix;
+
+
+            Matrix4 invMVP = Matrix4.Invert(mvp);
+
+            // Transform rectangle corners from screen space to model space
+            Vector2 modelCorner1 = TransformToModelSpace(corner_pt1, invMVP);
+            Vector2 modelCorner2 = TransformToModelSpace(corner_pt2, invMVP);
+
+            // Loop through all node in nodeMap
+            foreach (point_store pt in points.Values)
+            {
+                //______________________________
+                Vector2 pt_coord = new Vector2((float)pt.x_coord, (float)pt.y_coord);
+
+                Vector2 aDisplacement = new Vector2((float)(pt.displ_x / pt.displ_magnitude), 
+                    (float)(pt.displ_y / pt.displ_magnitude));
+                
+
+                float model_percent = (float)(gvariables_static.displacement_scale / 1000.0);
+                float aDisplacementMagnitude = (float)(pt.displ_magnitude / _rslt_extremes.max_displacement);
+
+                float scalevalue = gvariables_static.geom_size * model_percent * aDisplacementMagnitude;
+                Vector2 scaledDisplacement = aDisplacement * scalevalue; // * sinevalue; sinevalue is not used here, as it's for animation
+
+                // Find the displaced point location in model space
+                Vector2 displaced_pt_loc = pt_coord + scaledDisplacement;
+
+                // Check whether the point inside a rectangle
+                if (gvariables_static.isPointSelected(modelCorner1, modelCorner2, displaced_pt_loc) == true)
+                {
+                    selected_result_point_ids.Add(pt.point_id);
+
+                }
+
+            }
+
+            if (selected_result_point_ids.Count > 0)
+            {
+                add_selected_result_points(selected_result_point_ids, isRightButton);
+            }
+
+        }
+
+
+        private void add_selected_result_points(List<int> selected_result_point_ids, bool IsRemove)
+        {
+            bool is_selection_changed = false;
+
+            if (IsRemove == false)
+            {
+                // Add to the selected result point list
+                // Add all points at once
+                int initialCount = this.selected_resultpoint_ids.Count;
+                this.selected_resultpoint_ids.UnionWith(selected_result_point_ids);
+                is_selection_changed = this.selected_resultpoint_ids.Count != initialCount;
+            }
+            else
+            {
+                // Remove from the selected result point list
+                // Remove all points at once
+                int initialCount = this.selected_resultpoint_ids.Count;
+                this.selected_resultpoint_ids.ExceptWith(selected_result_point_ids);
+                is_selection_changed = this.selected_resultpoint_ids .Count != initialCount;
+            }
+
+
+            if (is_selection_changed == true)
+            {
+                // Add the selected result points
+
+                // meshdrawingdata.add_selected_points(this.selected_node_ids.ToList());
+            }
+            //
+        }
+
+
+        public void clear_selected_result_points()
+        {
+            this.selected_resultpoint_ids.Clear();
+            // meshdrawingdata.clear_selected_points();
+
+        }
+
+
+        public List<string> get_selected_result_points_string()
+        {
+            // return the selected result points as a list of strings for data grid view display
+            List<string> resultPoints = new List<string>();
+            
+            foreach (int point_id in this.selected_resultpoint_ids)
+            {
+                double displ_magnitude = points[point_id].displ_magnitude;
+                double sigma_x = points[point_id].sigma_x;
+                double sigma_y = points[point_id].sigma_y;
+                double tau_xy = points[point_id].tau_xy;
+                double principal_1 = points[point_id].sigma_1;
+                double principal_2 = points[point_id].sigma_2;
+                double von_mises = points[point_id].von_mises;
+                double max_shear = points[point_id].max_shear;
+
+                resultPoints.Add($"{point_id} , {displ_magnitude} , " +
+                    $"{sigma_x} , {sigma_y} , {tau_xy} , " +
+                    $"{principal_1} , {principal_2} , " +
+                    $"{von_mises} , {max_shear }");
+            }
+
+            return resultPoints;
+
+        }
+
+
+
+
+
+
+        // Helper method to transform screen point to model space
+        private Vector2 TransformToModelSpace(Vector2 screenPoint, Matrix4 invMVP)
+        {
+            // Convert to homogeneous coordinates
+            Vector4 clipPoint = new Vector4(screenPoint.X, screenPoint.Y, 0.0f, 1.0f);
+
+            // Transform to model space
+            Vector4 modelPoint = invMVP * clipPoint;
+
+            // Perspective division (if using perspective projection)
+            if (Math.Abs(modelPoint.W) > float.Epsilon)
+            {
+                modelPoint.X /= modelPoint.W;
+                modelPoint.Y /= modelPoint.W;
+            }
+
+            return new Vector2(modelPoint.X, modelPoint.Y);
+        }
 
 
         public void Dispose()
