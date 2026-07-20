@@ -11,6 +11,7 @@ using Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler;
 using src.model_store.geom_objects;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Drawing.Text;
 using System.Linq;
 using System.Text;
@@ -137,6 +138,13 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
         private IndexBuffer wireframe_ibo;
         private IndexBuffer triangle_ibo;
 
+        // Result point selection index buffer for selected points
+        private IndexBuffer selected_resultpoint_ibo;
+
+        // Result point label
+        private label_list_store result_point_label;
+
+
         // Shrunk mesh data
         private shrunkrsltdata_store shrunk_rsltmesh_data = new shrunkrsltdata_store();
 
@@ -148,6 +156,8 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
         public rsltdata_store()
         {
             InitializeShader();
+
+            result_point_label = new label_list_store();
         }
 
 
@@ -163,6 +173,9 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
                 ShaderLibrary.get_vertex_shader(ShaderLibrary.ShaderType.RsltWireframeShader),
                 ShaderLibrary.get_fragment_shader(ShaderLibrary.ShaderType.RsltWireframeShader)
                 );
+
+
+
         }
 
 
@@ -345,6 +358,9 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
             paint_result_mesh_wireframe();
 
             paint_result_mesh_points();
+
+            paint_selected_result_points();
+
         }
 
 
@@ -429,6 +445,35 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
 
             }
 
+        }
+
+
+        private void paint_selected_result_points()
+        {
+            if (!buffersInitialized)
+                return;
+
+            if (selected_resultpoint_ibo.BufferCount > 0)
+            {
+                // Paint the selected result points
+                rsltmeshShader.Bind();
+
+                point_vao.Bind();
+                selected_resultpoint_ibo.Bind();
+
+                GL.PointSize(5.0f);
+                GL.DrawElements(PrimitiveType.Points, selected_resultpoint_ibo.BufferCount, DrawElementsType.UnsignedInt, 0);
+                GL.PointSize(1.0f);
+
+                rsltmeshShader.UnBind();
+                point_vao.UnBind();
+                selected_resultpoint_ibo.UnBind();
+
+
+                // Paint the labels for the selected result points
+                result_point_label.paint_static_labels();
+
+            }
         }
 
 
@@ -787,6 +832,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
             point_vao = new VertexArray();
             point_vbo = new VertexBuffer(Math.Max(10, vertexData.Count));
             point_ibo = new IndexBuffer(Math.Max(10, pointIndexData.Count));
+            selected_resultpoint_ibo = new IndexBuffer(10);
 
 
             VertexBufferLayout pointLayout = new VertexBufferLayout();
@@ -800,7 +846,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
 
             point_vbo.AppendVertexBuffer(vertexData.ToArray());
             point_ibo.AppendIndexBuffer(pointIndexData.ToArray());
-
+            
             //_______________________________________________________________
             // prepare wireframe index data for openGL
             List<int> wireframeIndexData = new List<int>();
@@ -957,6 +1003,10 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
                 rsltmeshShader.SetFloat("uLineOpacity", 1.0f);
             }
 
+            // Update the result label uniforms
+            float zoomscale = (float)graphic_events_control.zoom_val;
+            result_point_label.update_openTK_uniforms(uMVP, zoomscale, gvariables_static.geom_transparency);
+
         }
 
         public void update_animation(float sine_oscillation)
@@ -1054,8 +1104,11 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
             if (is_selection_changed == true)
             {
                 // Add the selected result points
+                selected_resultpoint_ibo.ClearIndexBuffer();
+                selected_resultpoint_ibo.AppendIndexBuffer(this.selected_resultpoint_ids.ToArray());
 
-                // meshdrawingdata.add_selected_points(this.selected_node_ids.ToList());
+                add_selected_result_point_labels();
+                
             }
             //
         }
@@ -1064,7 +1117,8 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
         public void clear_selected_result_points()
         {
             this.selected_resultpoint_ids.Clear();
-            // meshdrawingdata.clear_selected_points();
+            selected_resultpoint_ibo.ClearIndexBuffer();
+            result_point_label.clear_labels();
 
         }
 
@@ -1076,14 +1130,16 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
             
             foreach (int point_id in this.selected_resultpoint_ids)
             {
-                double displ_magnitude = points[point_id].displ_magnitude;
-                double sigma_x = points[point_id].sigma_x;
-                double sigma_y = points[point_id].sigma_y;
-                double tau_xy = points[point_id].tau_xy;
-                double principal_1 = points[point_id].sigma_1;
-                double principal_2 = points[point_id].sigma_2;
-                double von_mises = points[point_id].von_mises;
-                double max_shear = points[point_id].max_shear;
+                point_store rslt_pt = points[point_id];
+
+                double displ_magnitude = rslt_pt.displ_magnitude;
+                double sigma_x = rslt_pt.sigma_x;
+                double sigma_y = rslt_pt.sigma_y;
+                double tau_xy = rslt_pt.tau_xy;
+                double principal_1 = rslt_pt.sigma_1;
+                double principal_2 = rslt_pt.sigma_2;
+                double von_mises = rslt_pt.von_mises;
+                double max_shear = rslt_pt.max_shear;
 
                 resultPoints.Add($"{point_id} , {displ_magnitude} , " +
                     $"{sigma_x} , {sigma_y} , {tau_xy} , " +
@@ -1096,7 +1152,78 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
         }
 
 
+        private void add_selected_result_point_labels()
+        {
+            // Add labels for the selected result points
+            result_point_label.clear_labels();
+            int label_id = 0;
 
+            foreach (int point_id in this.selected_resultpoint_ids)
+            {
+
+                // Create the result label
+                point_store rslt_pt = points[point_id];
+
+                //_______________________________________________________________________________________________________________
+                // result label location
+                Vector2 pt_coord = new Vector2((float)rslt_pt.x_coord, (float)rslt_pt.y_coord);
+
+                Vector2 aDisplacement = new Vector2((float)(rslt_pt.displ_x / rslt_pt.displ_magnitude),
+                    (float)(rslt_pt.displ_y / rslt_pt.displ_magnitude));
+
+
+                float model_percent = (float)(gvariables_static.displacement_scale / 1000.0);
+                float aDisplacementMagnitude = (float)(rslt_pt.displ_magnitude / _rslt_extremes.max_displacement);
+
+                float scalevalue = gvariables_static.geom_size * model_percent * aDisplacementMagnitude;
+                Vector2 scaledDisplacement = aDisplacement * scalevalue; // * sinevalue; sinevalue is not used here, as it's for animation
+
+                // Find the displaced point location in model space
+                Vector2 displaced_pt_loc = pt_coord + scaledDisplacement;
+                //_______________________________________________________________________________________________________________
+
+                int option = gvariables_static.result_option;
+                float colorValue = scaled_contourColorValue(rslt_pt, option);
+                Vector3 LabelColor = gvariables_static.GetJetColorClamped(colorValue);
+
+
+                string rsltlabel_string = FormatResultLabelValue((float)rslt_pt.displ_magnitude);
+
+
+                result_point_label.add_label(label_id + 0, rsltlabel_string, displaced_pt_loc, LabelColor);
+
+                label_id++;
+
+            }
+
+            // Update the label buffer
+            result_point_label.update_buffer(gvariables_static.geom_size * 0.5f);
+
+
+        }
+
+
+
+        private string FormatResultLabelValue(float value)
+        {
+            // Determine precision based on value magnitude
+            float absValue = Math.Abs(value);
+
+            if (absValue < 0.001f)
+                return value.ToString("F6");
+            else if (absValue < 0.01f)
+                return value.ToString("F5");
+            else if (absValue < 0.1f)
+                return value.ToString("F4");
+            else if (absValue < 1.0f)
+                return value.ToString("F3");
+            else if (absValue < 10.0f)
+                return value.ToString("F2");
+            else if (absValue < 100.0f)
+                return value.ToString("F1");
+            else
+                return value.ToString("F0");
+        }
 
 
 
@@ -1125,6 +1252,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
             point_vbo?.Dispose();
             point_vao?.Dispose();
             point_ibo?.Dispose();
+            selected_resultpoint_ibo?.Dispose();
             wireframe_ibo?.Dispose();
             triangle_ibo?.Dispose();
             // meshShader?.Dispose();
