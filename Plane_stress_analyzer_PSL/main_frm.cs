@@ -875,6 +875,7 @@ namespace Plane_stress_analyzer_PSL
             // Show the form
             if(!rsltoption_Form.Visible)
             {
+                
                 rsltoption_Form.Show(this);
             }
             rsltoption_Form.BringToFront();
@@ -910,13 +911,15 @@ namespace Plane_stress_analyzer_PSL
 
             // Turn on Flag Nodal Constraint update form is open
             modeldata.isAnnotateResultInProgress = true;
-            modeldata.fe_data.clear_selected_nodes();
+            // modeldata.fe_data.clear_selected_nodes();
 
             // Show the form
             if (!annotate_Form.Visible)
             {
+                annotate_Form.updateSelectedResultPointsDataGridView();
                 annotate_Form.Show(this);
             }
+
             annotate_Form.BringToFront();
 
             glControl_main_panel.Invalidate();

@@ -516,6 +516,13 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
 
             point_vbo.updateVertexBuffer(vertexData.ToArray());
 
+
+            // Update the result point labels for the selected points
+            if (selected_resultpoint_ids.Count > 0)
+            {
+                add_selected_result_point_labels();
+            }
+
         }
 
 
@@ -1005,7 +1012,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
 
             // Update the result label uniforms
             float zoomscale = (float)graphic_events_control.zoom_val;
-            result_point_label.update_openTK_uniforms(uMVP, zoomscale, gvariables_static.geom_transparency);
+            result_point_label.update_openTK_uniforms(uMVP, zoomscale, 1.0f);
 
         }
 
@@ -1184,10 +1191,45 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
 
                 int option = gvariables_static.result_option;
                 float colorValue = scaled_contourColorValue(rslt_pt, option);
+                float labelValue = (float)rslt_pt.displ_magnitude;
+
+                switch (option)
+                {
+                    case 1:
+                        labelValue = (float)rslt_pt.displ_magnitude;
+                        break;
+                    case 2:
+                        labelValue = (float)rslt_pt.sigma_x;
+                        colorValue = (colorValue + 1.0f) * 0.5f; // Adjust color value for stressX to be in [0, 1] range
+                        break;
+                    case 3:
+                        labelValue = (float)rslt_pt.sigma_y;
+                        colorValue = (colorValue + 1.0f) * 0.5f; // Adjust color value for stressX to be in [0, 1] range
+                        break;
+                    case 4:
+                        labelValue = (float)rslt_pt.tau_xy;
+                        colorValue = (colorValue + 1.0f) * 0.5f; // Adjust color value for stressX to be in [0, 1] range
+                        break;
+                    case 5:
+                        labelValue = (float)rslt_pt.von_mises;
+                        colorValue = (colorValue + 1.0f) * 0.5f; // Adjust color value for stressX to be in [0, 1] range
+                        break;
+                    case 6:
+                        labelValue = (float)rslt_pt.sigma_1;
+                        colorValue = (colorValue + 1.0f) * 0.5f; // Adjust color value for stressX to be in [0, 1] range
+                        break;
+                    case 7:
+                        labelValue = (float)rslt_pt.sigma_2;
+                        colorValue = (colorValue + 1.0f) * 0.5f; // Adjust color value for stressX to be in [0, 1] range
+                        break;
+                    case 8:
+                        labelValue = (float)rslt_pt.max_shear;
+                        colorValue = (colorValue + 1.0f) * 0.5f; // Adjust color value for stressX to be in [0, 1] range
+                        break;
+                }
+
                 Vector3 LabelColor = gvariables_static.GetJetColorClamped(colorValue);
-
-
-                string rsltlabel_string = FormatResultLabelValue((float)rslt_pt.displ_magnitude);
+                string rsltlabel_string = FormatResultLabelValue(labelValue);
 
 
                 result_point_label.add_label(label_id + 0, rsltlabel_string, displaced_pt_loc, LabelColor);

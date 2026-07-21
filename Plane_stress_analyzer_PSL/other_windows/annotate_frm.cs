@@ -83,7 +83,7 @@ namespace other_windows
         private void annotate_frm_FormClosing(object sender, FormClosingEventArgs e)
         {
             // Control the flag
-            modeldata.rslt_data.clear_selected_result_points();
+           // modeldata.rslt_data.clear_selected_result_points();
             modeldata.isAnnotateResultInProgress = false;
 
             // Call the main form
