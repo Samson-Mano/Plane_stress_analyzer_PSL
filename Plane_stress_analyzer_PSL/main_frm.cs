@@ -32,7 +32,7 @@ namespace Plane_stress_analyzer_PSL
         private Timer zoomToFitTimer;
 
         // Refreh and FPS Tracking variables
-        private Timer refreshStatusResetTimer;
+        // private Timer refreshStatusResetTimer;
         private Stopwatch fpsStopwatch = new Stopwatch();
 
 
