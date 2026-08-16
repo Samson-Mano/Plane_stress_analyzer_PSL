@@ -43,7 +43,7 @@ namespace Plane_stress_analyzer_PSL.other_windows
 
             checkBox_extendconstraints.Checked = true;
             checkBox_extendloads.Checked = true;
-            checkBox_saveHrefinedmodel.Checked = true;
+            checkBox_saveHrefinedmodel.Checked = false;
 
             checkBox_selfweight.Checked = false;
             self_weight_control();
@@ -373,8 +373,10 @@ namespace Plane_stress_analyzer_PSL.other_windows
                         }
 
                         AppendStatus("Results read complete!\n");
-                        MessageBox.Show("Solve completed successfully!", "Success",
-                            MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                        // MessageBox.Show("Solve completed successfully!", "Success",
+                        //     MessageBoxButtons.OK, MessageBoxIcon.Information);
+
                     }
                 }
             }

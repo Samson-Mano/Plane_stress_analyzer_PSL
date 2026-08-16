@@ -18,6 +18,7 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
             RsltMeshShader,
             RsltWireframeShader,
             RsltPSLShader,
+            RsltPSLType2Shader,
             SelectionShader,
             DrawingAxisShader,
             ContourBarShader
@@ -293,42 +294,41 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
             layout(location = 0) in vec2 aPosition;
             layout(location = 1) in vec2 aDisplacement;
             layout(location = 2) in float aDisplacementMagnitude;
-            layout(location = 3) in float aPrincipalAngle; // Principal stress angle in radians
-            layout(location = 4) in float aSigma1; // Principal stress value 1
-            layout(location = 5) in float aSigma2; // Principal stress value 2
-            layout(location = 6) in vec2 aDirection1; // Direction of principal stress 1 x 
-            layout(location = 7) in vec2 aDirection2; // Direction of principal stress 2 x 
+            layout(location = 3) in float aSigma1; // Principal stress value 1
+            layout(location = 4) in float aSigma2; // Principal stress value 2
+            layout(location = 5) in vec2 aDirection1; // Direction of principal stress 1 x 
+            layout(location = 6) in vec2 aDirection2; // Direction of principal stress 2 x 
             
+            out float v_geomscale;        // Pass geomscale to fragment
+
             out vec2 v_worldPos;         // World position for distance calculations
+
             out float v_sigma1;          // Pass sigma1 to fragment
             out float v_sigma2;          // Pass sigma2 to fragment
-            // out float v_principalAngle;  // Pass angle to fragment
+
             out vec2 v_direction1;       // Pass direction1 to fragment
             out vec2 v_direction2;       // Pass direction2 to fragment                    
-            // out float v_deflscale;
+
                     
             void main()
             {
                 float scalevalue = geomscale * modelpercent * aDisplacementMagnitude;
-                vec2 scaledDisplacement = aDisplacement * scalevalue * sinevalue;
+                vec2 scaledDisplacement = aDisplacement * scalevalue * sinevalue * 0.0f;
 
                 gl_Position = uMVP * vec4(aPosition + scaledDisplacement, 0.0, 1.0);
                 
-                float contourcolor = aDisplacementMagnitude * sinevalue;  
+                // float contourcolor = aDisplacementMagnitude * sinevalue;  
 
-
-                // if(rsltoption != 0)
-                //     contourcolor = (contourcolor + 1.0) * 0.5; // Normalize to [0,1] if option is set
                 
                 // Pass the principal stress values and angle to the fragment shader
+                v_geomscale = geomscale;
                 v_worldPos = aPosition + scaledDisplacement;
-                // v_deflscale = contourcolor;
+
                 v_sigma1 = aSigma1;
                 v_sigma2 = aSigma2;
-                // v_principalAngle = aPrincipalAngle;
+
                 v_direction1 = aDirection1;
                 v_direction2 = aDirection2;
-
             }
 
 
@@ -337,17 +337,145 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
         }
 
 
-
         private static string rslt_psline_mesh_frag_shader()
+        {
+
+            return @"
+            
+           #version 330 core
+
+            uniform float uLineWidthMax = 2.0;
+            uniform float uLineWidthMin = 1.0;
+            uniform float uDensity = 1.0;
+
+            uniform bool uShowTension = true;
+            uniform bool uShowCompression = true;
+            uniform vec3 uTensionColor = vec3(1.0, 0.0, 0.0);
+            uniform vec3 uCompressionColor = vec3(0.0, 0.0, 1.0);
+            
+            in float v_geomscale;
+            in vec2  v_worldPos;
+            in float v_sigma1; // Normalized principal stress value 1 (value between 0 and 1)
+            in float v_sigma2; // Normalized principal stress value 2 (value between 0 and 1)
+            in vec2  v_direction1; // Normalized Direction of principal stress 1
+            in vec2  v_direction2; // Normalized Direction of principal stress 2
+
+            out vec4 fragColor;
+
+            void main() 
+            {
+                // Initialize with black background (or transparent)
+                vec3 color = vec3(0.0);
+                float alpha = 0.2;
+                
+                // Adjust density based on geomscale to maintain consistent visual density across different scales
+                float adjustedDensity = uDensity / v_geomscale; // Adjust density based on geomscale
+                float adjustedLineWidthMax = uLineWidthMax * v_geomscale; // Adjust max line width based on geomscale
+                float adjustedLineWidthMin = uLineWidthMin * v_geomscale; // Adjust min line width based on geomscale
+
+
+                vec2 pos = v_worldPos;
+    
+                // Create grid of streamline seeds based on position and density
+                float gridSize = 0.05 / adjustedDensity; // Adjust grid spacing
+                vec2 gridPos = floor(pos / gridSize) * gridSize + gridSize * 0.5;
+    
+                // Check if we're near a seed point
+                vec2 offset = pos - gridPos;
+    
+                // Process tension (sigma1) - RED color, width varies with sigma1
+                if (uShowTension && v_sigma1 > 0.01) 
+                {
+                    // Calculate line width based on sigma1 value (maps 0-1 to min-max width)
+                    float lineWidth = mix(adjustedLineWidthMin, adjustedLineWidthMax, v_sigma1);
+                    float lineRadius = lineWidth * 0.001; // Scale appropriately
+        
+                    // Create a streamline along direction1
+                    vec2 direction = v_direction1;
+                    vec2 perpDir = vec2(-direction.y, direction.x);
+        
+                    // Compute distance to the streamline passing through the seed
+                    float distToLine = abs(dot(offset, perpDir));
+        
+                    // Blend the line - constant color, varying width
+                    if (distToLine < lineRadius) 
+                    {
+                        // Smooth falloff at edges (optional)
+                        float lineFactor = 1.0 - (distToLine / lineRadius);
+                        float alphaFactor = lineFactor * 0.9; // Slightly transparent at edges
+            
+                        // Use constant tension color (no intensity modulation)
+                        color += uTensionColor * alphaFactor;
+                        alpha = max(alpha, alphaFactor);
+                    }
+                }
+    
+                // Process compression (sigma2) - BLUE color, width varies with sigma2
+                if (uShowCompression && v_sigma2 > 0.01) 
+                {
+                    // Calculate line width based on sigma2 value (maps 0-1 to min-max width)
+                    float lineWidth = mix(adjustedLineWidthMin, adjustedLineWidthMax, v_sigma2);
+                    float lineRadius = lineWidth * 0.001; // Scale appropriately
+        
+                    // Create a streamline along direction2
+                    vec2 direction = v_direction2;
+                    vec2 perpDir = vec2(-direction.y, direction.x);
+        
+                    // Compute distance to the streamline passing through the seed
+                    float distToLine = abs(dot(offset, perpDir));
+        
+                    // Blend the line - constant color, varying width
+                    if (distToLine < lineRadius) 
+                    {
+                        // Smooth falloff at edges (optional)
+                        float lineFactor = 1.0 - (distToLine / lineRadius);
+                        float alphaFactor = lineFactor * 0.9; // Slightly transparent at edges
+            
+                        // Use constant compression color (no intensity modulation)
+                        color += uCompressionColor * alphaFactor;
+                        alpha = max(alpha, alphaFactor);
+                    }
+                }
+    
+                // Optional: Add glow effect (maintains constant colors but adds glow based on width)
+                if (alpha > 0.0) 
+                {
+                    // Calculate glow radius based on max possible width
+                    float maxLineWidth = adjustedLineWidthMax * 0.001;
+                    float glowRadius = maxLineWidth * 3.0;
+        
+                    float distToAnyLine = min(
+                        uShowTension ? abs(dot(offset, vec2(-v_direction1.y, v_direction1.x))) : 999.0,
+                        uShowCompression ? abs(dot(offset, vec2(-v_direction2.y, v_direction2.x))) : 999.0
+                    );
+        
+                    if (distToAnyLine < glowRadius) 
+                    {
+                        float glowFactor = exp(-distToAnyLine * distToAnyLine / (glowRadius * glowRadius * 0.5));
+                        // Glow should be subtle, don't overwhelm the main lines
+                        color += color * glowFactor * 0.2;
+                        alpha = min(alpha + glowFactor * 0.05, 1.0);
+                    }
+                }
+    
+                // Clamp and output
+                fragColor = vec4(clamp(color, 0.0, 1.0), clamp(alpha, 0.0, 1.0));
+            }
+
+        ";
+        }
+
+
+        private static string rslt_psline_mesh_frag_shader_r1()
         {
 
             return @"
             
             #version 330 core
 
-            uniform float uLineWidth = 2.0;
-            uniform float uContourDensity = 0.01;
-            uniform float uMinStressMagnitude = 0.0;
+            uniform float uLineWidth = 5.0;
+            uniform float uDensity = 1.0;
+
 
             uniform bool uShowTension = true;
             uniform bool uShowCompression = true;
@@ -355,69 +483,129 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
             uniform vec3 uCompressionColor = vec3(0.0, 0.0, 1.0);
 
             in vec2  v_worldPos;
-            in float v_sigma1;
-            in float v_sigma2;
-            in vec2  v_direction1;
-            in vec2  v_direction2;
+            in float v_sigma1; // Normalized principal stress value 1 (value between 0 and 1)
+            in float v_sigma2; // Normalized principal stress value 2 (value between 0 and 1)
+            in vec2  v_direction1; // Normalized Direction of principal stress 1
+            in vec2  v_direction2; // Normalized Direction of principal stress 2
 
             out vec4 fragColor;
 
-            // Repurposed contour function for trajectory lines
-            float trajectoryLine(float value, float density, float width)
+          
+            // Function to compute distance to a line segment
+            float distToLine(vec2 p, vec2 a, vec2 b) 
             {
-                float scaled = value * density;
-                float distToLine = abs(fract(scaled + 0.5) - 0.5);
-                float aa = fwidth(scaled) * width;
-                return 1.0 - smoothstep(0.0, aa, distToLine);
+                vec2 ap = p - a;
+                vec2 ab = b - a;
+                float t = clamp(dot(ap, ab) / dot(ab, ab), 0.0, 1.0);
+                vec2 closest = a + t * ab;
+                return length(p - closest);
             }
 
-            void main()
+            // Function to trace streamline
+            vec2 traceStreamline(vec2 start, vec2 direction, float stepSize, int maxSteps) 
             {
-                vec3 color = vec3(0.0); // Black/transparent background
-    
-                // Get stress info
-                float mag1 = abs(v_sigma1);
-                float mag2 = abs(v_sigma2);
-                vec2 dir1 = normalize(v_direction1);
-                vec2 dir2 = normalize(v_direction2);
-    
-                // Draw major principal stress lines
-                if (mag1 > uMinStressMagnitude && 
-                    ((v_sigma1 > 0.0 && uShowTension) || (v_sigma1 < 0.0 && uShowCompression)))
+                vec2 pos = start;
+                for (int i = 0; i < maxSteps; i++) 
                 {
-                    // Project position along direction field
-                    float val = dot(v_worldPos, dir1);
-                    float line = trajectoryLine(val, uContourDensity, uLineWidth);
+                    // In a real implementation, you'd sample the direction field here
+                    // For this example, we use the interpolated direction
+                    pos += direction * stepSize;
+                }
+                return pos;
+            }
+
+            void main() 
+            {
+                // Initialize with black background (or transparent)
+                vec3 color = vec3(0.0);
+                float alpha = 0.0;
+    
+                vec2 pos = v_worldPos;
+    
+                // Create grid of streamline seeds based on position and density
+                float gridSize = 0.05 / uDensity; // Adjust grid spacing
+                vec2 gridPos = floor(pos / gridSize) * gridSize + gridSize * 0.5;
+    
+                // Check if we're near a seed point
+                vec2 offset = pos - gridPos;
+                float distToSeed = length(offset);
+    
+                // Only render streamlines near seed points
+                float lineRadius = uLineWidth * 0.001; // Scale line width appropriately
+    
+                // Process tension (sigma1)
+                if (uShowTension && v_sigma1 > 0.01) {
+                    // Create a streamline along direction1
+                    vec2 direction = v_direction1;
+                    vec2 perpDir = vec2(-direction.y, direction.x);
         
-                    if (line > 0.0)
-                    {
-                        vec3 lineColor = (v_sigma1 > 0.0) ? uTensionColor : uCompressionColor;
-                        color = mix(color, lineColor, line);
+                    // Compute distance to the streamline passing through the seed
+                    float distToLine = abs(dot(offset, perpDir));
+        
+                    // Calculate intensity based on sigma1 value
+                    float intensity = v_sigma1;
+        
+                    // Blend the line
+                    if (distToLine < lineRadius) {
+                        float lineFactor = 1.0 - (distToLine / lineRadius);
+                        float alphaFactor = lineFactor * intensity;
+            
+                        // Mix with tension color
+                        vec3 lineColor = uTensionColor * intensity;
+                        color += lineColor * alphaFactor;
+                        alpha = max(alpha, alphaFactor * 0.8);
                     }
                 }
     
-                // Draw minor principal stress lines (perpendicular)
-                if (mag2 > uMinStressMagnitude && 
-                    ((v_sigma2 > 0.0 && uShowTension) || (v_sigma2 < 0.0 && uShowCompression)))
-                {
-                    float val = dot(v_worldPos, dir2);
-                    float line = trajectoryLine(val, uContourDensity, uLineWidth);
+                // Process compression (sigma2)
+                if (uShowCompression && v_sigma2 > 0.01) {
+                    // Create a streamline along direction2
+                    vec2 direction = v_direction2;
+                    vec2 perpDir = vec2(-direction.y, direction.x);
         
-                    if (line > 0.0)
-                    {
-                        vec3 lineColor = (v_sigma2 > 0.0) ? uTensionColor : uCompressionColor;
-                        // If both lines overlap, use max intensity
-                        color = max(color, lineColor * line);
+                    // Compute distance to the streamline passing through the seed
+                    float distToLine = abs(dot(offset, perpDir));
+        
+                    // Calculate intensity based on sigma2 value
+                    float intensity = v_sigma2;
+        
+                    // Blend the line
+                    if (distToLine < lineRadius) {
+                        float lineFactor = 1.0 - (distToLine / lineRadius);
+                        float alphaFactor = lineFactor * intensity;
+            
+                        // Mix with compression color
+                        vec3 lineColor = uCompressionColor * intensity;
+                        color += lineColor * alphaFactor;
+                        alpha = max(alpha, alphaFactor * 0.8);
                     }
                 }
     
-                fragColor = vec4(color, 1.0);
+                // Add glow effect to make streamlines more visible
+                if (alpha > 0.0) {
+                    // Soft glow around lines
+                    float glowRadius = lineRadius * 3.0;
+                    float distToAnyLine = min(
+                        uShowTension ? abs(dot(offset, vec2(-v_direction1.y, v_direction1.x))) : 999.0,
+                        uShowCompression ? abs(dot(offset, vec2(-v_direction2.y, v_direction2.x))) : 999.0
+                    );
+        
+                    if (distToAnyLine < glowRadius) {
+                        float glowFactor = exp(-distToAnyLine * distToAnyLine / (glowRadius * glowRadius * 0.5));
+                        color += color * glowFactor * 0.3;
+                        alpha = min(alpha + glowFactor * 0.1, 1.0);
+                    }
+                }
+    
+                // Clamp and output
+                fragColor = vec4(clamp(color, 0.0, 1.0), clamp(alpha, 0.0, 1.0));
             }
 
 
+        ";
+        }
 
-";
-}
+
 
         private static string rslt_psline_mesh_frag_shader_r0()
         {
@@ -621,6 +809,195 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
 
         }
 
+
+
+        #endregion
+
+
+
+        #region "Result Plane stress line Type 2 shader"
+
+
+        private static string rslt_pslinetype2_mesh_vert_shader()
+        {
+            return @"
+
+            #version 330 core
+
+            // Pre-computed MVP matrix on CPU for better performance
+            uniform mat4 uMVP;           // Model-View-Projection matrix
+            uniform float geomscale = 1.0f; // Geometry scale factor
+            uniform float sinevalue = 1.0f;                    
+            uniform float modelpercent = 0.01; // default 1 % scale factor             
+
+            layout(location = 0) in vec2 aPosition;
+            layout(location = 1) in vec2 aDisplacement;
+            layout(location = 2) in float aDisplacementMagnitude;
+            layout(location = 3) in float aSigma1; // Principal stress value 1
+            layout(location = 4) in float aSigma2; // Principal stress value 2
+            layout(location = 5) in vec2 aDirection1; // Direction of principal stress 1 x 
+            layout(location = 6) in vec2 aDirection2; // Direction of principal stress 2 x 
+            
+            out float v_geomscale;        // Pass geomscale to fragment
+
+            out vec2 v_worldPos;         // World position for distance calculations
+
+            out float v_sigma1;          // Pass sigma1 to fragment
+            out float v_sigma2;          // Pass sigma2 to fragment
+
+            out vec2 v_direction1;       // Pass direction1 to fragment
+            out vec2 v_direction2;       // Pass direction2 to fragment                    
+
+                    
+            void main()
+            {
+                float scalevalue = geomscale * modelpercent * aDisplacementMagnitude;
+                vec2 scaledDisplacement = aDisplacement * scalevalue * sinevalue;
+
+                gl_Position = uMVP * vec4(aPosition + scaledDisplacement, 0.0, 1.0);
+                
+                // float contourcolor = aDisplacementMagnitude * sinevalue;  
+
+                
+                // Pass the principal stress values and angle to the fragment shader
+                v_geomscale = geomscale;
+                v_worldPos = aPosition + scaledDisplacement;
+
+                v_sigma1 = aSigma1;
+                v_sigma2 = aSigma2;
+
+                v_direction1 = aDirection1;
+                v_direction2 = aDirection2;
+
+            }
+
+
+                    ";
+
+        }
+
+
+        private static string rslt_pslinetype2_mesh_frag_shader()
+        {
+
+            return @"
+            
+           #version 330 core
+
+            uniform float uLineWidth = 2.0;
+
+            uniform bool uShowTension = true;
+            uniform bool uShowCompression = true;
+            uniform vec3 uTensionColor = vec3(1.0, 0.0, 0.0);
+            uniform vec3 uCompressionColor = vec3(0.0, 0.0, 1.0);
+
+            uniform float uStepSize = 0.01;
+            uniform int uMaxSteps = 100;
+
+            in vec2  v_worldPos;
+            in float v_sigma1;
+            in float v_sigma2;
+            in vec2  v_direction1;
+            in vec2  v_direction2;
+
+            out vec4 fragColor;
+
+
+            // Helper function for distance to line segment
+            float distToLine(vec2 p, vec2 a, vec2 b) 
+            {
+                vec2 ap = p - a;
+                vec2 ab = b - a;
+                float lenSq = dot(ab, ab);
+                if (lenSq == 0.0) return length(ap);
+    
+                float t = clamp(dot(ap, ab) / lenSq, 0.0, 1.0);
+                vec2 closest = a + t * ab;
+                return length(p - closest);
+            }
+
+
+            // Function to compute distance to a streamline
+            float distToStreamline(vec2 point, vec2 seed, vec2 direction, float stepSize, int maxSteps) 
+            {
+                vec2 pos = seed;
+                float minDist = 999.0;
+    
+                // Trace forward
+                for (int i = 0; i < maxSteps; i++) 
+	            {
+                    // In practice, you'd sample from a texture or field
+                    // Here we use the interpolated direction
+                    vec2 nextPos = pos + direction * stepSize;
+                    float d = distToLine(point, pos, nextPos);
+                    minDist = min(minDist, d);
+                    pos = nextPos;
+        
+                    // Break if too far
+                    if (length(pos - seed) > 1.0) break;
+                }
+    
+                // Trace backward
+                pos = seed;
+                for (int i = 0; i < maxSteps; i++) 
+	            {
+                    vec2 nextPos = pos - direction * stepSize;
+                    float d = distToLine(point, pos, nextPos);
+                    minDist = min(minDist, d);
+                    pos = nextPos;
+        
+                    if (length(pos - seed) > 1.0) break;
+                }
+    
+                return minDist;
+            }
+
+            void main() 
+            {
+                vec3 color = vec3(0.0);
+                float alpha = 0.0;
+    
+
+                vec2 pos = v_worldPos;
+    
+                // Seed grid for streamlines
+                float gridSize = 0.1;
+                vec2 gridPos = floor(pos / gridSize) * gridSize + gridSize * 0.5;
+                vec2 offset = pos - gridPos;
+    
+                float lineWidth = uLineWidth * 0.001;
+    
+                // Process tension lines
+                if (uShowTension && v_sigma1 > 0.01) 
+	            {
+                    float dist = distToStreamline(pos, gridPos, v_direction1, uStepSize, uMaxSteps);
+        
+                    if (dist < lineWidth) 
+		            {
+                        float intensity = v_sigma1 * (1.0 - dist / lineWidth);
+                        color += uTensionColor * intensity;
+                        alpha = max(alpha, intensity * 0.8);
+                    }
+                }
+    
+                // Process compression lines
+                if (uShowCompression && v_sigma2 > 0.01) 
+	            {
+                    float dist = distToStreamline(pos, gridPos, v_direction2, uStepSize, uMaxSteps);
+        
+                    if (dist < lineWidth) 
+		            {
+                        float intensity = v_sigma2 * (1.0 - dist / lineWidth);
+                        color += uCompressionColor * intensity;
+                        alpha = max(alpha, intensity * 0.8);
+                    }
+                }
+    
+                fragColor = vec4(clamp(color, 0.0, 1.0), clamp(alpha, 0.0, 1.0));
+            }
+
+        ";
+        }
 
 
         #endregion
@@ -953,7 +1330,6 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
         #endregion
 
 
-
         #region "Contour Bar Shader"
 
         private static string contourbar_vert_shader()
@@ -1037,6 +1413,8 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
                     return rslt_wireframe_vert_shader();
                 case ShaderType.RsltPSLShader:
                     return rslt_psline_mesh_vert_shader();
+                case ShaderType.RsltPSLType2Shader:
+                    return rslt_pslinetype2_mesh_vert_shader();
                 case ShaderType.SelectionShader:
                     return selrect_vert_shader();
                 case ShaderType.ConstraintShader:
@@ -1068,6 +1446,8 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
                     return rslt_wireframe_frag_shader();
                 case ShaderType.RsltPSLShader:
                     return rslt_psline_mesh_frag_shader();
+                case ShaderType.RsltPSLType2Shader:
+                    return rslt_pslinetype2_mesh_frag_shader();
                 case ShaderType.SelectionShader:
                     return selrect_frag_shader();
                 case ShaderType.ConstraintShader:

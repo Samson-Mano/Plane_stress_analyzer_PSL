@@ -129,6 +129,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
         private Shader rsltmeshShader;
         private Shader rsltmeshwireframeShader;
         private Shader rsltPSLShader;
+        private Shader rsltPSLType2Shader;
 
         // Vertex Buffer object and Vertex Array object 
         private VertexBuffer point_vbo;
@@ -184,6 +185,11 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
             rsltPSLShader = new Shader(
                 ShaderLibrary.get_vertex_shader(ShaderLibrary.ShaderType.RsltPSLShader),
                 ShaderLibrary.get_fragment_shader(ShaderLibrary.ShaderType.RsltPSLShader)
+                );
+
+            rsltPSLType2Shader = new Shader(
+                ShaderLibrary.get_vertex_shader(ShaderLibrary.ShaderType.RsltPSLType2Shader),
+                ShaderLibrary.get_fragment_shader(ShaderLibrary.ShaderType.RsltPSLType2Shader)
                 );
 
         }
@@ -363,9 +369,9 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
 
         public void paint_results()
         {
-            if (gvariables_static.result_option == 9)
+            if (gvariables_static.result_option == 9 || gvariables_static.result_option == 10)
             {
-                // Special case for PSL lines (option = 9)
+                // Special case for PSL lines (option = 9 or 10)
                 paint_PSL_lines();
                 return;
             }
@@ -501,22 +507,45 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
                 return;
 
 
-            rsltPSLShader.Bind();
-            psl_point_vao.Bind();
+            int option = gvariables_static.result_option;
 
-            if (triangle_ibo.BufferCount > 0)
+            if (option == 9)
             {
 
-                // Paint the Result triangle mesh
-                triangle_ibo.Bind();
-                GL.DrawElements(PrimitiveType.Triangles, triangle_ibo.BufferCount,
-                    DrawElementsType.UnsignedInt, 0);
-                triangle_ibo.UnBind();
+                rsltPSLShader.Bind();
+                psl_point_vao.Bind();
+
+                if (triangle_ibo.BufferCount > 0)
+                {
+
+                    // Paint the Result triangle mesh
+                    triangle_ibo.Bind();
+                    GL.DrawElements(PrimitiveType.Triangles, triangle_ibo.BufferCount,
+                        DrawElementsType.UnsignedInt, 0);
+                    triangle_ibo.UnBind();
+                }
+
+                psl_point_vao.UnBind();
+                rsltPSLShader.UnBind();
+
             }
+            else if(option == 10)
+            {
 
-            psl_point_vao.UnBind();
-            rsltPSLShader.UnBind();
-
+                rsltPSLType2Shader.Bind();
+                psl_point_vao.Bind();
+                if (triangle_ibo.BufferCount > 0)
+                {
+                    // Paint the Result triangle mesh
+                    triangle_ibo.Bind();
+                    GL.DrawElements(PrimitiveType.Triangles, triangle_ibo.BufferCount,
+                        DrawElementsType.UnsignedInt, 0);
+                    triangle_ibo.UnBind();
+                }
+                psl_point_vao.UnBind();
+                rsltPSLType2Shader.UnBind();
+            }
+              
         }
 
 
@@ -530,18 +559,12 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
 
             int option =  gvariables_static.result_option;
 
-            // Special case for PSL lines (option = 9)
-            if (option == 9)
+            // Special case for PSL lines (option = 9 or 10)
+            if (option == 9 || option == 10)
             {
-
-
-
 
                 return;
             }
-
-
-
 
 
             List<float> vertexData = new List<float>();
@@ -853,42 +876,42 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
                         return normalizedValue;
 
                     }
-                case 9: // PSL Lines
-                    {
-                        // For PSL lines, we can return a default value or handle it differently
-                        float pi2_value = (float)Math.PI * 0.5f;
+                //case 9: // PSL Lines
+                //    {
+                //        // For PSL lines, we can return a default value or handle it differently
+                //        float pi2_value = (float)Math.PI * 0.5f;
 
 
-                        float c_value = (float)Math.Atan2(pt.tau_xy, pt.sigma_x - pt.sigma_y) / 2.0f;
+                //        float c_value = (float)Math.Atan2(pt.tau_xy, pt.sigma_x - pt.sigma_y) / 2.0f;
 
-                        float actualRangeMin = (float)(-pi2_value +
-                          ((pi2_value + pi2_value) * zoomMin));
+                //        float actualRangeMin = (float)(-pi2_value +
+                //          ((pi2_value + pi2_value) * zoomMin));
 
-                        float actualRangeMax = (float)(-pi2_value + +
-                            ((pi2_value + pi2_value) * zoomMax));
+                //        float actualRangeMax = (float)(-pi2_value + +
+                //            ((pi2_value + pi2_value) * zoomMax));
 
-                        float actualRangeSpan = actualRangeMax - actualRangeMin;
+                //        float actualRangeSpan = actualRangeMax - actualRangeMin;
 
-                        float normalizedValue = ((float)c_value - actualRangeMin) / actualRangeSpan;
+                //        float normalizedValue = ((float)c_value - actualRangeMin) / actualRangeSpan;
 
-                        if (normalizedValue < -EPSILON)
-                        {
-                            normalizedValue = -1.0f;
-                        }
-                        else if (normalizedValue > 1.0f + EPSILON)
-                        {
-                            normalizedValue = 2.0f;
-                        }
-                        else
-                        {
-                            // Clamp the normalized value to [0, 1] range
-                            normalizedValue = Math.Max(0.0f, Math.Min(1.0f, normalizedValue));
-                        }
+                //        if (normalizedValue < -EPSILON)
+                //        {
+                //            normalizedValue = -1.0f;
+                //        }
+                //        else if (normalizedValue > 1.0f + EPSILON)
+                //        {
+                //            normalizedValue = 2.0f;
+                //        }
+                //        else
+                //        {
+                //            // Clamp the normalized value to [0, 1] range
+                //            normalizedValue = Math.Max(0.0f, Math.Min(1.0f, normalizedValue));
+                //        }
 
-                        normalizedValue = (normalizedValue * 2.0f) - 1.0f; // Scale to [-1, 1]
+                //        normalizedValue = (normalizedValue * 2.0f) - 1.0f; // Scale to [-1, 1]
 
-                        return normalizedValue;
-                    }
+                //        return normalizedValue;
+                //    }
             }
 
             return 0.0f; // Default case, should not reach here
@@ -1098,19 +1121,49 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
                 // Calculate the magnitude of the displacement vector for color mapping
                 vertexData.Add((float)(pt.displ_magnitude / _rslt_extremes.max_displacement)); // normalized scalar value
 
+                // Sigma XX stress in X direction
+                float sigmaX_actualRangeSpan = (float)(_rslt_extremes.max_stressX - _rslt_extremes.min_stressX);
+
+                float aSigmaX = ((float)pt.sigma_x - (float)(_rslt_extremes.min_stressX)) / sigmaX_actualRangeSpan;
+
+
+                // Sigma YY stress in Y direction
+                float sigmaY_actualRangeSpan = (float)(_rslt_extremes.max_stressY - _rslt_extremes.min_stressY);
+
+                float aSigmaY = ((float)pt.sigma_y - (float)(_rslt_extremes.min_stressY)) / sigmaY_actualRangeSpan;
+
+                // Tau XY shear stress in XY direction
+
+
+
+
+
                 // Principal stress angle for PSL lines
                 float aPrincipalStressAngle = (float)Math.Atan2(pt.tau_xy, pt.sigma_x - pt.sigma_y) / 2.0f;
-                // Principal stresses
+
+                // Principal stresses 1
                 float aPrincipalStress_sigma1 = (float)((pt.sigma_x + pt.sigma_y) / 2.0f +
                                 Math.Sqrt(Math.Pow((pt.sigma_x - pt.sigma_y) / 2.0f, 2) +
                                 Math.Pow(pt.tau_xy, 2)));
 
+                float sigma1_actualRangeSpan = (float)(_rslt_extremes.max_principalStress1 - _rslt_extremes.min_principalStress1);
+
+                // Normalize principal stress 1 (pt.sigma_1)
+                aPrincipalStress_sigma1 = ((float)pt.sigma_1 - (float)(_rslt_extremes.min_principalStress1)) / sigma1_actualRangeSpan;
+
+
+                // Principal stress 2
                 float aPrincipalStress_sigma2 = (float)((pt.sigma_x + pt.sigma_y) / 2.0f -
                                 Math.Sqrt(Math.Pow((pt.sigma_x - pt.sigma_y) / 2.0f, 2) +
                                 Math.Pow(pt.tau_xy, 2)));
 
+                float sigma2_actualRangeSpan = (float)(_rslt_extremes.max_principalStress2 - _rslt_extremes.min_principalStress2);
 
-                vertexData.Add(aPrincipalStressAngle); // Principal stress angle for PSL lines
+                // Normalize principal stress 2 (pt.sigma_2)
+                aPrincipalStress_sigma2 = ((float)pt.sigma_2 - (float)(_rslt_extremes.min_principalStress2)) / sigma2_actualRangeSpan;
+
+
+                // vertexData.Add(aPrincipalStressAngle); // Principal stress angle for PSL lines
                 vertexData.Add(aPrincipalStress_sigma1); // Principal stress 1
                 vertexData.Add(aPrincipalStress_sigma2); // Principal stress 2
 
@@ -1122,6 +1175,8 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
                 Vector2 dir2 = new Vector2((float)Math.Cos(aPrincipalStressAngle + Math.PI / 2),
                                            (float)Math.Sin(aPrincipalStressAngle + Math.PI / 2));
 
+                dir1 = Vector2.Normalize(dir1);
+                dir2 = Vector2.Normalize(dir2);
 
                 vertexData.Add((float)dir1.X);
                 vertexData.Add((float)dir1.Y);
@@ -1145,12 +1200,11 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
             pointLayout.AddFloat(2);  // x and y coordinates
             pointLayout.AddFloat(2); // displ_x and displ_y
             pointLayout.AddFloat(1); // displacement magnitude
-            pointLayout.AddFloat(1); // principal stress angle in radians
-            pointLayout.AddFloat(1); // principal stress 1
-            pointLayout.AddFloat(1); // principal stress 2
-            pointLayout.AddFloat(2); // principal direction vectors Direction 1
-            pointLayout.AddFloat(2); // principal direction vectors Direction 2
-
+            pointLayout.AddFloat(1); // sigma1 principal stress value 1
+            pointLayout.AddFloat(1); // sigma2 principal stress value 2
+            pointLayout.AddFloat(2); // direction1 of principal stress 1
+            pointLayout.AddFloat(2); // direction2 of principal stress 2
+            
 
             psl_point_vao.Add_vertexBuffer(psl_point_vbo, pointLayout);
 
@@ -1218,7 +1272,12 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
 
             //rsltPSLShader.SetFloat("vertexTransparency", gvariables_static.rslt_transparency);
 
+            //____________________________________________________________________________________________
+            // Update the PSL shader uniforms type 2
+            rsltPSLType2Shader.SetMatrix4("uMVP", uMVP);
+            rsltPSLType2Shader.SetFloat("geomscale", gvariables_static.geom_size);
 
+            rsltPSLType2Shader.SetFloat("modelpercent", model_percent);
 
         }
 
@@ -1232,14 +1291,15 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
 
 
             rsltPSLShader.SetFloat("sinevalue", sine_oscillation);
-            rsltPSLShader.SetFloat("uLineOpacity", 1.0f);
+            rsltPSLType2Shader.SetFloat("sinevalue", sine_oscillation);
+            // rsltPSLShader.SetFloat("uLineOpacity", 1.0f);
 
 
             if (sine_oscillation < 0.1)
             {
                 rsltmeshShader.SetFloat("uLineOpacity", 0.0f);
 
-                rsltPSLShader.SetFloat("uLineOpacity", 0.0f);
+               // rsltPSLShader.SetFloat("uLineOpacity", 0.0f);
             }
 
         }

@@ -725,6 +725,7 @@ namespace Plane_stress_analyzer_PSL
 
         private void pSLToolStripMenuItem_Click(object sender, EventArgs e) => TrySetResultOption(9);
 
+        private void pSLType2ToolStripMenuItem_Click(object sender, EventArgs e) => TrySetResultOption(10);
 
 
         private void hideResultsToolStripMenuItem_Click(object sender, EventArgs e) => TrySetResultOption(0);
@@ -753,6 +754,7 @@ namespace Plane_stress_analyzer_PSL
             principalStress2ToolStripMenuItem.Checked = (option == 7);
             maxShearStressToolStripMenuItem.Checked = (option == 8);
             pSLToolStripMenuItem.Checked = (option == 9);
+            pSLType2ToolStripMenuItem.Checked = (option == 10); 
             hideResultsToolStripMenuItem.Checked = (option == 0);
 
             // Reset the result option flags in the modeldata_store
@@ -826,6 +828,12 @@ namespace Plane_stress_analyzer_PSL
                     break;
                 case 9:
                     // PSL Result
+                    gvariables_static.is_paint_result_PSL = true;
+                    gvariables_static.geom_transparency = default_result_geom_transparency;
+                    gvariables_static.rslt_transparency = default_result_rslt_transparency;
+                    break;
+                case 10:
+                    // PSL Type 2 Result
                     gvariables_static.is_paint_result_PSL = true;
                     gvariables_static.geom_transparency = default_result_geom_transparency;
                     gvariables_static.rslt_transparency = default_result_rslt_transparency;
@@ -926,8 +934,8 @@ namespace Plane_stress_analyzer_PSL
 
         }
 
-        #endregion
 
+        #endregion
 
     }
 }

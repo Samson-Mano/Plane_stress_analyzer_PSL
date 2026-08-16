@@ -273,7 +273,11 @@ namespace Plane_stress_analyzer_PSL.src.model_store
                     break;
                 case 9:
                     contour_bar_data.UpdateContourLevelBarPosition(graphic_events_control.window_width,
-                        graphic_events_control.window_height, -800.0f, 800.0f, "PSL");
+                        graphic_events_control.window_height, -1.0f, 1.0f, "PSL Type 1");
+                    break;
+                case 10:
+                    contour_bar_data.UpdateContourLevelBarPosition(graphic_events_control.window_width,
+                        graphic_events_control.window_height, -1.0f, 1.0f, "PSL Type 2");
                     break;
 
             }
