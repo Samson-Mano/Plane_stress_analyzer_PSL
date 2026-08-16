@@ -128,10 +128,17 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
 
         private Shader rsltmeshShader;
         private Shader rsltmeshwireframeShader;
+        private Shader rsltPSLShader;
 
         // Vertex Buffer object and Vertex Array object 
         private VertexBuffer point_vbo;
         private VertexArray point_vao;
+
+
+        // PSL lines vertex buffer and vertex array object
+        private VertexBuffer psl_point_vbo;
+        private VertexArray psl_point_vao;
+
 
         // Index buffer for the points, wireframe lines, and triangles (EBO)
         private IndexBuffer point_ibo;
@@ -174,7 +181,10 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
                 ShaderLibrary.get_fragment_shader(ShaderLibrary.ShaderType.RsltWireframeShader)
                 );
 
-
+            rsltPSLShader = new Shader(
+                ShaderLibrary.get_vertex_shader(ShaderLibrary.ShaderType.RsltPSLShader),
+                ShaderLibrary.get_fragment_shader(ShaderLibrary.ShaderType.RsltPSLShader)
+                );
 
         }
 
@@ -353,6 +363,14 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
 
         public void paint_results()
         {
+            if (gvariables_static.result_option == 9)
+            {
+                // Special case for PSL lines (option = 9)
+                paint_PSL_lines();
+                return;
+            }
+            
+
             paint_result_mesh();
 
             paint_result_mesh_wireframe();
@@ -477,6 +495,32 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
         }
 
 
+        private void paint_PSL_lines()
+        {
+            if (!gvariables_static.is_paint_resultmesh || !buffersInitialized)
+                return;
+
+
+            rsltPSLShader.Bind();
+            psl_point_vao.Bind();
+
+            if (triangle_ibo.BufferCount > 0)
+            {
+
+                // Paint the Result triangle mesh
+                triangle_ibo.Bind();
+                GL.DrawElements(PrimitiveType.Triangles, triangle_ibo.BufferCount,
+                    DrawElementsType.UnsignedInt, 0);
+                triangle_ibo.UnBind();
+            }
+
+            psl_point_vao.UnBind();
+            rsltPSLShader.UnBind();
+
+        }
+
+
+
         public void switch_result_option()
         {
             // Switch the result option for visualization
@@ -485,6 +529,20 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
             // 8 = Max shear stress
 
             int option =  gvariables_static.result_option;
+
+            // Special case for PSL lines (option = 9)
+            if (option == 9)
+            {
+
+
+
+
+                return;
+            }
+
+
+
+
 
             List<float> vertexData = new List<float>();
 
@@ -795,6 +853,42 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
                         return normalizedValue;
 
                     }
+                case 9: // PSL Lines
+                    {
+                        // For PSL lines, we can return a default value or handle it differently
+                        float pi2_value = (float)Math.PI * 0.5f;
+
+
+                        float c_value = (float)Math.Atan2(pt.tau_xy, pt.sigma_x - pt.sigma_y) / 2.0f;
+
+                        float actualRangeMin = (float)(-pi2_value +
+                          ((pi2_value + pi2_value) * zoomMin));
+
+                        float actualRangeMax = (float)(-pi2_value + +
+                            ((pi2_value + pi2_value) * zoomMax));
+
+                        float actualRangeSpan = actualRangeMax - actualRangeMin;
+
+                        float normalizedValue = ((float)c_value - actualRangeMin) / actualRangeSpan;
+
+                        if (normalizedValue < -EPSILON)
+                        {
+                            normalizedValue = -1.0f;
+                        }
+                        else if (normalizedValue > 1.0f + EPSILON)
+                        {
+                            normalizedValue = 2.0f;
+                        }
+                        else
+                        {
+                            // Clamp the normalized value to [0, 1] range
+                            normalizedValue = Math.Max(0.0f, Math.Min(1.0f, normalizedValue));
+                        }
+
+                        normalizedValue = (normalizedValue * 2.0f) - 1.0f; // Scale to [-1, 1]
+
+                        return normalizedValue;
+                    }
             }
 
             return 0.0f; // Default case, should not reach here
@@ -891,10 +985,17 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
                 triangle_ibo.AppendIndexBuffer(triangleIndexData.ToArray());
             }
 
+
+            // PSL Mesh buffers
+            generate_PSL_mesh();
+
+
             // Shrunk Mesh buffers
             generate_shrunk_mesh();
 
+
             buffersInitialized = true;
+
         }
 
 
@@ -966,6 +1067,99 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
         }
 
 
+        private void generate_PSL_mesh()
+        {
+            // Generate PSL mesh data based on the points and triangles
+            // This function should create the necessary vertex and index buffers for PSL visualization
+            // Implementation depends on how PSL data is structured and visualized
+
+            List<float> vertexData = new List<float>();
+
+
+            for (int i = 0; i < points.Count; i++)
+            {
+                point_store pt = points[i];
+                vertexData.Add((float)pt.x_coord);
+                vertexData.Add((float)pt.y_coord);
+
+                // Normalized displacement values for plotting
+                if (pt.displ_magnitude > 0)
+                {
+                    vertexData.Add((float)(pt.displ_x / pt.displ_magnitude));
+                    vertexData.Add((float)(pt.displ_y / pt.displ_magnitude));
+                }
+                else
+                {
+                    vertexData.Add(0);
+                    vertexData.Add(0);
+                }
+
+
+                // Calculate the magnitude of the displacement vector for color mapping
+                vertexData.Add((float)(pt.displ_magnitude / _rslt_extremes.max_displacement)); // normalized scalar value
+
+                // Principal stress angle for PSL lines
+                float aPrincipalStressAngle = (float)Math.Atan2(pt.tau_xy, pt.sigma_x - pt.sigma_y) / 2.0f;
+                // Principal stresses
+                float aPrincipalStress_sigma1 = (float)((pt.sigma_x + pt.sigma_y) / 2.0f +
+                                Math.Sqrt(Math.Pow((pt.sigma_x - pt.sigma_y) / 2.0f, 2) +
+                                Math.Pow(pt.tau_xy, 2)));
+
+                float aPrincipalStress_sigma2 = (float)((pt.sigma_x + pt.sigma_y) / 2.0f -
+                                Math.Sqrt(Math.Pow((pt.sigma_x - pt.sigma_y) / 2.0f, 2) +
+                                Math.Pow(pt.tau_xy, 2)));
+
+
+                vertexData.Add(aPrincipalStressAngle); // Principal stress angle for PSL lines
+                vertexData.Add(aPrincipalStress_sigma1); // Principal stress 1
+                vertexData.Add(aPrincipalStress_sigma2); // Principal stress 2
+
+                // // Line length (scale with stress magnitude or fixed)
+                // float lineLength = 0.5f; // or scale with magnitude
+
+                // Principal direction 1 (major principal stress)
+                Vector2 dir1 = new Vector2((float)Math.Cos(aPrincipalStressAngle), (float)Math.Sin(aPrincipalStressAngle));
+                Vector2 dir2 = new Vector2((float)Math.Cos(aPrincipalStressAngle + Math.PI / 2),
+                                           (float)Math.Sin(aPrincipalStressAngle + Math.PI / 2));
+
+
+                vertexData.Add((float)dir1.X);
+                vertexData.Add((float)dir1.Y);
+
+
+                vertexData.Add((float)dir2.X);
+                vertexData.Add((float)dir2.Y);
+
+
+            }
+
+
+
+
+            // Create VAO and VBO for points
+            psl_point_vao = new VertexArray();
+            psl_point_vbo = new VertexBuffer(Math.Max(10, vertexData.Count));
+
+
+            VertexBufferLayout pointLayout = new VertexBufferLayout();
+            pointLayout.AddFloat(2);  // x and y coordinates
+            pointLayout.AddFloat(2); // displ_x and displ_y
+            pointLayout.AddFloat(1); // displacement magnitude
+            pointLayout.AddFloat(1); // principal stress angle in radians
+            pointLayout.AddFloat(1); // principal stress 1
+            pointLayout.AddFloat(1); // principal stress 2
+            pointLayout.AddFloat(2); // principal direction vectors Direction 1
+            pointLayout.AddFloat(2); // principal direction vectors Direction 2
+
+
+            psl_point_vao.Add_vertexBuffer(psl_point_vbo, pointLayout);
+
+            psl_point_vbo.AppendVertexBuffer(vertexData.ToArray());
+
+        }
+
+
+
         public void update_openTK_uniforms(drawing_events graphic_events_control)
         {
             Matrix4 uMVP = graphic_events_control.projectionMatrix *
@@ -1014,6 +1208,18 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
             float zoomscale = (float)graphic_events_control.zoom_val;
             result_point_label.update_openTK_uniforms(uMVP, zoomscale, 1.0f);
 
+
+            //____________________________________________________________________________________________
+            // Update the PSL shader uniforms
+            rsltPSLShader.SetMatrix4("uMVP", uMVP);
+            rsltPSLShader.SetFloat("geomscale", gvariables_static.geom_size);
+
+            rsltPSLShader.SetFloat("modelpercent", model_percent);
+
+            //rsltPSLShader.SetFloat("vertexTransparency", gvariables_static.rslt_transparency);
+
+
+
         }
 
         public void update_animation(float sine_oscillation)
@@ -1024,9 +1230,16 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
             rsltmeshwireframeShader.SetFloat("sinevalue", sine_oscillation);
             rsltmeshShader.SetFloat("uLineOpacity", 1.0f);
 
+
+            rsltPSLShader.SetFloat("sinevalue", sine_oscillation);
+            rsltPSLShader.SetFloat("uLineOpacity", 1.0f);
+
+
             if (sine_oscillation < 0.1)
             {
                 rsltmeshShader.SetFloat("uLineOpacity", 0.0f);
+
+                rsltPSLShader.SetFloat("uLineOpacity", 0.0f);
             }
 
         }
@@ -1294,6 +1507,8 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
             point_vbo?.Dispose();
             point_vao?.Dispose();
             point_ibo?.Dispose();
+            psl_point_vao?.Dispose();
+            psl_point_vbo?.Dispose();
             selected_resultpoint_ibo?.Dispose();
             wireframe_ibo?.Dispose();
             triangle_ibo?.Dispose();

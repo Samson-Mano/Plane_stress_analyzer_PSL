@@ -17,6 +17,7 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
             LoadShader,
             RsltMeshShader,
             RsltWireframeShader,
+            RsltPSLShader,
             SelectionShader,
             DrawingAxisShader,
             ContourBarShader
@@ -205,8 +206,6 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
         #endregion
 
 
-
-
         #region "Result WireFrame Mesh Shaders"
 
         private static string rslt_wireframe_vert_shader()
@@ -274,6 +273,358 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
         }
 
         #endregion
+
+
+        #region "Result Plane stress line shader"
+
+
+        private static string rslt_psline_mesh_vert_shader()
+        {
+            return @"
+
+            #version 330 core
+
+            // Pre-computed MVP matrix on CPU for better performance
+            uniform mat4 uMVP;           // Model-View-Projection matrix
+            uniform float geomscale = 1.0f; // Geometry scale factor
+            uniform float sinevalue = 1.0f;                    
+            uniform float modelpercent = 0.01; // default 1 % scale factor             
+
+            layout(location = 0) in vec2 aPosition;
+            layout(location = 1) in vec2 aDisplacement;
+            layout(location = 2) in float aDisplacementMagnitude;
+            layout(location = 3) in float aPrincipalAngle; // Principal stress angle in radians
+            layout(location = 4) in float aSigma1; // Principal stress value 1
+            layout(location = 5) in float aSigma2; // Principal stress value 2
+            layout(location = 6) in vec2 aDirection1; // Direction of principal stress 1 x 
+            layout(location = 7) in vec2 aDirection2; // Direction of principal stress 2 x 
+            
+            out vec2 v_worldPos;         // World position for distance calculations
+            out float v_sigma1;          // Pass sigma1 to fragment
+            out float v_sigma2;          // Pass sigma2 to fragment
+            // out float v_principalAngle;  // Pass angle to fragment
+            out vec2 v_direction1;       // Pass direction1 to fragment
+            out vec2 v_direction2;       // Pass direction2 to fragment                    
+            // out float v_deflscale;
+                    
+            void main()
+            {
+                float scalevalue = geomscale * modelpercent * aDisplacementMagnitude;
+                vec2 scaledDisplacement = aDisplacement * scalevalue * sinevalue;
+
+                gl_Position = uMVP * vec4(aPosition + scaledDisplacement, 0.0, 1.0);
+                
+                float contourcolor = aDisplacementMagnitude * sinevalue;  
+
+
+                // if(rsltoption != 0)
+                //     contourcolor = (contourcolor + 1.0) * 0.5; // Normalize to [0,1] if option is set
+                
+                // Pass the principal stress values and angle to the fragment shader
+                v_worldPos = aPosition + scaledDisplacement;
+                // v_deflscale = contourcolor;
+                v_sigma1 = aSigma1;
+                v_sigma2 = aSigma2;
+                // v_principalAngle = aPrincipalAngle;
+                v_direction1 = aDirection1;
+                v_direction2 = aDirection2;
+
+            }
+
+
+                    ";
+
+        }
+
+
+
+        private static string rslt_psline_mesh_frag_shader()
+        {
+
+            return @"
+            
+            #version 330 core
+
+            uniform float uLineWidth = 2.0;
+            uniform float uContourDensity = 0.01;
+            uniform float uMinStressMagnitude = 0.0;
+
+            uniform bool uShowTension = true;
+            uniform bool uShowCompression = true;
+            uniform vec3 uTensionColor = vec3(1.0, 0.0, 0.0);
+            uniform vec3 uCompressionColor = vec3(0.0, 0.0, 1.0);
+
+            in vec2  v_worldPos;
+            in float v_sigma1;
+            in float v_sigma2;
+            in vec2  v_direction1;
+            in vec2  v_direction2;
+
+            out vec4 fragColor;
+
+            // Repurposed contour function for trajectory lines
+            float trajectoryLine(float value, float density, float width)
+            {
+                float scaled = value * density;
+                float distToLine = abs(fract(scaled + 0.5) - 0.5);
+                float aa = fwidth(scaled) * width;
+                return 1.0 - smoothstep(0.0, aa, distToLine);
+            }
+
+            void main()
+            {
+                vec3 color = vec3(0.0); // Black/transparent background
+    
+                // Get stress info
+                float mag1 = abs(v_sigma1);
+                float mag2 = abs(v_sigma2);
+                vec2 dir1 = normalize(v_direction1);
+                vec2 dir2 = normalize(v_direction2);
+    
+                // Draw major principal stress lines
+                if (mag1 > uMinStressMagnitude && 
+                    ((v_sigma1 > 0.0 && uShowTension) || (v_sigma1 < 0.0 && uShowCompression)))
+                {
+                    // Project position along direction field
+                    float val = dot(v_worldPos, dir1);
+                    float line = trajectoryLine(val, uContourDensity, uLineWidth);
+        
+                    if (line > 0.0)
+                    {
+                        vec3 lineColor = (v_sigma1 > 0.0) ? uTensionColor : uCompressionColor;
+                        color = mix(color, lineColor, line);
+                    }
+                }
+    
+                // Draw minor principal stress lines (perpendicular)
+                if (mag2 > uMinStressMagnitude && 
+                    ((v_sigma2 > 0.0 && uShowTension) || (v_sigma2 < 0.0 && uShowCompression)))
+                {
+                    float val = dot(v_worldPos, dir2);
+                    float line = trajectoryLine(val, uContourDensity, uLineWidth);
+        
+                    if (line > 0.0)
+                    {
+                        vec3 lineColor = (v_sigma2 > 0.0) ? uTensionColor : uCompressionColor;
+                        // If both lines overlap, use max intensity
+                        color = max(color, lineColor * line);
+                    }
+                }
+    
+                fragColor = vec4(color, 1.0);
+            }
+
+
+
+";
+}
+
+        private static string rslt_psline_mesh_frag_shader_r0()
+        {
+
+            return @"
+
+
+            # version 330 core
+
+            uniform float vertexTransparency;
+
+            uniform float uNumContours = 10.0;
+            uniform float uLineWidth = 1.0;
+            uniform vec3  uLineColor = vec3(0.0);
+            uniform float uLineOpacity = 1.0;
+            uniform float uMinContourValue = 0.01;
+
+            // Controls density of principal stress lines.
+            uniform float uStressLineDensity = 25.0;
+
+            in float v_sigma1;
+            in float v_sigma2;
+            in float v_principalAngle;
+            in vec2  v_direction1;
+            in vec2  v_direction2;
+            in float v_deflscale;
+
+            out vec4 fColor;
+
+
+            // ------------------------------------------------------------
+            // Heatmap
+            // ------------------------------------------------------------
+
+            vec3 jetHeatmap(float value)
+            {
+                float t = clamp(value, 0.0, 1.0);
+
+                return clamp(
+                    vec3(1.5) -
+                    abs(4.0 * vec3(t) + vec3(-3.0, -2.0, -1.0)),
+                    vec3(0.0),
+                    vec3(1.0)
+                );
+            }
+
+
+            // ------------------------------------------------------------
+            // Ordinary scalar contour
+            // ------------------------------------------------------------
+
+            float scalarContour(float value, float numContours, float lineWidth)
+            {
+                float scaled = value * numContours;
+
+                float distToLine =
+                    abs(fract(scaled + 0.5) - 0.5);
+
+                float aa = max(fwidth(scaled) * lineWidth, 1e-5);
+
+                return 1.0 -
+                       smoothstep(0.0, aa, distToLine);
+            }
+
+
+            // ------------------------------------------------------------
+            // Directional stripe pattern
+            //
+            // The stripes are perpendicular to dir.
+            //
+            // NOTE:
+            // This is an approximation. It does NOT integrate the
+            // direction field, so strongly curved stress trajectories
+            // will not be represented correctly.
+            // ------------------------------------------------------------
+
+            float principalStripe(vec2 direction, float density, float width)
+            {
+                direction = normalize(direction);
+
+                // Pixel coordinates.
+                vec2 p = gl_FragCoord.xy;
+
+                // Coordinate perpendicular to the principal direction.
+                vec2 normal = vec2(-direction.y, direction.x);
+
+                float coordinate = dot(p, normal);
+
+                float phase = coordinate * density / 100.0;
+
+                float distToLine =
+                    abs(fract(phase + 0.5) - 0.5);
+
+                float aa = max(fwidth(phase), 1e-5);
+
+                return 1.0 -
+                       smoothstep(
+                           width * aa,
+                           (width + 1.0) * aa,
+                           distToLine
+                       );
+            }
+
+
+            // ------------------------------------------------------------
+            // Stress information
+            // ------------------------------------------------------------
+
+            void getStressAtFragment(out float sigma1, out float sigma2, out vec2 dir1,
+                out vec2 dir2, out float angle)
+            {
+                sigma1 = v_sigma1;
+                sigma2 = v_sigma2;
+
+                dir1 = normalize(v_direction1);
+                dir2 = normalize(v_direction2);
+
+                angle = v_principalAngle;
+            }
+
+
+            // ------------------------------------------------------------
+            // Main
+            // ------------------------------------------------------------
+
+            void main()
+            {
+
+                float sigma1;
+                float sigma2;
+                vec2 dir1;
+                vec2 dir2;
+                float angle;
+
+                getStressAtFragment(
+                    sigma1,
+                    sigma2,
+                    dir1,
+                    dir2,
+                    angle
+                );
+
+
+                // --------------------------------------------------------
+                // Heatmap value
+                //
+                // Replace this with whatever stress normalization you use.
+                // --------------------------------------------------------
+
+                float stressValue = clamp(abs(sigma1), 0.0, 1.0);
+
+                vec3 heatColor = jetHeatmap(stressValue);
+
+
+                // --------------------------------------------------------
+                // Principal stress lines
+                // --------------------------------------------------------
+
+                float line1 = principalStripe(dir1, uStressLineDensity, uLineWidth);
+
+                float line2 = principalStripe(dir2, uStressLineDensity, uLineWidth);
+
+                // Choose either family:
+                float principalLines = line1;
+
+                // Or both families:
+                // float principalLines = max(line1, line2);
+
+
+                // --------------------------------------------------------
+                // Suppress lines when stress magnitude is very small
+                // --------------------------------------------------------
+
+                float magnitude = max(abs(sigma1), abs(sigma2));
+
+                float stressMask =
+                    smoothstep(0.0, uMinContourValue, magnitude);
+
+                principalLines *= stressMask;
+
+
+                // --------------------------------------------------------
+                // Blend lines over heatmap
+                // --------------------------------------------------------
+
+                vec3 finalColor = mix(
+                    heatColor,
+                    uLineColor,
+                    principalLines * uLineOpacity
+                );
+
+
+                float alpha = vertexTransparency;
+
+                fColor = vec4(finalColor, alpha);
+            }
+
+
+
+                    ";
+
+        }
+
+
+
+        #endregion
+
 
 
         #region "Text shaders"
@@ -684,6 +1035,8 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
                     return rslt_mesh_vert_shader();
                 case ShaderType.RsltWireframeShader:
                     return rslt_wireframe_vert_shader();
+                case ShaderType.RsltPSLShader:
+                    return rslt_psline_mesh_vert_shader();
                 case ShaderType.SelectionShader:
                     return selrect_vert_shader();
                 case ShaderType.ConstraintShader:
@@ -713,6 +1066,8 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
                     return rslt_mesh_frag_shader();
                 case ShaderType.RsltWireframeShader:
                     return rslt_wireframe_frag_shader();
+                case ShaderType.RsltPSLShader:
+                    return rslt_psline_mesh_frag_shader();
                 case ShaderType.SelectionShader:
                     return selrect_frag_shader();
                 case ShaderType.ConstraintShader:
