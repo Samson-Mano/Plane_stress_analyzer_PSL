@@ -1012,6 +1012,8 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
             // PSL Mesh buffers
             generate_PSL_mesh();
 
+            // Create the Type 2 PSL mesh buffers
+            generate_PSL_type2_line_mesh();
 
             // Shrunk Mesh buffers
             generate_shrunk_mesh();
@@ -1209,6 +1211,100 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
             psl_point_vao.Add_vertexBuffer(psl_point_vbo, pointLayout);
 
             psl_point_vbo.AppendVertexBuffer(vertexData.ToArray());
+
+        }
+
+
+        private (Vector2 dir1, Vector2 dir2, double sigma1, double sigma2)
+            get_principal_stress_directions_and_values(point_store pt)
+        {
+
+
+            // Principal stress angle for PSL lines
+            double aPrincipalStressAngle = Math.Atan2(pt.tau_xy, pt.sigma_x - pt.sigma_y) / 2.0f;
+
+            // Principal stresses 1
+            double aPrincipalStress_sigma1 = ((pt.sigma_x + pt.sigma_y) / 2.0f +
+                            Math.Sqrt(Math.Pow((pt.sigma_x - pt.sigma_y) / 2.0f, 2) +
+                            Math.Pow(pt.tau_xy, 2)));
+
+            double sigma1_actualRangeSpan = (_rslt_extremes.max_principalStress1 - _rslt_extremes.min_principalStress1);
+
+            // Normalize principal stress 1 (pt.sigma_1)
+            aPrincipalStress_sigma1 = ((pt.sigma_1 - (_rslt_extremes.min_principalStress1)) / sigma1_actualRangeSpan);
+
+
+            // Principal stress 2
+            double aPrincipalStress_sigma2 = ((pt.sigma_x + pt.sigma_y) / 2.0f -
+                            Math.Sqrt(Math.Pow((pt.sigma_x - pt.sigma_y) / 2.0f, 2) +
+                            Math.Pow(pt.tau_xy, 2)));
+
+            double sigma2_actualRangeSpan = (_rslt_extremes.max_principalStress2 - _rslt_extremes.min_principalStress2);
+
+            // Normalize principal stress 2 (pt.sigma_2)
+            aPrincipalStress_sigma2 = ((pt.sigma_2 - (_rslt_extremes.min_principalStress2)) / sigma2_actualRangeSpan);
+
+
+            // Principal direction 1 (major principal stress)
+            Vector2 dir1 = new Vector2((float)Math.Cos(aPrincipalStressAngle), (float)Math.Sin(aPrincipalStressAngle));
+            Vector2 dir2 = new Vector2((float)Math.Cos(aPrincipalStressAngle + Math.PI / 2),
+                                       (float)Math.Sin(aPrincipalStressAngle + Math.PI / 2));
+
+
+
+            return (dir1, dir2, aPrincipalStress_sigma1, aPrincipalStress_sigma2);
+
+        }
+
+
+
+
+        private void generate_PSL_type2_line_mesh()
+        {
+
+            foreach (tri_store tri in tris)
+            {
+                // Get the points of the triangle
+                // First point
+                point_store pt1 = points[tri.pt_id1];
+
+                // Get the point 1 coordinates
+                double x1_coord = pt1.x_coord;
+                double y1_coord = pt1.y_coord;
+
+                // Calculate the principal stress angle for point 1
+                var (pt1_dir1, pt1_dir2, pt1_sigma1, pt1_sigma2) = get_principal_stress_directions_and_values(pt1);
+
+
+                // Second point
+                point_store pt2 = points[tri.pt_id2];
+
+                // Get the point 2 coordinates
+                double x2_coord = pt2.x_coord;
+                double y2_coord = pt2.y_coord;
+
+                // Calculate the principal stress angle for point 2
+                var (pt2_dir1, pt2_dir2, pt2_sigma1, pt2_sigma2) = get_principal_stress_directions_and_values(pt2);
+
+
+                // Third point
+                point_store pt3 = points[tri.pt_id3];
+
+                // Get the point 3 coordinates
+                double x3_coord = pt3.x_coord;
+                double y3_coord = pt3.y_coord;
+
+                // Calculate the principal stress angle for point 3
+                var (pt3_dir1, pt3_dir2, pt3_sigma1, pt3_sigma2) = get_principal_stress_directions_and_values(pt3);
+
+                // Integrate for stream line visualization based on the principal stress directions and values
+
+
+
+
+
+            }
+
 
         }
 
