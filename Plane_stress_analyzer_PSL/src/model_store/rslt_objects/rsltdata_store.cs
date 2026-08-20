@@ -1216,46 +1216,46 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
         }
 
 
-        private (Vector2 dir1, Vector2 dir2, double sigma1, double sigma2)
-            get_principal_stress_directions_and_values(point_store pt)
-        {
+        //private (Vector2 dir1, Vector2 dir2, double sigma1, double sigma2)
+        //    get_principal_stress_directions_and_values(point_store pt)
+        //{
 
 
-            // Principal stress angle for PSL lines
-            double aPrincipalStressAngle = Math.Atan2(pt.tau_xy, pt.sigma_x - pt.sigma_y) / 2.0f;
+        //    // Principal stress angle for PSL lines
+        //    double aPrincipalStressAngle = Math.Atan2(pt.tau_xy, pt.sigma_x - pt.sigma_y) / 2.0f;
 
-            // Principal stresses 1
-            double aPrincipalStress_sigma1 = ((pt.sigma_x + pt.sigma_y) / 2.0f +
-                            Math.Sqrt(Math.Pow((pt.sigma_x - pt.sigma_y) / 2.0f, 2) +
-                            Math.Pow(pt.tau_xy, 2)));
+        //    // Principal stresses 1
+        //    double aPrincipalStress_sigma1 = ((pt.sigma_x + pt.sigma_y) / 2.0f +
+        //                    Math.Sqrt(Math.Pow((pt.sigma_x - pt.sigma_y) / 2.0f, 2) +
+        //                    Math.Pow(pt.tau_xy, 2)));
 
-            double sigma1_actualRangeSpan = (_rslt_extremes.max_principalStress1 - _rslt_extremes.min_principalStress1);
+        //    double sigma1_actualRangeSpan = (_rslt_extremes.max_principalStress1 - _rslt_extremes.min_principalStress1);
 
-            // Normalize principal stress 1 (pt.sigma_1)
-            aPrincipalStress_sigma1 = ((pt.sigma_1 - (_rslt_extremes.min_principalStress1)) / sigma1_actualRangeSpan);
-
-
-            // Principal stress 2
-            double aPrincipalStress_sigma2 = ((pt.sigma_x + pt.sigma_y) / 2.0f -
-                            Math.Sqrt(Math.Pow((pt.sigma_x - pt.sigma_y) / 2.0f, 2) +
-                            Math.Pow(pt.tau_xy, 2)));
-
-            double sigma2_actualRangeSpan = (_rslt_extremes.max_principalStress2 - _rslt_extremes.min_principalStress2);
-
-            // Normalize principal stress 2 (pt.sigma_2)
-            aPrincipalStress_sigma2 = ((pt.sigma_2 - (_rslt_extremes.min_principalStress2)) / sigma2_actualRangeSpan);
+        //    // Normalize principal stress 1 (pt.sigma_1)
+        //    aPrincipalStress_sigma1 = ((pt.sigma_1 - (_rslt_extremes.min_principalStress1)) / sigma1_actualRangeSpan);
 
 
-            // Principal direction 1 (major principal stress)
-            Vector2 dir1 = new Vector2((float)Math.Cos(aPrincipalStressAngle), (float)Math.Sin(aPrincipalStressAngle));
-            Vector2 dir2 = new Vector2((float)Math.Cos(aPrincipalStressAngle + Math.PI / 2),
-                                       (float)Math.Sin(aPrincipalStressAngle + Math.PI / 2));
+        //    // Principal stress 2
+        //    double aPrincipalStress_sigma2 = ((pt.sigma_x + pt.sigma_y) / 2.0f -
+        //                    Math.Sqrt(Math.Pow((pt.sigma_x - pt.sigma_y) / 2.0f, 2) +
+        //                    Math.Pow(pt.tau_xy, 2)));
+
+        //    double sigma2_actualRangeSpan = (_rslt_extremes.max_principalStress2 - _rslt_extremes.min_principalStress2);
+
+        //    // Normalize principal stress 2 (pt.sigma_2)
+        //    aPrincipalStress_sigma2 = ((pt.sigma_2 - (_rslt_extremes.min_principalStress2)) / sigma2_actualRangeSpan);
+
+
+        //    // Principal direction 1 (major principal stress)
+        //    Vector2 dir1 = new Vector2((float)Math.Cos(aPrincipalStressAngle), (float)Math.Sin(aPrincipalStressAngle));
+        //    Vector2 dir2 = new Vector2((float)Math.Cos(aPrincipalStressAngle + Math.PI / 2),
+        //                               (float)Math.Sin(aPrincipalStressAngle + Math.PI / 2));
 
 
 
-            return (dir1, dir2, aPrincipalStress_sigma1, aPrincipalStress_sigma2);
+        //    return (dir1, dir2, aPrincipalStress_sigma1, aPrincipalStress_sigma2);
 
-        }
+        //}
 
 
 
@@ -1264,20 +1264,23 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
         {
             // Solve for streamlines
             // Streamline visualization based on principal stress directions and values
-            streamlines_solve streamline_tension = new streamlines_solve();
-            streamlines_solve streamline_compression = new streamlines_solve();
+            streamlines_solve streamline_tension = new streamlines_solve(isTensionLine: true);
+            streamlines_solve streamline_compression = new streamlines_solve(isTensionLine: false);
 
             foreach (point_store pt in points.Values)
             {
-                // Calculate the principal stress angle for each point
-                var (dir1, dir2, sigma1, sigma2) = get_principal_stress_directions_and_values(pt);
+                //// Calculate the principal stress angle for each point
+                //var (dir1, dir2, sigma1, sigma2) = get_principal_stress_directions_and_values(pt);
 
-                // Add the data to the streamline solver for tension and compression
-                dir1 = Vector2.Normalize(dir1);
-                dir2 = Vector2.Normalize(dir2);
+                //// Add the data to the streamline solver for tension and compression
+                //dir1 = Vector2.Normalize(dir1);
+                //dir2 = Vector2.Normalize(dir2);
 
-                streamline_tension.add_point_data(pt.point_id, new OpenTK.Vector2((float)pt.x_coord, (float)pt.y_coord), dir1, sigma1);
-                streamline_compression.add_point_data(pt.point_id, new OpenTK.Vector2((float)pt.x_coord, (float)pt.y_coord), dir2, sigma2);
+                streamline_tension.add_point_data(pt.point_id, new OpenTK.Vector2((float)pt.x_coord, (float)pt.y_coord), 
+                    (float)pt.sigma_x, (float)pt.sigma_y, (float)pt.tau_xy);
+                streamline_compression.add_point_data(pt.point_id, new OpenTK.Vector2((float)pt.x_coord, (float)pt.y_coord),
+                    (float)pt.sigma_x, (float)pt.sigma_y, (float)pt.tau_xy);
+
 
             }
 
@@ -1290,7 +1293,12 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
             }
 
 
+            int targetSeedCount = 100; // Number of seed points for streamlines
 
+
+            // Calculate streamlines for tension and compression
+            streamline_tension.calculate_streamlines(targetSeedCount);
+            streamline_compression.calculate_streamlines(targetSeedCount);
 
 
 
