@@ -18,7 +18,7 @@ namespace src.model_store.rslt_objects
     public class streamlines_solve
     {
 
-        private class nodedata_store
+        internal sealed class nodedata_store
         {
             public int point_id { get; set; }
             public OpenTK.Vector2 location { get; set; }
@@ -31,7 +31,7 @@ namespace src.model_store.rslt_objects
         }
 
 
-        private class triangledata_store
+        internal sealed class triangledata_store
         {
             public int tri_id { get; set; }
             public int pt_id1 { get; set; }
@@ -40,7 +40,7 @@ namespace src.model_store.rslt_objects
 
         }
 
-        private class boundaryedges_store
+        internal sealed class boundaryedges_store
         {
             public int edge_id { get; set; }
             public int pt_id1 { get; set; }
@@ -52,31 +52,8 @@ namespace src.model_store.rslt_objects
         }
 
 
-        private StressTensor GetStressAtPoint(OpenTK.Vector2 point)
-        {
-            // Find the triangle containing this point
-            var triangle = FindContainingTriangle(point);
-            if (triangle == null) return null;
 
-            // Get the three vertices and their stress tensors
-            var v1 = point_data[triangle.pt_id1];
-            var v2 = point_data[triangle.pt_id2];
-            var v3 = point_data[triangle.pt_id3];
-
-            // Compute barycentric coordinates
-            var weights = ComputeBarycentricWeights(point, v1.location, v2.location, v3.location);
-
-            // Interpolate stress tensor components
-            // Assuming you have stress tensor data (σxx, σyy, σxy) at each node
-            float sigmaXX = weights.w1 * v1.sigmaXX + weights.w2 * v2.sigmaXX + weights.w3 * v3.sigmaXX;
-            float sigmaYY = weights.w1 * v1.sigmaYY + weights.w2 * v2.sigmaYY + weights.w3 * v3.sigmaYY;
-            float sigmaXY = weights.w1 * v1.sigmaXY + weights.w2 * v2.sigmaXY + weights.w3 * v3.sigmaXY;
-
-            return new StressTensor(sigmaXX, sigmaYY, sigmaXY);
-        }
-
-
-        private class StressTensor
+        internal sealed class StressTensor
         {
             public float SigmaXX { get; set; }
             public float SigmaYY { get; set; }
@@ -104,6 +81,31 @@ namespace src.model_store.rslt_objects
 
                 return (sigma1, sigma2, angle);
             }
+        }
+
+
+
+        private StressTensor GetStressAtPoint(OpenTK.Vector2 point)
+        {
+            // Find the triangle containing this point
+            var triangle = FindContainingTriangle(point);
+            if (triangle == null) return null;
+
+            // Get the three vertices and their stress tensors
+            var v1 = point_data[triangle.pt_id1];
+            var v2 = point_data[triangle.pt_id2];
+            var v3 = point_data[triangle.pt_id3];
+
+            // Compute barycentric coordinates
+            var weights = ComputeBarycentricWeights(point, v1.location, v2.location, v3.location);
+
+            // Interpolate stress tensor components
+            // Assuming you have stress tensor data (σxx, σyy, σxy) at each node
+            float sigmaXX = weights.w1 * v1.sigmaXX + weights.w2 * v2.sigmaXX + weights.w3 * v3.sigmaXX;
+            float sigmaYY = weights.w1 * v1.sigmaYY + weights.w2 * v2.sigmaYY + weights.w3 * v3.sigmaYY;
+            float sigmaXY = weights.w1 * v1.sigmaXY + weights.w2 * v2.sigmaXY + weights.w3 * v3.sigmaXY;
+
+            return new StressTensor(sigmaXX, sigmaYY, sigmaXY);
         }
 
 
@@ -418,9 +420,11 @@ namespace src.model_store.rslt_objects
 
             this.streamlines.Clear();
 
+            float geomsize = gvariables_static.geom_size;
+
             foreach (OpenTK.Vector2 seed_point in seed_points)
             {
-                streamline_result streamline = TraceStressLine(seed_point, isTensionLine, stepSize: 0.1f, maxSteps: 1000);
+                streamline_result streamline = TraceStressLine(seed_point, isTensionLine, stepSize: geomsize / 1000.0f, maxSteps: 1000);
                 this.streamlines.Add(streamline);
 
             }
@@ -487,15 +491,16 @@ namespace src.model_store.rslt_objects
             float currentStepSize = stepSize;
             int direction = forward ? 1 : -1;
 
-            for (int i = 0; i < maxSteps; i++)
+            //for (int i = 0; i < maxSteps; i++)
+            while(true)
             {
                 points.Add(currentPoint);
 
                 // Get direction based on stress state
                 OpenTK.Vector2 directionVector = GetStressLineDirection(currentPoint, isTensionLine);
 
-                if (directionVector.LengthSquared < 0.0001f)
-                    break;
+                //if (directionVector.LengthSquared < 0.0001f)
+                //    break;
 
                 directionVector.Normalize();
                 if (!forward) directionVector = -directionVector;
@@ -506,31 +511,31 @@ namespace src.model_store.rslt_objects
                 // Check if next point is inside mesh
                 if (!IsPointInsideMesh(nextPoint))
                 {
-                    // Try smaller step
-                    if (currentStepSize > 0.001f)
-                    {
-                        currentStepSize *= 0.5f;
-                        i--; // Retry this iteration
-                        continue;
-                    }
+                    //// Try smaller step
+                    //if (currentStepSize > 0.001f)
+                    //{
+                    //    currentStepSize *= 0.5f;
+                    //    i--; // Retry this iteration
+                    //    continue;
+                    //}
                     break;
                 }
 
-                // Check for convergence
-                if ((nextPoint - currentPoint).Length < 1e-7f)
-                    break;
+                //// Check for convergence
+                //if ((nextPoint - currentPoint).Length < 1e-7f)
+                //    break;
 
                 currentPoint = nextPoint;
 
-                // Adaptive step size based on curvature
-                if (i % 2 == 0 && i > 0)
-                {
-                    float curvature = EstimateCurvature(points);
-                    if (curvature > 0.1f && currentStepSize > 0.001f)
-                        currentStepSize *= 0.8f; // Smaller steps in high curvature
-                    else if (curvature < 0.01f && currentStepSize < stepSize)
-                        currentStepSize = Math.Min(stepSize, currentStepSize * 1.2f);
-                }
+                //// Adaptive step size based on curvature
+                //if (i % 2 == 0 && i > 0)
+                //{
+                //    float curvature = EstimateCurvature(points);
+                //    if (curvature > 0.1f && currentStepSize > 0.001f)
+                //        currentStepSize *= 0.8f; // Smaller steps in high curvature
+                //    else if (curvature < 0.01f && currentStepSize < stepSize)
+                //        currentStepSize = Math.Min(stepSize, currentStepSize * 1.2f);
+                //}
             }
         }
 
@@ -545,21 +550,21 @@ namespace src.model_store.rslt_objects
             // k2
             OpenTK.Vector2 mid1 = point + 0.5f * stepSize * k1;
             OpenTK.Vector2 dir2 = GetStressLineDirection(mid1, isTensionLine);
-            if (dir2.LengthSquared < 0.0001f) return point;
+            // if (dir2.LengthSquared < 0.0001f) return point;
             dir2.Normalize();
             OpenTK.Vector2 k2 = dir2;
 
             // k3
             OpenTK.Vector2 mid2 = point + 0.5f * stepSize * k2;
             OpenTK.Vector2 dir3 = GetStressLineDirection(mid2, isTensionLine);
-            if (dir3.LengthSquared < 0.0001f) return point;
+            // if (dir3.LengthSquared < 0.0001f) return point;
             dir3.Normalize();
             OpenTK.Vector2 k3 = dir3;
 
             // k4
             OpenTK.Vector2 end = point + stepSize * k3;
             OpenTK.Vector2 dir4 = GetStressLineDirection(end, isTensionLine);
-            if (dir4.LengthSquared < 0.0001f) return point;
+            // if (dir4.LengthSquared < 0.0001f) return point;
             dir4.Normalize();
             OpenTK.Vector2 k4 = dir4;
 

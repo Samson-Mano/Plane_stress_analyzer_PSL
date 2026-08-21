@@ -826,48 +826,24 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
 
             // Pre-computed MVP matrix on CPU for better performance
             uniform mat4 uMVP;           // Model-View-Projection matrix
-            uniform float geomscale = 1.0f; // Geometry scale factor
-            uniform float sinevalue = 1.0f;                    
-            uniform float modelpercent = 0.01; // default 1 % scale factor             
-
-            layout(location = 0) in vec2 aPosition;
-            layout(location = 1) in vec2 aDisplacement;
-            layout(location = 2) in float aDisplacementMagnitude;
-            layout(location = 3) in float aSigma1; // Principal stress value 1
-            layout(location = 4) in float aSigma2; // Principal stress value 2
-            layout(location = 5) in vec2 aDirection1; // Direction of principal stress 1 x 
-            layout(location = 6) in vec2 aDirection2; // Direction of principal stress 2 x 
-            
-            out float v_geomscale;        // Pass geomscale to fragment
-
-            out vec2 v_worldPos;         // World position for distance calculations
-
-            out float v_sigma1;          // Pass sigma1 to fragment
-            out float v_sigma2;          // Pass sigma2 to fragment
-
-            out vec2 v_direction1;       // Pass direction1 to fragment
-            out vec2 v_direction2;       // Pass direction2 to fragment                    
-
                     
+            layout(location = 0) in vec2 aPosition;
+            layout(location = 1) in float colorOption;
+            
+            out vec4 vColor;            
+                  
             void main()
             {
-                float scalevalue = geomscale * modelpercent * aDisplacementMagnitude;
-                vec2 scaledDisplacement = aDisplacement * scalevalue * sinevalue;
 
-                gl_Position = uMVP * vec4(aPosition + scaledDisplacement, 0.0, 1.0);
+                gl_Position = uMVP * vec4(aPosition, 0.0, 1.0);
                 
-                // float contourcolor = aDisplacementMagnitude * sinevalue;  
+                if (colorOption == 0.0)
+                    vColor = vec4(1.0, 0.0, 0.0, 1.0); // Red for tension
+                else if (colorOption == 1.0)
+                    vColor = vec4(0.0, 0.0, 1.0, 1.0); // Blue for compression
+                else
+                    vColor = vec4(1.0, 1.0, 1.0, 1.0); // Default color
 
-                
-                // Pass the principal stress values and angle to the fragment shader
-                v_geomscale = geomscale;
-                v_worldPos = aPosition + scaledDisplacement;
-
-                v_sigma1 = aSigma1;
-                v_sigma2 = aSigma2;
-
-                v_direction1 = aDirection1;
-                v_direction2 = aDirection2;
 
             }
 
@@ -882,118 +858,15 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
 
             return @"
             
-           #version 330 core
+            #version 330 core
 
-            uniform float uLineWidth = 2.0;
-
-            uniform bool uShowTension = true;
-            uniform bool uShowCompression = true;
-            uniform vec3 uTensionColor = vec3(1.0, 0.0, 0.0);
-            uniform vec3 uCompressionColor = vec3(0.0, 0.0, 1.0);
-
-            uniform float uStepSize = 0.01;
-            uniform int uMaxSteps = 100;
-
-            in vec2  v_worldPos;
-            in float v_sigma1;
-            in float v_sigma2;
-            in vec2  v_direction1;
-            in vec2  v_direction2;
-
-            out vec4 fragColor;
-
-
-            // Helper function for distance to line segment
-            float distToLine(vec2 p, vec2 a, vec2 b) 
+            in vec4 vColor;
+            out vec4 fColor;
+    
+            void main()
             {
-                vec2 ap = p - a;
-                vec2 ab = b - a;
-                float lenSq = dot(ab, ab);
-                if (lenSq == 0.0) return length(ap);
-    
-                float t = clamp(dot(ap, ab) / lenSq, 0.0, 1.0);
-                vec2 closest = a + t * ab;
-                return length(p - closest);
-            }
-
-
-            // Function to compute distance to a streamline
-            float distToStreamline(vec2 point, vec2 seed, vec2 direction, float stepSize, int maxSteps) 
-            {
-                vec2 pos = seed;
-                float minDist = 999.0;
-    
-                // Trace forward
-                for (int i = 0; i < maxSteps; i++) 
-	            {
-                    // In practice, you'd sample from a texture or field
-                    // Here we use the interpolated direction
-                    vec2 nextPos = pos + direction * stepSize;
-                    float d = distToLine(point, pos, nextPos);
-                    minDist = min(minDist, d);
-                    pos = nextPos;
-        
-                    // Break if too far
-                    if (length(pos - seed) > 1.0) break;
-                }
-    
-                // Trace backward
-                pos = seed;
-                for (int i = 0; i < maxSteps; i++) 
-	            {
-                    vec2 nextPos = pos - direction * stepSize;
-                    float d = distToLine(point, pos, nextPos);
-                    minDist = min(minDist, d);
-                    pos = nextPos;
-        
-                    if (length(pos - seed) > 1.0) break;
-                }
-    
-                return minDist;
-            }
-
-            void main() 
-            {
-                vec3 color = vec3(0.0);
-                float alpha = 0.0;
-    
-
-                vec2 pos = v_worldPos;
-    
-                // Seed grid for streamlines
-                float gridSize = 0.1;
-                vec2 gridPos = floor(pos / gridSize) * gridSize + gridSize * 0.5;
-                vec2 offset = pos - gridPos;
-    
-                float lineWidth = uLineWidth * 0.001;
-    
-                // Process tension lines
-                if (uShowTension && v_sigma1 > 0.01) 
-	            {
-                    float dist = distToStreamline(pos, gridPos, v_direction1, uStepSize, uMaxSteps);
-        
-                    if (dist < lineWidth) 
-		            {
-                        float intensity = v_sigma1 * (1.0 - dist / lineWidth);
-                        color += uTensionColor * intensity;
-                        alpha = max(alpha, intensity * 0.8);
-                    }
-                }
-    
-                // Process compression lines
-                if (uShowCompression && v_sigma2 > 0.01) 
-	            {
-                    float dist = distToStreamline(pos, gridPos, v_direction2, uStepSize, uMaxSteps);
-        
-                    if (dist < lineWidth) 
-		            {
-                        float intensity = v_sigma2 * (1.0 - dist / lineWidth);
-                        color += uCompressionColor * intensity;
-                        alpha = max(alpha, intensity * 0.8);
-                    }
-                }
-    
-                fragColor = vec4(clamp(color, 0.0, 1.0), clamp(alpha, 0.0, 1.0));
+                // Simple color output without lighting
+                fColor = vColor;
             }
 
         ";

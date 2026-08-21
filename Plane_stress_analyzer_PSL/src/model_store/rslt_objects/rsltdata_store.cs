@@ -141,6 +141,11 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
         private VertexBuffer psl_point_vbo;
         private VertexArray psl_point_vao;
 
+        // PSL lines vertex buffer and vertex array object
+        private VertexBuffer psl2_point_vbo;
+        private VertexArray psl2_point_vao;
+        private IndexBuffer psl2_lines_ibo;
+
 
         // Index buffer for the points, wireframe lines, and triangles (EBO)
         private IndexBuffer point_ibo;
@@ -534,16 +539,16 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
             {
 
                 rsltPSLType2Shader.Bind();
-                psl_point_vao.Bind();
-                if (triangle_ibo.BufferCount > 0)
+                psl2_point_vao.Bind();
+                if (psl2_lines_ibo.BufferCount > 0)
                 {
-                    // Paint the Result triangle mesh
-                    triangle_ibo.Bind();
-                    GL.DrawElements(PrimitiveType.Triangles, triangle_ibo.BufferCount,
+                    // Paint the Result Stress lines
+                    psl2_lines_ibo.Bind();
+                    GL.DrawElements(PrimitiveType.Lines, psl2_lines_ibo.BufferCount,
                         DrawElementsType.UnsignedInt, 0);
-                    triangle_ibo.UnBind();
+                    psl2_lines_ibo.UnBind();
                 }
-                psl_point_vao.UnBind();
+                psl2_point_vao.UnBind();
                 rsltPSLType2Shader.UnBind();
             }
               
@@ -1142,7 +1147,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
 
 
                 // Principal stress angle for PSL lines
-                float aPrincipalStressAngle = (float)Math.Atan2(pt.tau_xy, pt.sigma_x - pt.sigma_y) / 2.0f;
+                float aPrincipalStressAngle = (float)Math.Atan2(2.0 *pt.tau_xy, pt.sigma_x - pt.sigma_y) / 2.0f;
 
                 // Principal stresses 1
                 float aPrincipalStress_sigma1 = (float)((pt.sigma_x + pt.sigma_y) / 2.0f +
@@ -1300,7 +1305,54 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
             streamline_tension.calculate_streamlines(targetSeedCount);
             streamline_compression.calculate_streamlines(targetSeedCount);
 
+            //____________________________________________________________________________________________________
 
+            List<float> vertexData = new List<float>();
+            List<int> lineIndexData = new List<int>();
+
+            int pt_id = 0;
+
+            for (int i = 0; i < streamline_tension.streamlines.Count; i++)
+            {
+                var streamline = streamline_tension.streamlines[i];
+
+                foreach (OpenTK.Vector2 pt in streamline.streamline_points)
+                {
+                    vertexData.Add(pt.X);
+                    vertexData.Add(pt.Y);
+                    vertexData.Add(0.0f); // color option for tension (0.0)
+
+                    lineIndexData.Add(pt_id + 0);
+                    lineIndexData.Add(pt_id + 1);
+                    pt_id++;
+                }
+
+                // Remove the last index to avoid connecting to the next streamline
+                if (lineIndexData.Count > 1)
+                {
+                    lineIndexData.RemoveAt(lineIndexData.Count - 1);
+                    lineIndexData.RemoveAt(lineIndexData.Count - 1);
+                }
+
+            }
+
+
+            //____________________________________________________________________________________________________
+            // Create VAO and VBO for points
+            psl2_point_vao = new VertexArray();
+            psl2_point_vbo = new VertexBuffer(Math.Max(10, vertexData.Count));
+            psl2_lines_ibo = new IndexBuffer(Math.Max(10, lineIndexData.Count));
+
+            VertexBufferLayout pointLayout = new VertexBufferLayout();
+            pointLayout.AddFloat(2);  // x and y coordinates
+            pointLayout.AddFloat(1); // color option
+
+
+
+            psl2_point_vao.Add_vertexBuffer(psl2_point_vbo, pointLayout);
+
+            psl2_point_vbo.AppendVertexBuffer(vertexData.ToArray());
+            psl2_lines_ibo.AppendIndexBuffer(lineIndexData.ToArray());
 
 
         }
@@ -1368,9 +1420,9 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
             //____________________________________________________________________________________________
             // Update the PSL shader uniforms type 2
             rsltPSLType2Shader.SetMatrix4("uMVP", uMVP);
-            rsltPSLType2Shader.SetFloat("geomscale", gvariables_static.geom_size);
+            // rsltPSLType2Shader.SetFloat("geomscale", gvariables_static.geom_size);
 
-            rsltPSLType2Shader.SetFloat("modelpercent", model_percent);
+            // rsltPSLType2Shader.SetFloat("modelpercent", model_percent);
 
         }
 
@@ -1384,7 +1436,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
 
 
             rsltPSLShader.SetFloat("sinevalue", sine_oscillation);
-            rsltPSLType2Shader.SetFloat("sinevalue", sine_oscillation);
+            // rsltPSLType2Shader.SetFloat("sinevalue", sine_oscillation);
             // rsltPSLShader.SetFloat("uLineOpacity", 1.0f);
 
 
