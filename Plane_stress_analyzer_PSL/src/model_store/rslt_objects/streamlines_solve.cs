@@ -417,6 +417,7 @@ namespace src.model_store.rslt_objects
 
             // Generate seed points for streamlines
             List<OpenTK.Vector2> seed_points = GenerateSeedPoints(targetSeedCount);
+            // List<OpenTK.Vector2> seed_points = GenerateGridSeedPoints(targetSeedCount);
 
             this.streamlines.Clear();
 
@@ -491,8 +492,10 @@ namespace src.model_store.rslt_objects
             float currentStepSize = stepSize;
             int direction = forward ? 1 : -1;
 
+            int i = 0;
+
             //for (int i = 0; i < maxSteps; i++)
-            while(true)
+            while (true)
             {
                 points.Add(currentPoint);
 
@@ -506,7 +509,7 @@ namespace src.model_store.rslt_objects
                 if (!forward) directionVector = -directionVector;
 
                 // Adaptive RK4 with error control
-                OpenTK.Vector2 nextPoint = StepRK4(currentPoint, directionVector, currentStepSize, isTensionLine);
+                OpenTK.Vector2 nextPoint = StepRK4(currentPoint, directionVector, direction, currentStepSize, isTensionLine);
 
                 // Check if next point is inside mesh
                 if (!IsPointInsideMesh(nextPoint))
@@ -536,40 +539,45 @@ namespace src.model_store.rslt_objects
                 //    else if (curvature < 0.01f && currentStepSize < stepSize)
                 //        currentStepSize = Math.Min(stepSize, currentStepSize * 1.2f);
                 //}
+
+                if(i > 100000) break;
+
+                i++;
             }
         }
 
 
 
-        private OpenTK.Vector2 StepRK4(OpenTK.Vector2 point, OpenTK.Vector2 direction,
+        private OpenTK.Vector2 StepRK4(OpenTK.Vector2 point, OpenTK.Vector2 directionVector,
+                                       int direction,
                                        float stepSize, bool isTensionLine)
         {
             // k1
-            OpenTK.Vector2 k1 = direction;
+            OpenTK.Vector2 k1 = directionVector;
 
             // k2
-            OpenTK.Vector2 mid1 = point + 0.5f * stepSize * k1;
+            OpenTK.Vector2 mid1 = point + 0.5f * stepSize * k1 * direction;
             OpenTK.Vector2 dir2 = GetStressLineDirection(mid1, isTensionLine);
             // if (dir2.LengthSquared < 0.0001f) return point;
             dir2.Normalize();
             OpenTK.Vector2 k2 = dir2;
 
             // k3
-            OpenTK.Vector2 mid2 = point + 0.5f * stepSize * k2;
+            OpenTK.Vector2 mid2 = point + 0.5f * stepSize * k2 * direction;
             OpenTK.Vector2 dir3 = GetStressLineDirection(mid2, isTensionLine);
             // if (dir3.LengthSquared < 0.0001f) return point;
             dir3.Normalize();
             OpenTK.Vector2 k3 = dir3;
 
             // k4
-            OpenTK.Vector2 end = point + stepSize * k3;
+            OpenTK.Vector2 end = point + stepSize * k3 * direction;
             OpenTK.Vector2 dir4 = GetStressLineDirection(end, isTensionLine);
             // if (dir4.LengthSquared < 0.0001f) return point;
             dir4.Normalize();
             OpenTK.Vector2 k4 = dir4;
 
             // Combine
-            OpenTK.Vector2 step = (stepSize / 6f) * (k1 + 2f * k2 + 2f * k3 + k4);
+            OpenTK.Vector2 step = (stepSize / 6f) * (k1 + 2f * k2 + 2f * k3 + k4) * direction;
             return point + step;
         }
 
@@ -747,6 +755,38 @@ namespace src.model_store.rslt_objects
         }
 
 
+        private List<OpenTK.Vector2> GenerateGridSeedPoints(int targetSeedCount)
+        {
+            List<OpenTK.Vector2> seed_points = new List<OpenTK.Vector2>();
+         
+            // Get mesh bounds
+            var bounds = GetMeshBounds();
+            float width = bounds.Width;
+            float height = bounds.Height;
+            
+            // Determine grid size based on target seed count
+            int gridCols = (int)Math.Sqrt(targetSeedCount * (width / height));
+            int gridRows = (int)Math.Sqrt(targetSeedCount * (height / width));
+            float cellWidth = width / gridCols;
+            float cellHeight = height / gridRows;
+            for (int i = 0; i < gridCols; i++)
+            {
+                for (int j = 0; j < gridRows; j++)
+                {
+                    // Calculate the center of the cell
+                    float x = bounds.Left + (i + 0.5f) * cellWidth;
+                    float y = bounds.Top + (j + 0.5f) * cellHeight;
+                    OpenTK.Vector2 seedPoint = new OpenTK.Vector2(x, y);
+                    // Check if the point is inside the mesh
+                    if (IsPointInsideMesh(seedPoint))
+                    {
+                        seed_points.Add(seedPoint);
+                    }
+                }
+            }
+            return seed_points;
+        }
+
 
         private List<OpenTK.Vector2> GenerateSeedPoints(int targetSeedCount)
         {
@@ -789,8 +829,8 @@ namespace src.model_store.rslt_objects
                         float t = (j + 0.5f) / seedsForThisEdge;
                         OpenTK.Vector2 seed = OpenTK.Vector2.Lerp(p1, p2, t);
 
-                        // // Offset slightly inside the domain (opposite to outward normal)
-                        // seed -= edge.outward_normal * 0.01f; // Move into the domain
+                        // Offset slightly inside the domain (opposite to outward normal)
+                        seed -= edge.outward_normal * 0.01f; // Move into the domain
 
                         seed_points.Add(seed);
                         seedsPlaced++;
@@ -819,6 +859,26 @@ namespace src.model_store.rslt_objects
                     // seed -= edge.outward_normal * 0.01f; // Move into the domain
                     seed_points.Add(seed);
                 }
+
+                //for (int i = 0; i < boundary_edges.Count; i++)
+                //{
+                //    boundaryedges_store edge = boundary_edges[i];
+
+                //    var p1 = point_data[edge.pt_id1].location;
+                //    var p2 = point_data[edge.pt_id2].location;
+
+
+                //    OpenTK.Vector2 seed = OpenTK.Vector2.Lerp(p1, p2, 0.5f);
+
+                //    // Offset slightly inside the domain (opposite to outward normal)
+                //    seed -= edge.outward_normal * 0.01f; // Move into the domain
+
+                //    seed_points.Add(seed);
+
+                //}
+
+
+
             }
 
             return seed_points;

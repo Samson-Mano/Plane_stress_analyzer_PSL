@@ -1337,6 +1337,32 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
             }
 
 
+
+            for (int i = 0; i < streamline_compression.streamlines.Count; i++)
+            {
+                var streamline = streamline_compression.streamlines[i];
+
+                foreach (OpenTK.Vector2 pt in streamline.streamline_points)
+                {
+                    vertexData.Add(pt.X);
+                    vertexData.Add(pt.Y);
+                    vertexData.Add(1.0f); // color option for compression (1.0)
+
+                    lineIndexData.Add(pt_id + 0);
+                    lineIndexData.Add(pt_id + 1);
+                    pt_id++;
+                }
+
+                // Remove the last index to avoid connecting to the next streamline
+                if (lineIndexData.Count > 1)
+                {
+                    lineIndexData.RemoveAt(lineIndexData.Count - 1);
+                    lineIndexData.RemoveAt(lineIndexData.Count - 1);
+                }
+
+            }
+
+
             //____________________________________________________________________________________________________
             // Create VAO and VBO for points
             psl2_point_vao = new VertexArray();
