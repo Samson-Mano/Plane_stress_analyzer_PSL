@@ -54,6 +54,9 @@
     <ClCompile Include="solver\utility\ipresult_extrapolator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="solver\stress_line_calculator\streamfunction_solver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="system_store\stress_system_store.h">
@@ -87,6 +90,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="solver\utility\ipresult_extrapolator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="solver\stress_line_calculator\streamfunction_solver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

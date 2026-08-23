@@ -147,6 +147,7 @@
     <ClCompile Include="solver\element_formulation\trielement_formulation.cpp" />
     <ClCompile Include="solver\polynomial_2dmesh_store.cpp" />
     <ClCompile Include="solver\stress2d_solver.cpp" />
+    <ClCompile Include="solver\stress_line_calculator\streamfunction_solver.cpp" />
     <ClCompile Include="solver\utility\integration_rules.cpp" />
     <ClCompile Include="solver\utility\ipresult_extrapolator.cpp" />
     <ClCompile Include="solver\utility\shapefunction_store.cpp" />
@@ -161,6 +162,7 @@
     <ClInclude Include="solver\element_formulation\trielement_formulation.h" />
     <ClInclude Include="solver\polynomial_2dmesh_store.h" />
     <ClInclude Include="solver\stress2d_solver.h" />
+    <ClInclude Include="solver\stress_line_calculator\streamfunction_solver.h" />
     <ClInclude Include="solver\utility\integration_rules.h" />
     <ClInclude Include="solver\utility\ipresult_extrapolator.h" />
     <ClInclude Include="solver\utility\shapefunction_store.h" />

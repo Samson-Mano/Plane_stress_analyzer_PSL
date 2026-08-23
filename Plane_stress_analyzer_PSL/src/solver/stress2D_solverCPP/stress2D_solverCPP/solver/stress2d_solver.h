@@ -25,7 +25,7 @@
 typedef Eigen::SparseMatrix<double> SparseMatrix;
 #pragma warning(pop)
 
-
+#include "stress_line_calculator/streamfunction_solver.h"
 
 #include "../system_store/stopwatch_events.h"
 #include "../system_store/stress_system_store.h"

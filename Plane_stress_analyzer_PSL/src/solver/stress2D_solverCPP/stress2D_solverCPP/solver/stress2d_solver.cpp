@@ -946,6 +946,23 @@ void stress2d_solver::map_results_to_rendererelements()
 
 	}
 
+	// Stream Function solve
+	streamfunction_solver streamtension_solver;
+
+	streamtension_solver.compute_streamfunction(polynomial_2dmesh.renderer_node_points, polynomial_2dmesh.renderer_element_triangles, 
+		true, nullptr);
+
+
+	streamfunction_solver streamcompression_solver;
+
+	streamcompression_solver.compute_streamfunction(polynomial_2dmesh.renderer_node_points, polynomial_2dmesh.renderer_element_triangles, 
+		false, nullptr);
+
+
+
+
+
+
 }
 
 
@@ -999,6 +1016,9 @@ bool stress2d_solver::store_results()
 		double max_shear = node.max_shear;
 		double theta_p = node.theta_p;
 
+		double streamfunction_tension = node.streamfunction_tension;
+		double streamfunction_compression = node.streamfunction_compression;
+
 
 		bin_file.write(reinterpret_cast<const char*>(&nodeid), sizeof(int32_t));
 		bin_file.write(reinterpret_cast<const char*>(&node.x), sizeof(double));
@@ -1017,6 +1037,8 @@ bool stress2d_solver::store_results()
 		bin_file.write(reinterpret_cast<const char*>(&von_mises), sizeof(double));
 		bin_file.write(reinterpret_cast<const char*>(&max_shear), sizeof(double));
 		bin_file.write(reinterpret_cast<const char*>(&theta_p), sizeof(double));
+		bin_file.write(reinterpret_cast<const char*>(&streamfunction_tension), sizeof(double));
+		bin_file.write(reinterpret_cast<const char*>(&streamfunction_compression), sizeof(double));	
 
 	}
 

@@ -50,6 +50,10 @@ struct renderer_node
 	double max_shear = 0.0; // Maximum shear stress
 	double theta_p = 0.0; // Principal stress angle
 
+	double streamfunction_tension = 0.0; // Streamfunction tension (for visualization of stress flow)
+	double streamfunction_compression = 0.0; // Streamfunction compression (for visualization of stress flow)
+
+
 };
 
 

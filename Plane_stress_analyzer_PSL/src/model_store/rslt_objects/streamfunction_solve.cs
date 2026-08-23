@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 using static src.model_store.rslt_objects.streamlines_solve;
 
 using MathNet.Numerics.LinearAlgebra;
+using MathNet.Numerics.LinearAlgebra.Double;
+using System.Collections.Concurrent;
+
 
 
 namespace src.model_store.rslt_objects
@@ -68,6 +71,21 @@ namespace src.model_store.rslt_objects
         }
 
 
+        internal sealed class MatrixEntry
+        {
+            public int Row { get; set; }
+            public int Col { get; set; }
+            public double Value { get; set; }
+        }
+
+        internal sealed class VectorEntry
+        {
+            public int Node { get; set; }
+            public double Value { get; set; }
+        }
+
+      
+
         // Stream function values for each node, indexed by point_id
         public Dictionary<int, double> streamfunction_values = new Dictionary<int, double>();
 
@@ -78,13 +96,17 @@ namespace src.model_store.rslt_objects
         bool isTensionLine = true; // true for tension lines, false for compression lines
 
 
-       
+        private ConcurrentBag<MatrixEntry> matrixEntries;
+        private ConcurrentBag<VectorEntry> vectorEntries;
 
         public streamfunction_solve(bool isTensionLine)
         {
             // Initialize the dictionaries
             point_data = new Dictionary<int, nodedata_store>();
             triangle_data = new Dictionary<int, triangledata_store>();
+
+            matrixEntries = new ConcurrentBag<MatrixEntry>();
+            vectorEntries = new ConcurrentBag<VectorEntry>();
 
             this.isTensionLine = isTensionLine;
         }
@@ -130,82 +152,132 @@ namespace src.model_store.rslt_objects
                 node_index++;
             }
 
-
-            // Create the global K matrix and F vector
             int num_nodes = point_data.Count;
 
-            Matrix<double> K_global = Matrix<double>.Build.Dense(num_nodes, num_nodes);
-            Vector<double> F_global = Vector<double>.Build.Dense(num_nodes);
+            // Use coordinate storage for efficient assembly
+            matrixEntries = new ConcurrentBag<MatrixEntry>();
+            vectorEntries = new ConcurrentBag<VectorEntry>();
 
-            foreach (triangledata_store tri in triangle_data.Values)
+            // Parallel assembly of both K and F
+            Parallel.ForEach(triangle_data.Values, tri =>
             {
-                Matrix3d K_element = getElementKmatrix(tri.tri_id);
-                Vector3d F_element = getElementFVector(tri.tri_id);
+                Matrix3d localK = getElementKMatrix(tri.tri_id);
+                Vector3d localF = getElementFVector(tri.tri_id);
 
-                // Map local element nodes to global node indices
-                int i1 = nodeid_map[tri.pt_id1];
-                int i2 = nodeid_map[tri.pt_id2];
-                int i3 = nodeid_map[tri.pt_id3];
+                // Get global node indices
+                int g1 = nodeid_map[tri.pt_id1];
+                int g2 = nodeid_map[tri.pt_id2];
+                int g3 = nodeid_map[tri.pt_id3];
+                int[] globalNodes = new int[] { g1, g2, g3 };
+
+                // Add K contributions
+                for (int i = 0; i < 3; i++)
+                {
+                    for (int j = 0; j < 3; j++)
+                    {
+                        double value = localK[i, j];
+                        if (Math.Abs(value) > 1e-15)
+                        {
+                            matrixEntries.Add(new MatrixEntry
+                            {
+                                Row = globalNodes[i],
+                                Col = globalNodes[j],
+                                Value = value
+                            });
+                        }
+                    }
+                }
+
+                // Add F contributions
+                vectorEntries.Add(new VectorEntry { Node = g1, Value = localF.X });
+                vectorEntries.Add(new VectorEntry { Node = g2, Value = localF.Y });
+                vectorEntries.Add(new VectorEntry { Node = g3, Value = localF.Z });
+            });
 
 
-                // Assemble the global K matrix
-                K_global[i1, i1] += K_element.M11;
-                K_global[i1, i2] += K_element.M12;
-                K_global[i1, i3] += K_element.M13;
-                K_global[i2, i1] += K_element.M21;
-                K_global[i2, i2] += K_element.M22;
-                K_global[i2, i3] += K_element.M23;
-                K_global[i3, i1] += K_element.M31;
-                K_global[i3, i2] += K_element.M32;
-                K_global[i3, i3] += K_element.M33;
+            // Build sparse matrix from coordinate format efficiently
+            // Use ToArray() only once per array
+            var entriesArray = matrixEntries.ToArray();
+            int entryCount = entriesArray.Length;
 
-                // Assemble the global F vector
-                F_global[i1] += F_element.X;
-                F_global[i2] += F_element.Y;
-                F_global[i3] += F_element.Z;
+            var rowIndices = new int[entryCount];
+            var colIndices = new int[entryCount];
+            var values = new double[entryCount];
+
+            for (int i = 0; i < entryCount; i++)
+            {
+                rowIndices[i] = entriesArray[i].Row;
+                colIndices[i] = entriesArray[i].Col;
+                values[i] = entriesArray[i].Value;
+            }
+
+            // Create sparse matrix
+            var sparseK = Matrix<double>.Build.SparseFromCoordinateFormat(
+                num_nodes, num_nodes, entryCount,
+                rowIndices, colIndices, values);
+
+            // Assemble F vector from parallel contributions
+            var F_global = Vector<double>.Build.Dense(num_nodes);
+
+
+            foreach (VectorEntry fEntry in vectorEntries.ToArray())
+            {
+                F_global[fEntry.Node] += fEntry.Value;
             }
 
 
-            // Solve the system of equations K_global * psi = F_global
-            // psi = 0.0 at first node
+            // Apply boundary condition more efficiently for sparse matrices
+            // Instead of SubMatrix (which creates a new dense matrix), use a different approach
 
-            // Apply boundary condition: psi = 0 at the first node
+            // Option 1: If you want to keep the original approach
+            // var K_reduced = sparseK.SubMatrix(1, num_nodes - 1, 1, num_nodes - 1);
+            // var F_reduced = F_global.SubVector(1, num_nodes - 1);
+            // Vector<double> psi_reduced = K_reduced.Solve(F_reduced);
 
-            // Remove the first row and column from K_global and the first entry from F_global
-            Matrix<double> K_reduced = K_global.SubMatrix(1, num_nodes - 1, 1, num_nodes - 1);
-            Vector<double> F_reduced = F_global.SubVector(1, num_nodes - 1);
+            // Option 2: More efficient for sparse matrices - modify in place
+            // Set the first row/column to identity
+            var psi = Vector<double>.Build.Dense(num_nodes);
 
-            // Solve for the reduced psi vector
-            Vector<double> psi_reduced = K_reduced.Solve(F_reduced);
+            // Create a copy of the matrix for modification
+            var K_modified = sparseK.Clone();
 
-            // Construct the full psi vector, including the first node with psi = 0
-            Vector<double> psi = Vector<double>.Build.Dense(num_nodes);
-            psi[0] = 0.0;
+            // Set first row: K[0,0] = 1, K[0,j] = 0 for j>0
+            for (int j = 1; j < num_nodes; j++)
+            {
+                K_modified[0, j] = 0.0;
+            }
+            K_modified[0, 0] = 1.0;
+
+            // Set first column: K[i,0] = 0 for i>0
             for (int i = 1; i < num_nodes; i++)
             {
-                psi[i] = psi_reduced[i - 1];
+                K_modified[i, 0] = 0.0;
             }
+
+            // Set F[0] = 0 (boundary condition)
+            F_global[0] = 0.0;
+
+            // Solve the modified system
+            psi = K_modified.Solve(F_global);
 
             // Normalize the stream function values to the range [0, 1]
             double min_psi = psi.Min();
             double max_psi = psi.Max();
 
-            if (max_psi - min_psi > 1e-8) // Avoid division by zero
+            if (max_psi - min_psi > 1e-8)
             {
+                // Vectorized normalization
+                double range = max_psi - min_psi;
                 for (int i = 0; i < num_nodes; i++)
                 {
-                    psi[i] = (psi[i] - min_psi) / (max_psi - min_psi);
+                    psi[i] = (psi[i] - min_psi) / range;
                 }
             }
             else
             {
-                // If all values are the same, set them to 0.5 (midpoint of [0, 1])
-                for (int i = 0; i < num_nodes; i++)
-                {
-                    psi[i] = 0.5;
-                }
+                // If all values are the same, set them to 0.5
+                psi = Vector<double>.Build.Dense(num_nodes, 0.5);
             }
-
 
 
 
@@ -221,7 +293,7 @@ namespace src.model_store.rslt_objects
         }
 
 
-        private Matrix3d getElementKmatrix(int element_id)
+        private Matrix3d getElementKMatrix(int element_id)
         {
             triangledata_store tri = triangle_data[element_id];
 
@@ -270,28 +342,22 @@ namespace src.model_store.rslt_objects
         }
 
 
-
         private Vector3d getElementFVector(int element_id)
         {
             triangledata_store tri = triangle_data[element_id];
 
-            // Get the node data for the triangle's vertices
             nodedata_store node1 = point_data[tri.pt_id1];
             nodedata_store node2 = point_data[tri.pt_id2];
             nodedata_store node3 = point_data[tri.pt_id3];
 
-
-            // Get the node coordinates
             Vector2 p1 = node1.location;
             Vector2 p2 = node2.location;
             Vector2 p3 = node3.location;
 
             double b1 = p2.Y - p3.Y;
             double c1 = p3.X - p2.X;
-
             double b2 = p3.Y - p1.Y;
             double c2 = p1.X - p3.X;
-
             double b3 = p1.Y - p2.Y;
             double c3 = p2.X - p1.X;
 
@@ -299,41 +365,41 @@ namespace src.model_store.rslt_objects
             double sigmaYY_avg = (node1.sigmaYY + node2.sigmaYY + node3.sigmaYY) / 3.0;
             double tauXY_avg = (node1.sigmaXY + node2.sigmaXY + node3.sigmaXY) / 3.0;
 
-
-            double sigma_avg = (sigmaXX_avg + sigmaYY_avg) / 2.0;
             double sigma_diff = (sigmaXX_avg - sigmaYY_avg) / 2.0;
-            double Radius = Math.Sqrt((sigma_diff * sigma_diff) + (tauXY_avg * tauXY_avg));
+            double R = Math.Sqrt(sigma_diff * sigma_diff + tauXY_avg * tauXY_avg);
 
-   
+            // Degenerate/isotropic point (sigma_xx = sigma_yy, tau_xy = 0):
+            // principal direction is undefined. Element contributes nothing.
+            if (R < 1e-9)
+                return new Vector3d(0.0, 0.0, 0.0);
 
-            double F1 = 0.0, F2 = 0.0, F3 = 0.0;
+            double cos2theta = sigma_diff / R;                                   // clamp guards fp drift
+            double costheta = Math.Sqrt(Math.Max(0.0, (1.0 + cos2theta) / 2.0));
+            double sintheta = Math.Sqrt(Math.Max(0.0, (1.0 - cos2theta) / 2.0));
+            if (tauXY_avg < 0.0) sintheta = -sintheta;
 
-            // Construct the F Vector
-            if (this.isTensionLine == true)
+            double gx, gy; // = target ∇phi direction (unit vector)
+
+            if (this.isTensionLine)
             {
-                // Tension lines (major principal stress)
-                F1 = (-tauXY_avg * b1 + sigma_diff * c1);
-                F2 = (-tauXY_avg * b2 + sigma_diff * c2);
-                F3 = (-tauXY_avg * b3 + sigma_diff * c3);
+                // grad(phi) = minor principal direction (perp to major/tension direction)
+                gx = -sintheta;
+                gy = costheta;
             }
             else
             {
-                // Compression lines (minor principal stress)
-                F1 = (tauXY_avg * b1 - sigma_diff * c1);
-                F2 = (tauXY_avg * b2 - sigma_diff * c2);
-                F3 = (tauXY_avg * b3 - sigma_diff * c3);
+                // grad(phi) = major principal direction (perp to minor/compression direction)
+                gx = costheta;
+                gy = sintheta;
             }
 
-
-            // Construct the F vector
-            F1 = (1.0 / (2.0 * Radius)) * F1;
-            F2 = (1.0 / (2.0 * Radius)) * F2;
-            F3 = (1.0 / (2.0 * Radius)) * F3;
+            // F_i = ∫ ∇N_i · (gx,gy) dA = (1/2)(b_i*gx + c_i*gy)   [since ∇N_i = (b_i,c_i)/(2A), integrated over area A]
+            double F1 = 0.5 * (b1 * gx + c1 * gy);
+            double F2 = 0.5 * (b2 * gx + c2 * gy);
+            double F3 = 0.5 * (b3 * gx + c3 * gy);
 
             return new Vector3d(F1, F2, F3);
-
         }
-
 
 
 
