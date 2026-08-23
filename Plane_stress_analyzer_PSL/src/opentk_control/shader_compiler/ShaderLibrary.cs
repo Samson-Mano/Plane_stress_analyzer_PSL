@@ -19,6 +19,7 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
             RsltWireframeShader,
             RsltPSLShader,
             RsltPSLType2Shader,
+            RsltPSLType2StreamFunctionShader,
             SelectionShader,
             DrawingAxisShader,
             ContourBarShader
@@ -857,16 +858,172 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
         {
 
             return @"
-            
             #version 330 core
 
             in vec4 vColor;
+            in float vStreamFuncValue;  
+
             out vec4 fColor;
-    
+            
+
             void main()
             {
                 // Simple color output without lighting
                 fColor = vColor;
+
+            }
+
+        ";
+        }
+
+
+        #endregion
+
+
+
+
+        #region "Result Plane stress line Type 2 Stream Function shader"
+
+
+        private static string rslt_pslinetype2_streamfunction_mesh_vert_shader()
+        {
+            return @"
+
+            #version 330 core
+
+            // Pre-computed MVP matrix on CPU for better performance
+            uniform mat4 uMVP;           // Model-View-Projection matrix
+                    
+            layout(location = 0) in vec2 aPosition;
+            layout(location = 1) in float aStreamFuncValueTension; // Stream function value for tension varies between 0 and 1
+            layout(location = 2) in float aStreamFuncValueCompression; // Stream function value for compression varies between 0 and 1
+            
+            out float vStreamFuncValueTension;
+            out float vStreamFuncValueCompression;
+
+            void main()
+            {
+
+                gl_Position = uMVP * vec4(aPosition, 0.0, 1.0);
+
+                vStreamFuncValueTension = aStreamFuncValueTension;
+                vStreamFuncValueCompression = aStreamFuncValueCompression;
+                
+            }
+
+
+                    ";
+
+        }
+
+
+        private static string rslt_pslinetype2_streamfunction_mesh_frag_shader()
+        {
+
+            return @"
+            
+           #version 330 core
+
+            uniform float uNumContours = 10.0;      // number of contour bands
+            uniform float uLineWidth = 1.0;         // contour line thickness (in pixels, roughly)
+            uniform float uLineOpacity = 1.0;       // how strongly lines blend over the heatmap
+            uniform float uMinContourValue = 0.01;  // minimum value for contour lines (smooth falloff)
+            uniform vec3 uBackgroundColor = vec3(0.1, 0.1, 0.1); // dark background
+
+            in float vStreamFuncValueTension;
+            in float vStreamFuncValueCompression;
+
+            out vec4 fColor;
+
+            // Returns 1.0 exactly on a contour line, fading to 0.0 away from it
+            float contourLines(float value, float numContours, float lineWidth)
+            {
+                // Clamp value to valid range
+                value = clamp(value, 0.0, 1.0);
+    
+                float scaled = value * numContours;
+                float distToLine = abs(fract(scaled + 0.5) - 0.5); // distance to nearest integer
+    
+                // Calculate anti-aliased line width
+                float aa = fwidth(scaled) * lineWidth;
+    
+                // Return 1.0 on the line, 0.0 away from it
+                return 1.0 - smoothstep(0.0, aa, distToLine);
+            }
+
+            // Enhanced contour with smooth falloff near min/max values
+            float contourLinesWithFalloff(float value, float numContours, float lineWidth, float minValue)
+            {
+                // Clamp value to valid range
+                value = clamp(value, 0.0, 1.0);
+    
+                // Skip contour lines near the edges (smooth falloff)
+                float edgeFalloff = 1.0;
+                if (value < minValue || value > 1.0 - minValue)
+                {
+                    float distToEdge = min(value, 1.0 - value);
+                    edgeFalloff = smoothstep(0.0, minValue, distToEdge);
+                }
+    
+                // Calculate contour line intensity
+                float scaled = value * numContours;
+                float distToLine = abs(fract(scaled + 0.5) - 0.5);
+                float aa = fwidth(scaled) * lineWidth;
+                float lineIntensity = 1.0 - smoothstep(0.0, aa, distToLine);
+    
+                return lineIntensity * edgeFalloff;
+            }
+
+            void main()
+            {
+                // Calculate contour intensities
+                float tensionLine = contourLines(vStreamFuncValueTension, uNumContours, uLineWidth);
+                float compressionLine = contourLines(vStreamFuncValueCompression, uNumContours, uLineWidth);
+    
+                // Apply minimum value falloff if desired
+                // float tensionLine = contourLinesWithFalloff(vStreamFuncValueTension, uNumContours, uLineWidth, uMinContourValue);
+                // float compressionLine = contourLinesWithFalloff(vStreamFuncValueCompression, uNumContours, uLineWidth, uMinContourValue);
+    
+                // Define colors
+                vec3 tensionColor = vec3(1.0, 0.0, 0.0);   // Red for tension
+                vec3 compressionColor = vec3(0.0, 0.0, 1.0); // Blue for compression
+    
+                // Mix colors: if both lines overlap, blend them (magenta)
+                vec3 lineColor = vec3(0.0);
+                float maxIntensity = 0.0;
+    
+                if (tensionLine > 0.0 && compressionLine > 0.0)
+                {
+                    // Both lines overlap - blend to magenta
+                    lineColor = mix(tensionColor, compressionColor, 0.5);
+                    maxIntensity = max(tensionLine, compressionLine);
+                }
+                else if (tensionLine > 0.0)
+                {
+                    lineColor = tensionColor;
+                    maxIntensity = tensionLine;
+                }
+                else if (compressionLine > 0.0)
+                {
+                    lineColor = compressionColor;
+                    maxIntensity = compressionLine;
+                }
+                else
+                {
+                    // No contour lines - transparent background
+                    fColor = vec4(0.0, 0.0, 0.0, 0.0);
+                    return;
+                }
+    
+                // Apply opacity
+                float finalAlpha = maxIntensity * uLineOpacity;
+    
+                // Optional: Add glow effect to make lines more visible
+                // float glow = pow(maxIntensity, 0.5) * 0.3;
+                // lineColor = mix(lineColor, vec3(1.0), glow);
+    
+                // Output final color
+                fColor = vec4(lineColor, finalAlpha);
             }
 
         ";
@@ -1288,6 +1445,8 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
                     return rslt_psline_mesh_vert_shader();
                 case ShaderType.RsltPSLType2Shader:
                     return rslt_pslinetype2_mesh_vert_shader();
+                case ShaderType.RsltPSLType2StreamFunctionShader:
+                    return rslt_pslinetype2_streamfunction_mesh_vert_shader();
                 case ShaderType.SelectionShader:
                     return selrect_vert_shader();
                 case ShaderType.ConstraintShader:
@@ -1321,6 +1480,8 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
                     return rslt_psline_mesh_frag_shader();
                 case ShaderType.RsltPSLType2Shader:
                     return rslt_pslinetype2_mesh_frag_shader();
+                case ShaderType.RsltPSLType2StreamFunctionShader:
+                    return rslt_pslinetype2_streamfunction_mesh_frag_shader();
                 case ShaderType.SelectionShader:
                     return selrect_frag_shader();
                 case ShaderType.ConstraintShader:

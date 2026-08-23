@@ -416,8 +416,12 @@ namespace src.model_store.rslt_objects
             ComputeBoundaryEdgeProperties();
 
             // Generate seed points for streamlines
-            List<OpenTK.Vector2> seed_points = GenerateSeedPoints(targetSeedCount);
+             List<OpenTK.Vector2> seed_points = GenerateSeedPoints(targetSeedCount);
+            List<OpenTK.Vector2> seed_points_g = GenerateGridSeedPoints(targetSeedCount);
             // List<OpenTK.Vector2> seed_points = GenerateGridSeedPoints(targetSeedCount);
+            // List<OpenTK.Vector2> seed_points = GenerateMidBoundarySeedPoints();
+
+            seed_points.AddRange(seed_points_g);
 
             this.streamlines.Clear();
 
@@ -425,7 +429,7 @@ namespace src.model_store.rslt_objects
 
             foreach (OpenTK.Vector2 seed_point in seed_points)
             {
-                streamline_result streamline = TraceStressLine(seed_point, isTensionLine, stepSize: geomsize / 1000.0f, maxSteps: 1000);
+                streamline_result streamline = TraceStressLine(seed_point, isTensionLine, stepSize: geomsize / 100.0f, maxSteps: 1000);
                 this.streamlines.Add(streamline);
 
             }
@@ -788,6 +792,27 @@ namespace src.model_store.rslt_objects
         }
 
 
+        private List<OpenTK.Vector2> GenerateMidBoundarySeedPoints()
+        {
+
+            List<OpenTK.Vector2> seed_points = new List<OpenTK.Vector2>();
+
+            foreach (boundaryedges_store edge in boundary_edges)
+            {
+                var p1 = point_data[edge.pt_id1].location;
+                var p2 = point_data[edge.pt_id2].location;
+                // Place seed at the midpoint of the edge
+                OpenTK.Vector2 seed = (p1 + p2) / 2f;
+                // Offset slightly inside the domain (opposite to outward normal)
+                seed -= edge.outward_normal * 0.01f; // Move into the domain
+                seed_points.Add(seed);
+            }
+
+            return seed_points;
+
+        }
+
+
         private List<OpenTK.Vector2> GenerateSeedPoints(int targetSeedCount)
         {
             List<OpenTK.Vector2> seed_points = new List<OpenTK.Vector2>();
@@ -856,7 +881,7 @@ namespace src.model_store.rslt_objects
                     // Place seed at the midpoint of the edge
                     OpenTK.Vector2 seed = (p1 + p2) / 2f;
                     // // Offset slightly inside the domain (opposite to outward normal)
-                    // seed -= edge.outward_normal * 0.01f; // Move into the domain
+                    seed -= edge.outward_normal * 0.01f; // Move into the domain
                     seed_points.Add(seed);
                 }
 

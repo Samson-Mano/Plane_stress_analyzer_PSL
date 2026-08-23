@@ -56,6 +56,9 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="MathNet.Numerics, Version=5.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MathNet.Numerics.5.0.0\lib\net461\MathNet.Numerics.dll</HintPath>
+    </Reference>
     <Reference Include="OpenTK, Version=3.3.3.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
       <HintPath>..\packages\OpenTK.3.3.3\lib\net20\OpenTK.dll</HintPath>
     </Reference>
@@ -67,6 +70,9 @@
     <Reference Include="System.Core" />
     <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Numerics" />
+    <Reference Include="System.ValueTuple, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ValueTuple.4.4.0\lib\net47\System.ValueTuple.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -156,6 +162,7 @@
     <Compile Include="src\model_store\modeldata_store.cs" />
     <Compile Include="src\model_store\rslt_objects\rsltdata_store.cs" />
     <Compile Include="src\model_store\rslt_objects\shrunkrsltdata_store.cs" />
+    <Compile Include="src\model_store\rslt_objects\streamfunction_solve.cs" />
     <Compile Include="src\model_store\rslt_objects\streamlines_solve.cs" />
     <Compile Include="src\opentk_control\opentk_buffer\GDIFontAtlas.cs" />
     <Compile Include="src\opentk_control\opentk_buffer\IndexBuffer.cs" />

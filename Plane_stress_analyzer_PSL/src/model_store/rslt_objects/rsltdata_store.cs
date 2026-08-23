@@ -131,6 +131,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
         private Shader rsltmeshwireframeShader;
         private Shader rsltPSLShader;
         private Shader rsltPSLType2Shader;
+        private Shader rsltPSLType2StreamFunctionShader;
 
         // Vertex Buffer object and Vertex Array object 
         private VertexBuffer point_vbo;
@@ -145,6 +146,12 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
         private VertexBuffer psl2_point_vbo;
         private VertexArray psl2_point_vao;
         private IndexBuffer psl2_lines_ibo;
+
+        private VertexBuffer psl2_streamfunction_point_vbo;
+        private VertexArray psl2_streamfunction_point_vao;
+        private IndexBuffer psl2_streamfunction_tri_ibo;
+
+
 
 
         // Index buffer for the points, wireframe lines, and triangles (EBO)
@@ -196,6 +203,11 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
             rsltPSLType2Shader = new Shader(
                 ShaderLibrary.get_vertex_shader(ShaderLibrary.ShaderType.RsltPSLType2Shader),
                 ShaderLibrary.get_fragment_shader(ShaderLibrary.ShaderType.RsltPSLType2Shader)
+                );
+
+            rsltPSLType2StreamFunctionShader = new Shader(
+                ShaderLibrary.get_vertex_shader(ShaderLibrary.ShaderType.RsltPSLType2StreamFunctionShader),
+                ShaderLibrary.get_fragment_shader(ShaderLibrary.ShaderType.RsltPSLType2StreamFunctionShader)
                 );
 
         }
@@ -538,18 +550,35 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
             else if(option == 10)
             {
 
-                rsltPSLType2Shader.Bind();
-                psl2_point_vao.Bind();
-                if (psl2_lines_ibo.BufferCount > 0)
+                //rsltPSLType2Shader.Bind();
+                //psl2_point_vao.Bind();
+                //if (psl2_lines_ibo.BufferCount > 0)
+                //{
+                //    // Paint the Result Stress lines
+                //    psl2_lines_ibo.Bind();
+                //    GL.DrawElements(PrimitiveType.Lines, psl2_lines_ibo.BufferCount,
+                //        DrawElementsType.UnsignedInt, 0);
+                //    psl2_lines_ibo.UnBind();
+                //}
+                //psl2_point_vao.UnBind();
+                //rsltPSLType2Shader.UnBind();
+
+
+                rsltPSLType2StreamFunctionShader.Bind();
+                psl2_streamfunction_point_vao.Bind();
+                if (psl2_streamfunction_tri_ibo.BufferCount > 0)
                 {
-                    // Paint the Result Stress lines
-                    psl2_lines_ibo.Bind();
-                    GL.DrawElements(PrimitiveType.Lines, psl2_lines_ibo.BufferCount,
+                    // Paint the Result Plane Stress lines triangles
+                    psl2_streamfunction_tri_ibo.Bind();
+                    GL.DrawElements(PrimitiveType.Triangles, psl2_streamfunction_tri_ibo.BufferCount,
                         DrawElementsType.UnsignedInt, 0);
-                    psl2_lines_ibo.UnBind();
+                    psl2_streamfunction_tri_ibo.UnBind();
                 }
-                psl2_point_vao.UnBind();
-                rsltPSLType2Shader.UnBind();
+                psl2_streamfunction_point_vao.UnBind();
+                rsltPSLType2StreamFunctionShader.UnBind();
+
+
+
             }
               
         }
@@ -1019,7 +1048,8 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
             generate_PSL_mesh();
 
             // Create the Type 2 PSL mesh buffers
-            generate_PSL_type2_line_mesh();
+            // generate_PSL_type2_line_mesh();
+            generate_PSL_type2_streamfunction_mesh();
 
             // Shrunk Mesh buffers
             generate_shrunk_mesh();
@@ -1221,49 +1251,6 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
         }
 
 
-        //private (Vector2 dir1, Vector2 dir2, double sigma1, double sigma2)
-        //    get_principal_stress_directions_and_values(point_store pt)
-        //{
-
-
-        //    // Principal stress angle for PSL lines
-        //    double aPrincipalStressAngle = Math.Atan2(pt.tau_xy, pt.sigma_x - pt.sigma_y) / 2.0f;
-
-        //    // Principal stresses 1
-        //    double aPrincipalStress_sigma1 = ((pt.sigma_x + pt.sigma_y) / 2.0f +
-        //                    Math.Sqrt(Math.Pow((pt.sigma_x - pt.sigma_y) / 2.0f, 2) +
-        //                    Math.Pow(pt.tau_xy, 2)));
-
-        //    double sigma1_actualRangeSpan = (_rslt_extremes.max_principalStress1 - _rslt_extremes.min_principalStress1);
-
-        //    // Normalize principal stress 1 (pt.sigma_1)
-        //    aPrincipalStress_sigma1 = ((pt.sigma_1 - (_rslt_extremes.min_principalStress1)) / sigma1_actualRangeSpan);
-
-
-        //    // Principal stress 2
-        //    double aPrincipalStress_sigma2 = ((pt.sigma_x + pt.sigma_y) / 2.0f -
-        //                    Math.Sqrt(Math.Pow((pt.sigma_x - pt.sigma_y) / 2.0f, 2) +
-        //                    Math.Pow(pt.tau_xy, 2)));
-
-        //    double sigma2_actualRangeSpan = (_rslt_extremes.max_principalStress2 - _rslt_extremes.min_principalStress2);
-
-        //    // Normalize principal stress 2 (pt.sigma_2)
-        //    aPrincipalStress_sigma2 = ((pt.sigma_2 - (_rslt_extremes.min_principalStress2)) / sigma2_actualRangeSpan);
-
-
-        //    // Principal direction 1 (major principal stress)
-        //    Vector2 dir1 = new Vector2((float)Math.Cos(aPrincipalStressAngle), (float)Math.Sin(aPrincipalStressAngle));
-        //    Vector2 dir2 = new Vector2((float)Math.Cos(aPrincipalStressAngle + Math.PI / 2),
-        //                               (float)Math.Sin(aPrincipalStressAngle + Math.PI / 2));
-
-
-
-        //    return (dir1, dir2, aPrincipalStress_sigma1, aPrincipalStress_sigma2);
-
-        //}
-
-
-
 
         private void generate_PSL_type2_line_mesh()
         {
@@ -1274,12 +1261,6 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
 
             foreach (point_store pt in points.Values)
             {
-                //// Calculate the principal stress angle for each point
-                //var (dir1, dir2, sigma1, sigma2) = get_principal_stress_directions_and_values(pt);
-
-                //// Add the data to the streamline solver for tension and compression
-                //dir1 = Vector2.Normalize(dir1);
-                //dir2 = Vector2.Normalize(dir2);
 
                 streamline_tension.add_point_data(pt.point_id, new OpenTK.Vector2((float)pt.x_coord, (float)pt.y_coord), 
                     (float)pt.sigma_x, (float)pt.sigma_y, (float)pt.tau_xy);
@@ -1384,6 +1365,97 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
         }
 
 
+        private void generate_PSL_type2_streamfunction_mesh()
+        {
+            // Solve for streamfunctions
+            streamfunction_solve streamfunction_tension = new streamfunction_solve(isTensionLine: true);
+            streamfunction_solve streamfunction_compression = new streamfunction_solve(isTensionLine: false);
+
+            foreach (point_store pt in points.Values)
+            {
+                // Add the point data to the streamfunction solver for tension and compression
+                streamfunction_tension.add_point_data(pt.point_id, new OpenTK.Vector2((float)pt.x_coord, (float)pt.y_coord),
+                    pt.sigma_x, pt.sigma_y, pt.tau_xy);
+                streamfunction_compression.add_point_data(pt.point_id, new OpenTK.Vector2((float)pt.x_coord, (float)pt.y_coord),
+                    pt.sigma_x, pt.sigma_y, pt.tau_xy);
+
+            }
+
+
+            foreach (tri_store tri in tris)
+            {
+                // Add the triangle data to the streamfunction solver for mesh connectivity
+                streamfunction_tension.add_triangle_data(tri.tri_id, tri.pt_id1, tri.pt_id2, tri.pt_id3);
+                streamfunction_compression.add_triangle_data(tri.tri_id, tri.pt_id1, tri.pt_id2, tri.pt_id3);
+            }
+
+
+            // Calculate streamfunction for tension and compression
+            streamfunction_tension.CalculateStreamFunction();
+            streamfunction_compression.CalculateStreamFunction();
+
+            //____________________________________________________________________________________________________
+
+            //____________________________________________________________________________________________________
+
+            List<float> vertexData = new List<float>();
+            List<int> triIndexData = new List<int>();
+
+            // Create a node id map to index mapping for the streamfunction mesh
+            Dictionary<int, int> nodeIdToIndexMap = new Dictionary<int, int>();
+
+            int pt_id = 0;
+
+            foreach (point_store pt in points.Values)
+            {
+                // Map the point ID to the current index
+                nodeIdToIndexMap[pt.point_id] = pt_id;
+                pt_id++;
+
+                // Add vertices for stream function mesh
+                vertexData.Add((float)pt.x_coord);
+                vertexData.Add((float)pt.y_coord);
+                vertexData.Add((float)streamfunction_tension.streamfunction_values[pt.point_id]);
+                vertexData.Add((float)streamfunction_compression.streamfunction_values[pt.point_id]);
+
+            }
+
+
+            // Add triangle indices for the streamfunction mesh
+            foreach (tri_store tri in tris)
+            {
+                // Map the point IDs to their corresponding indices
+                int index1 = nodeIdToIndexMap[tri.pt_id1];
+                int index2 = nodeIdToIndexMap[tri.pt_id2];
+                int index3 = nodeIdToIndexMap[tri.pt_id3];
+
+                triIndexData.Add(index1);
+                triIndexData.Add(index2);
+                triIndexData.Add(index3);
+            }
+
+
+            //____________________________________________________________________________________________________
+            // Create VAO and VBO for points
+            psl2_streamfunction_point_vao = new VertexArray();
+            psl2_streamfunction_point_vbo = new VertexBuffer(Math.Max(10, vertexData.Count));
+            psl2_streamfunction_tri_ibo = new IndexBuffer(Math.Max(10, triIndexData.Count));
+
+            VertexBufferLayout pointLayout = new VertexBufferLayout();
+            pointLayout.AddFloat(2);  // x and y coordinates
+            pointLayout.AddFloat(1); // Streamfunction value for tension
+            pointLayout.AddFloat(1); // Streamfunction value for compression
+
+
+            psl2_streamfunction_point_vao.Add_vertexBuffer(psl2_streamfunction_point_vbo, pointLayout);
+
+            psl2_streamfunction_point_vbo.AppendVertexBuffer(vertexData.ToArray());
+            psl2_streamfunction_tri_ibo.AppendIndexBuffer(triIndexData.ToArray());
+
+
+        }
+
+
 
         public void update_openTK_uniforms(drawing_events graphic_events_control)
         {
@@ -1449,6 +1521,12 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
             // rsltPSLType2Shader.SetFloat("geomscale", gvariables_static.geom_size);
 
             // rsltPSLType2Shader.SetFloat("modelpercent", model_percent);
+
+            // Update the PSL shader uniforms type 2 streamfunction
+            rsltPSLType2StreamFunctionShader.SetMatrix4("uMVP", uMVP);
+            rsltPSLType2StreamFunctionShader.SetFloat("uNumContours", gvariables_static.contourline_level);
+            rsltPSLType2StreamFunctionShader.SetFloat("uLineOpacity", 1.0f);
+
 
         }
 
