@@ -977,12 +977,12 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
             void main()
             {
                 // Calculate contour intensities
-                float tensionLine = contourLines(vStreamFuncValueTension, uNumContours, uLineWidth);
-                float compressionLine = contourLines(vStreamFuncValueCompression, uNumContours, uLineWidth);
+                // float tensionLine = contourLines(vStreamFuncValueTension, uNumContours, uLineWidth);
+                // float compressionLine = contourLines(vStreamFuncValueCompression, uNumContours, uLineWidth);
     
                 // Apply minimum value falloff if desired
-                // float tensionLine = contourLinesWithFalloff(vStreamFuncValueTension, uNumContours, uLineWidth, uMinContourValue);
-                // float compressionLine = contourLinesWithFalloff(vStreamFuncValueCompression, uNumContours, uLineWidth, uMinContourValue);
+                float tensionLine = contourLinesWithFalloff(vStreamFuncValueTension, uNumContours, uLineWidth, uMinContourValue);
+                float compressionLine = contourLinesWithFalloff(vStreamFuncValueCompression, uNumContours, uLineWidth, uMinContourValue);
     
                 // Define colors
                 vec3 tensionColor = vec3(1.0, 0.0, 0.0);   // Red for tension
@@ -1019,8 +1019,8 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
                 float finalAlpha = maxIntensity * uLineOpacity;
     
                 // Optional: Add glow effect to make lines more visible
-                // float glow = pow(maxIntensity, 0.5) * 0.3;
-                // lineColor = mix(lineColor, vec3(1.0), glow);
+                float glow = pow(maxIntensity, 0.5) * 0.3;
+                lineColor = mix(lineColor, vec3(1.0), glow);
     
                 // Output final color
                 fColor = vec4(lineColor, finalAlpha);

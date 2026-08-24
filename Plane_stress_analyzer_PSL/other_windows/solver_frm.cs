@@ -295,6 +295,10 @@ namespace Plane_stress_analyzer_PSL.other_windows
                             double max_shear = reader.ReadDouble();
                             double theta_p = reader.ReadDouble();
 
+                            double streamfunction_tension = reader.ReadDouble();
+                            double streamfunction_compression = reader.ReadDouble();
+
+
                             modeldata.rslt_data.add_point(node_id,
                                 node_xcoord, 
                                 node_ycoord,
@@ -311,7 +315,9 @@ namespace Plane_stress_analyzer_PSL.other_windows
                                 sigma_2,
                                 von_mises,
                                 max_shear,
-                                theta_p
+                                theta_p,
+                                streamfunction_tension,
+                                streamfunction_compression
                                 );
 
                         }

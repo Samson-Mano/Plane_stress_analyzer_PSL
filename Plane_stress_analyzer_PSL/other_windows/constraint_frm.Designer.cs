@@ -46,9 +46,11 @@
             this.label1 = new System.Windows.Forms.Label();
             this.button_applyconstraint = new System.Windows.Forms.Button();
             this.textBox_selectednodes = new System.Windows.Forms.TextBox();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView_ConstraintList)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.groupBox1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // dataGridView_ConstraintList
@@ -70,7 +72,7 @@
             this.dataGridView_ConstraintList.ReadOnly = true;
             this.dataGridView_ConstraintList.RowHeadersWidth = 62;
             this.dataGridView_ConstraintList.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dataGridView_ConstraintList.Size = new System.Drawing.Size(439, 251);
+            this.dataGridView_ConstraintList.Size = new System.Drawing.Size(450, 250);
             this.dataGridView_ConstraintList.TabIndex = 14;
             // 
             // Column1_constraintid
@@ -134,13 +136,13 @@
             this.circleSelectionToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(784, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(794, 24);
             this.menuStrip1.TabIndex = 13;
             this.menuStrip1.Text = "menuStrip1";
             // 
             // button_deleteconstraint
             // 
-            this.button_deleteconstraint.Location = new System.Drawing.Point(581, 300);
+            this.button_deleteconstraint.Location = new System.Drawing.Point(172, 340);
             this.button_deleteconstraint.Name = "button_deleteconstraint";
             this.button_deleteconstraint.Size = new System.Drawing.Size(130, 35);
             this.button_deleteconstraint.TabIndex = 12;
@@ -151,7 +153,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(9, 138);
+            this.label3.Location = new System.Drawing.Point(329, 289);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(121, 16);
             this.label3.TabIndex = 9;
@@ -209,7 +211,7 @@
             // 
             // button_applyconstraint
             // 
-            this.button_applyconstraint.Location = new System.Drawing.Point(399, 300);
+            this.button_applyconstraint.Location = new System.Drawing.Point(12, 340);
             this.button_applyconstraint.Name = "button_applyconstraint";
             this.button_applyconstraint.Size = new System.Drawing.Size(134, 35);
             this.button_applyconstraint.TabIndex = 11;
@@ -219,18 +221,29 @@
             // 
             // textBox_selectednodes
             // 
-            this.textBox_selectednodes.Location = new System.Drawing.Point(12, 156);
+            this.textBox_selectednodes.Location = new System.Drawing.Point(332, 312);
             this.textBox_selectednodes.Multiline = true;
             this.textBox_selectednodes.Name = "textBox_selectednodes";
             this.textBox_selectednodes.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.textBox_selectednodes.Size = new System.Drawing.Size(313, 193);
+            this.textBox_selectednodes.Size = new System.Drawing.Size(450, 90);
             this.textBox_selectednodes.TabIndex = 10;
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.BackgroundImage = global::Properties.Resources.plane_stress_support_pic;
+            this.pictureBox1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.pictureBox1.Location = new System.Drawing.Point(64, 138);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(180, 180);
+            this.pictureBox1.TabIndex = 6;
+            this.pictureBox1.TabStop = false;
             // 
             // constraint_frm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(784, 361);
+            this.ClientSize = new System.Drawing.Size(794, 421);
+            this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.dataGridView_ConstraintList);
             this.Controls.Add(this.menuStrip1);
             this.Controls.Add(this.button_deleteconstraint);
@@ -241,7 +254,7 @@
             this.Font = new System.Drawing.Font("Verdana", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(4);
-            this.MinimumSize = new System.Drawing.Size(800, 400);
+            this.MinimumSize = new System.Drawing.Size(810, 460);
             this.Name = "constraint_frm";
             this.Opacity = 0.85D;
             this.Text = "Nodal Constraints";
@@ -252,6 +265,7 @@
             this.menuStrip1.PerformLayout();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -275,5 +289,6 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn Column2_nodeids;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column3_constrainttype;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column4_constraintangle;
+        private System.Windows.Forms.PictureBox pictureBox1;
     }
 }

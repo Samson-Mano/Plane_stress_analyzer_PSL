@@ -26,10 +26,7 @@ void streamfunction_solver::compute_streamfunction(std::unordered_map<int, rende
 
 	int num_nodes = static_cast<int>(renderer_node_points.size());
 
-	globalKMatrix.resize(num_nodes, num_nodes);
-	globalFVector.resize(num_nodes);
-
-	globalFVector.setZero();
+	Eigen::VectorXd globalFVector = Eigen::VectorXd::Zero(num_nodes);
 
 	std::vector<Eigen::Triplet<double>> kTriplets;
 
@@ -40,26 +37,30 @@ void streamfunction_solver::compute_streamfunction(std::unordered_map<int, rende
 		Eigen::Matrix3d elementK = getElementKMatrix(renderer_node_points, tri_element);
 		Eigen::Vector3d elementF = getElementFVector(renderer_node_points, tri_element);
 
-		std::vector<int> node_ids = { tri_element.n1, tri_element.n2, tri_element.n3 };
+		std::array<int, 3> node_ids = { tri_element.n1, tri_element.n2, tri_element.n3 };
+
+		std::array<int, 3> global_indices = {
+			node_id_to_index[node_ids[0]],
+			node_id_to_index[node_ids[1]],
+			node_id_to_index[node_ids[2]]
+		};
 
 
 		for (int i = 0; i < 3; ++i)
 		{
-			int global_i = node_id_to_index[node_ids[i]];
 
 			// Add to the global F vector
-			globalFVector(global_i) += elementF(i);
+			globalFVector(global_indices[i]) += elementF(i);
 
 			for (int j = 0; j < 3; ++j)
 			{
-				int global_j = node_id_to_index[node_ids[j]];
-
 				// Add to the global K matrix using triplet format
-				kTriplets.emplace_back(global_i, global_j, elementK(i, j));
+				kTriplets.emplace_back(global_indices[i], global_indices[j], elementK(i, j));
 			}
 		}
 	}
 
+	Eigen::SparseMatrix<double> globalKMatrix(num_nodes, num_nodes);
 	globalKMatrix.setFromTriplets(kTriplets.begin(), kTriplets.end());
 
 
@@ -70,7 +71,9 @@ void streamfunction_solver::compute_streamfunction(std::unordered_map<int, rende
 	Eigen::VectorXd reducedFVector = globalFVector.segment(1, globalFVector.size() - 1);
 
 	// Solve the reduced system
-	Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
+	// Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
+
+	Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> solver;
 	solver.compute(reducedKMatrix);
 
 	if (solver.info() != Eigen::Success) 
@@ -99,13 +102,21 @@ void streamfunction_solver::compute_streamfunction(std::unordered_map<int, rende
 	// Normailze the solution to the range [0, 1]
 	double maxStreamFunction = fullSolution.maxCoeff();
 	double minStreamFunction = fullSolution.minCoeff();
+	double streamFunctionRange = maxStreamFunction - minStreamFunction;
 
-	for (int i = 0; i < fullSolution.size(); ++i)
+	//for (int i = 0; i < fullSolution.size(); ++i)
+	//{
+	//	fullSolution(i) = (fullSolution(i) - minStreamFunction) / streamFunctionRange;
+	//}
+
+	if (streamFunctionRange > 1e-9) // Avoid division by zero
 	{
-		fullSolution(i) = (fullSolution(i) - minStreamFunction) / (maxStreamFunction - minStreamFunction);
+		fullSolution = (fullSolution.array() - minStreamFunction) / streamFunctionRange;
 	}
-
-
+	else
+	{
+		fullSolution.setConstant(0.5); // If the range is too small, set all values to 0.5
+	}
 
 
 	// Store the solution

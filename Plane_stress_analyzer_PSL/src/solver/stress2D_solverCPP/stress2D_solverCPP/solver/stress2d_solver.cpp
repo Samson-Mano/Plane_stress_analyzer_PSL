@@ -946,6 +946,8 @@ void stress2d_solver::map_results_to_rendererelements()
 
 	}
 
+	report("Generating Streamfunction results for tension and compression stress lines");
+
 	// Stream Function solve
 	streamfunction_solver streamtension_solver;
 
@@ -959,7 +961,7 @@ void stress2d_solver::map_results_to_rendererelements()
 		false, nullptr);
 
 
-
+	report("Streamfunction results generated for tension and compression stress lines");
 
 
 

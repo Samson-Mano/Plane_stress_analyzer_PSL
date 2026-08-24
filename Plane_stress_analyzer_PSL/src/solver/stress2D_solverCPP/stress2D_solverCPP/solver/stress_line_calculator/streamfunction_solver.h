@@ -57,9 +57,9 @@ private:
 
 	bool isTensionLine = true;
 
-	Eigen::SparseMatrix<double> globalKMatrix; // Global Stiffness Matrix [K]
+	//Eigen::SparseMatrix<double> globalKMatrix; // Global Stiffness Matrix [K]
 
-	Eigen::VectorXd globalFVector; // Global Force Vector [F]
+	//Eigen::VectorXd globalFVector; // Global Force Vector [F]
 
 
 

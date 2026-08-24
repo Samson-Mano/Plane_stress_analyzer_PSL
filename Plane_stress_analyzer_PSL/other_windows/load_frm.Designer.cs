@@ -30,6 +30,10 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(load_frm));
             this.dataGridView_LoadList = new System.Windows.Forms.DataGridView();
+            this.Column1_loadsetid = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column2_nodeids = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column3_loadampl = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column4_loadangle = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.circleSelectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.rectangleSelectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
@@ -42,13 +46,11 @@
             this.label1 = new System.Windows.Forms.Label();
             this.button_applyload = new System.Windows.Forms.Button();
             this.textBox_selectednodes = new System.Windows.Forms.TextBox();
-            this.Column1_loadsetid = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column2_nodeids = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column3_loadampl = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column4_loadangle = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView_LoadList)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.groupBox1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // dataGridView_LoadList
@@ -70,8 +72,45 @@
             this.dataGridView_LoadList.ReadOnly = true;
             this.dataGridView_LoadList.RowHeadersWidth = 62;
             this.dataGridView_LoadList.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dataGridView_LoadList.Size = new System.Drawing.Size(439, 251);
+            this.dataGridView_LoadList.Size = new System.Drawing.Size(449, 250);
             this.dataGridView_LoadList.TabIndex = 21;
+            // 
+            // Column1_loadsetid
+            // 
+            this.Column1_loadsetid.FillWeight = 80F;
+            this.Column1_loadsetid.HeaderText = "Node Load ID";
+            this.Column1_loadsetid.MinimumWidth = 8;
+            this.Column1_loadsetid.Name = "Column1_loadsetid";
+            this.Column1_loadsetid.ReadOnly = true;
+            this.Column1_loadsetid.Width = 80;
+            // 
+            // Column2_nodeids
+            // 
+            this.Column2_nodeids.HeaderText = "Node IDs";
+            this.Column2_nodeids.MinimumWidth = 8;
+            this.Column2_nodeids.Name = "Column2_nodeids";
+            this.Column2_nodeids.ReadOnly = true;
+            this.Column2_nodeids.Width = 125;
+            // 
+            // Column3_loadampl
+            // 
+            this.Column3_loadampl.FillWeight = 80F;
+            this.Column3_loadampl.HeaderText = "Load Amplitude";
+            this.Column3_loadampl.MinimumWidth = 8;
+            this.Column3_loadampl.Name = "Column3_loadampl";
+            this.Column3_loadampl.ReadOnly = true;
+            this.Column3_loadampl.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.Column3_loadampl.Width = 80;
+            // 
+            // Column4_loadangle
+            // 
+            this.Column4_loadangle.FillWeight = 80F;
+            this.Column4_loadangle.HeaderText = "Load Angle";
+            this.Column4_loadangle.MinimumWidth = 8;
+            this.Column4_loadangle.Name = "Column4_loadangle";
+            this.Column4_loadangle.ReadOnly = true;
+            this.Column4_loadangle.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.Column4_loadangle.Width = 80;
             // 
             // circleSelectionToolStripMenuItem
             // 
@@ -97,13 +136,13 @@
             this.circleSelectionToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(784, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(794, 24);
             this.menuStrip1.TabIndex = 20;
             this.menuStrip1.Text = "menuStrip1";
             // 
             // button_deleteload
             // 
-            this.button_deleteload.Location = new System.Drawing.Point(581, 306);
+            this.button_deleteload.Location = new System.Drawing.Point(172, 340);
             this.button_deleteload.Name = "button_deleteload";
             this.button_deleteload.Size = new System.Drawing.Size(130, 35);
             this.button_deleteload.TabIndex = 19;
@@ -114,7 +153,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(9, 144);
+            this.label3.Location = new System.Drawing.Point(329, 297);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(121, 16);
             this.label3.TabIndex = 16;
@@ -167,7 +206,7 @@
             // 
             // button_applyload
             // 
-            this.button_applyload.Location = new System.Drawing.Point(399, 306);
+            this.button_applyload.Location = new System.Drawing.Point(12, 340);
             this.button_applyload.Name = "button_applyload";
             this.button_applyload.Size = new System.Drawing.Size(134, 35);
             this.button_applyload.TabIndex = 18;
@@ -177,55 +216,29 @@
             // 
             // textBox_selectednodes
             // 
-            this.textBox_selectednodes.Location = new System.Drawing.Point(12, 162);
+            this.textBox_selectednodes.Location = new System.Drawing.Point(332, 316);
             this.textBox_selectednodes.Multiline = true;
             this.textBox_selectednodes.Name = "textBox_selectednodes";
             this.textBox_selectednodes.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.textBox_selectednodes.Size = new System.Drawing.Size(313, 193);
+            this.textBox_selectednodes.Size = new System.Drawing.Size(450, 90);
             this.textBox_selectednodes.TabIndex = 17;
             // 
-            // Column1_loadsetid
+            // pictureBox1
             // 
-            this.Column1_loadsetid.FillWeight = 80F;
-            this.Column1_loadsetid.HeaderText = "Node Load ID";
-            this.Column1_loadsetid.MinimumWidth = 8;
-            this.Column1_loadsetid.Name = "Column1_loadsetid";
-            this.Column1_loadsetid.ReadOnly = true;
-            this.Column1_loadsetid.Width = 80;
-            // 
-            // Column2_nodeids
-            // 
-            this.Column2_nodeids.HeaderText = "Node IDs";
-            this.Column2_nodeids.MinimumWidth = 8;
-            this.Column2_nodeids.Name = "Column2_nodeids";
-            this.Column2_nodeids.ReadOnly = true;
-            this.Column2_nodeids.Width = 125;
-            // 
-            // Column3_loadampl
-            // 
-            this.Column3_loadampl.FillWeight = 80F;
-            this.Column3_loadampl.HeaderText = "Load Amplitude";
-            this.Column3_loadampl.MinimumWidth = 8;
-            this.Column3_loadampl.Name = "Column3_loadampl";
-            this.Column3_loadampl.ReadOnly = true;
-            this.Column3_loadampl.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.Column3_loadampl.Width = 80;
-            // 
-            // Column4_loadangle
-            // 
-            this.Column4_loadangle.FillWeight = 80F;
-            this.Column4_loadangle.HeaderText = "Load Angle";
-            this.Column4_loadangle.MinimumWidth = 8;
-            this.Column4_loadangle.Name = "Column4_loadangle";
-            this.Column4_loadangle.ReadOnly = true;
-            this.Column4_loadangle.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.Column4_loadangle.Width = 80;
+            this.pictureBox1.BackgroundImage = global::Properties.Resources.plane_stress_load_pic;
+            this.pictureBox1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.pictureBox1.Location = new System.Drawing.Point(75, 144);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(180, 180);
+            this.pictureBox1.TabIndex = 22;
+            this.pictureBox1.TabStop = false;
             // 
             // load_frm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(784, 361);
+            this.ClientSize = new System.Drawing.Size(794, 421);
+            this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.dataGridView_LoadList);
             this.Controls.Add(this.menuStrip1);
             this.Controls.Add(this.button_deleteload);
@@ -236,7 +249,7 @@
             this.Font = new System.Drawing.Font("Verdana", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(4);
-            this.MinimumSize = new System.Drawing.Size(800, 400);
+            this.MinimumSize = new System.Drawing.Size(810, 460);
             this.Name = "load_frm";
             this.Opacity = 0.85D;
             this.Text = "Nodal Loads";
@@ -247,6 +260,7 @@
             this.menuStrip1.PerformLayout();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -271,5 +285,6 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn Column2_nodeids;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column3_loadampl;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column4_loadangle;
+        private System.Windows.Forms.PictureBox pictureBox1;
     }
 }

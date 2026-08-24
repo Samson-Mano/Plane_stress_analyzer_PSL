@@ -79,11 +79,15 @@ namespace Plane_stress_analyzer_PSL.other_windows
                 return;
             }
 
+
+
             if (load_angle < 0.0 && load_angle > 360.0)
             {
                 return;
             }
 
+            // load_angle = load_angle + 360.0; // Convert to the opposite direction
+            load_angle = -load_angle; // Convert to the opposite direction
 
             // Get the node locations
             List<Vector2> load_node_pts = new List<Vector2>();
@@ -182,7 +186,7 @@ namespace Plane_stress_analyzer_PSL.other_windows
                     load.load_set_id,
                     nodeIdsPreview,   // show some of load nodes as string here
                     load.load_amplitude,
-                    load.load_angle
+                    -1.0 * load.load_angle
                     );
 
             }

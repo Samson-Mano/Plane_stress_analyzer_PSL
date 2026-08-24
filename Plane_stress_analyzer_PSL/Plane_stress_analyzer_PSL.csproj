@@ -273,6 +273,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="logo_ico_png.ico" />
+    <None Include="Resources\plane_stress_support_pic.png" />
+    <None Include="Resources\plane_stress_load_pic.png" />
     <Content Include="src\solver\stress2D_solverCPP\stress2D_solverCPP.slnx" />
     <Content Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\main.cpp" />
     <Content Include="src\solver\stress2D_solverCPP\stress2D_solverCPP\solve_2DstressanalysisCPP.cpp" />
