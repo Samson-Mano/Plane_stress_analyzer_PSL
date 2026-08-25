@@ -16,7 +16,7 @@
 int main()
 {
 
-	const char* input_file = "test_model.bin";   // Adjust path here
+	const char* input_file = "constraintangle_test45deg.bin";   // Adjust path here
 	// const char* output_file = "model_output.bin"; // Optional
 
 	// Example placeholder

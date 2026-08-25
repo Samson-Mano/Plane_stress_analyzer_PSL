@@ -178,15 +178,53 @@ void stress2d_solver::create_global_supportInclination_matrix()
 {
 	// Global support inclination matrix
 	this->global_supportInclination_matrix.resize(numDOF, numDOF);
-	this->global_supportInclination_matrix.setZero();
+	this->global_supportInclination_matrix.setIdentity();
 
 	std::vector<Eigen::Triplet<double>> s_triplets;
 
+
+	auto apply_support_inclination = [&](int node_id, double support_angle)
+		{
+			// Convert angle to radians
+			double support_angle_rad = (support_angle - 90.0) * (M_PI / 180.0);
+			double cos_theta = cos(support_angle_rad);
+			double sin_theta = sin(support_angle_rad);
+
+			int dof_u = (node_id * 2) + 0; // u DOF
+			int dof_v = (node_id * 2) + 1; // v DOF
+
+			s_triplets.emplace_back(dof_u, dof_u, cos_theta);
+			s_triplets.emplace_back(dof_u, dof_v, sin_theta);
+			s_triplets.emplace_back(dof_v, dof_u, -sin_theta);
+			s_triplets.emplace_back(dof_v, dof_v, cos_theta);
+		};
+
+
+	std::unordered_set<int> constrained_nodes;
+
+	for (const auto& constraint : polynomial_2dmesh.get_constraint_data())
+	{
+		const constraint_store& constraint_data = constraint.second;
+
+		for (const auto& node_id : constraint_data.node_ids)
+		{
+			apply_support_inclination(node_id, constraint_data.constraintangle);
+			constrained_nodes.insert(node_id);
+		}
+	}
+
+
 	for (const auto& node_id : polynomial_2dmesh.polynomial_node_list)
 	{
+		if (constrained_nodes.find(node_id.first) != constrained_nodes.end())
+		{
+			// Node is already constrained, skip
+			continue;
+		}	
+
 		const polynomial_node_store& node_data = node_id.second;
 
-		int dof_u = (node_data.node_id * 2);     // u DOF
+		int dof_u = (node_data.node_id * 2) + 0;     // u DOF
 		int dof_v = (node_data.node_id * 2) + 1; // v DOF
 
 		// Default support inclination
@@ -198,32 +236,6 @@ void stress2d_solver::create_global_supportInclination_matrix()
 	}
 
 
-	auto apply_support_inclination = [&](int node_id, double support_angle)
-		{
-			// Convert angle to radians
-			double support_angle_rad = (support_angle - 90.0) * M_PI / 180.0;
-			double cos_theta = cos(support_angle_rad);
-			double sin_theta = sin(support_angle_rad);
-
-			int dof_u = (node_id * 2);     // u DOF
-			int dof_v = (node_id * 2) + 1; // v DOF
-
-			s_triplets.emplace_back(dof_u, dof_u, cos_theta);
-			s_triplets.emplace_back(dof_u, dof_v, -sin_theta);
-			s_triplets.emplace_back(dof_v, dof_u, sin_theta);
-			s_triplets.emplace_back(dof_v, dof_v, cos_theta);
-		};
-
-
-	for (const auto& constraint : polynomial_2dmesh.get_constraint_data())
-	{
-		const constraint_store& constraint_data = constraint.second;
-
-		for (const auto& node_id : constraint_data.node_ids)
-		{
-			apply_support_inclination(node_id, constraint_data.constraintangle);
-		}
-	}
 
 	// Create the global support inclination matrix from triplets
 	this->global_supportInclination_matrix.setFromTriplets(s_triplets.begin(), s_triplets.end());
@@ -1170,6 +1182,42 @@ void stress2d_solver::store_k_m_matrices_text_debug()
 	int max_print_size = 200;
 	int matrix_rows = global_stiffness_matrix.rows();
 	int matrix_cols = global_stiffness_matrix.cols();
+
+
+	// Write Support Inclination Matrix
+	text_file << "=== Support Inclination Matrix ===\n";
+	text_file << "Size: " << matrix_rows << " x " << matrix_cols << "\n";
+
+	if (matrix_rows > max_print_size || matrix_cols > max_print_size)
+	{
+		text_file << "WARNING: Matrix size exceeds " << max_print_size
+			<< " x " << max_print_size << ". Printing only the first "
+			<< max_print_size << " x " << max_print_size << " block.\n\n";
+
+		// Print only the top-left corner
+		for (int i = 0; i < std::min(max_print_size, matrix_rows); i++)
+		{
+			for (int j = 0; j < std::min(max_print_size, matrix_cols); j++)
+			{
+				text_file << std::setw(15) << std::setprecision(6) << global_supportInclination_matrix.coeff(i, j) << " ";
+			}
+			text_file << "\n";
+		}
+	}
+	else
+	{
+		// Print full matrix
+		for (int i = 0; i < matrix_rows; i++)
+		{
+			for (int j = 0; j < matrix_cols; j++)
+			{
+				text_file << std::setw(15) << std::setprecision(6) << global_supportInclination_matrix.coeff(i, j) << " ";
+			}
+			text_file << "\n";
+		}
+	}
+	text_file << "\n";
+
 
 	// Write Ke Matrix
 	text_file << "=== Stiffness Matrix ===\n";
