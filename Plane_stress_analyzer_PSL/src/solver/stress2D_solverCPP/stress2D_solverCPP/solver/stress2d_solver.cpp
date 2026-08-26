@@ -129,6 +129,9 @@ bool stress2d_solver::perform_solve()
 	// Find the global resultant forces
 	this->global_reaction_vector = (this->global_stiffness_matrix * this->global_displacement_vector) - this->global_load_vector;
 
+	// Temporarily store the untransformed global displacement vector for validation
+	Eigen::VectorXd displacement_vector_untransformed = this->global_displacement_vector;
+
 
 	// Transform the global displacement vector back to the original coordinate system
 	this->global_displacement_vector = this->global_supportInclination_matrix * this->global_displacement_vector;
@@ -150,11 +153,15 @@ bool stress2d_solver::perform_solve()
 	// Map the results back to the original node IDs and store them in the polynomial_2dmesh structure
 	for (int i = 0; i < static_cast<int>(polynomial_2dmesh.polynomial_node_list.size()); ++i)
 	{
-		polynomial_2dmesh.polynomial_node_list[i].displ_x = this->global_displacement_vector(i * 2);
-		polynomial_2dmesh.polynomial_node_list[i].displ_y = this->global_displacement_vector(i * 2 + 1);
 
-		polynomial_2dmesh.polynomial_node_list[i].reaction_x = this->global_reaction_vector(i * 2);
-		polynomial_2dmesh.polynomial_node_list[i].reaction_y = this->global_reaction_vector(i * 2 + 1);
+		polynomial_2dmesh.polynomial_node_list[i].untransformed_displ_x = displacement_vector_untransformed((i * 2) + 0);
+		polynomial_2dmesh.polynomial_node_list[i].untransformed_displ_y = displacement_vector_untransformed((i * 2) + 1);
+
+		polynomial_2dmesh.polynomial_node_list[i].displ_x = this->global_displacement_vector((i * 2) + 0);
+		polynomial_2dmesh.polynomial_node_list[i].displ_y = this->global_displacement_vector((i * 2) + 1);
+
+		polynomial_2dmesh.polynomial_node_list[i].reaction_x = this->global_reaction_vector((i * 2) + 0);
+		polynomial_2dmesh.polynomial_node_list[i].reaction_y = this->global_reaction_vector((i * 2) + 1);
 	}
 
 
@@ -453,8 +460,8 @@ void stress2d_solver::create_global_load_vector_self_weight()
 		const polynomial_node_store& node = nodes.second;
 		int node_id = node.node_id;
 
-		xy_acceleration[node_id * 2] = this->accl_x; // u DOF
-		xy_acceleration[node_id * 2 + 1] = this->accl_y; // v DOF
+		xy_acceleration[(node_id * 2) + 0] = this->accl_x; // u DOF
+		xy_acceleration[(node_id * 2) + 1] = this->accl_y; // v DOF
 
 	}
 
@@ -480,14 +487,14 @@ void stress2d_solver::create_global_BC_flag_vector()
 		{
 			if (constraint_type == 0) // Pinned
 			{
-				this->global_BC_flag_vector[node_id * 2] = 1; // u DOF fixed
-				this->global_BC_flag_vector[node_id * 2 + 1] = 1; // v DOF fixed
+				this->global_BC_flag_vector[(node_id * 2) + 0] = 1; // u DOF fixed
+				this->global_BC_flag_vector[(node_id * 2) + 1] = 1; // v DOF fixed
 
 			}
 			else if (constraint_type == 1) // Roller
 			{
-				this->global_BC_flag_vector[node_id * 2] = 0; // u DOF free
-				this->global_BC_flag_vector[node_id * 2 + 1] = 1; // v DOF fixed
+				this->global_BC_flag_vector[(node_id * 2) + 0] = 0; // u DOF free
+				this->global_BC_flag_vector[(node_id * 2) + 1] = 1; // v DOF fixed
 			}
 		};
 
@@ -762,8 +769,18 @@ void stress2d_solver::set_element_results()
 				double u_disp = polynomial_2dmesh.polynomial_node_list[nd_id].displ_x;
 				double v_disp = polynomial_2dmesh.polynomial_node_list[nd_id].displ_y;
 
+				// double u_disp = polynomial_2dmesh.polynomial_node_list[nd_id].untransformed_displ_x;
+				// double v_disp = polynomial_2dmesh.polynomial_node_list[nd_id].untransformed_displ_y;
+
+				// Transform the displacements to the local coordinate system based on support inclination
+				// int start_idx = nd_id * 2;
+				// Eigen::Matrix2d local_inclination_matrix = this->global_supportInclination_matrix.block(start_idx, start_idx, 2, 2);	
+
+				Eigen::Vector2d local_disp = Eigen::Vector2d(u_disp, v_disp);
+
+
 				node_coords.push_back({ x_coord, y_coord });
-				node_displacements.push_back({ u_disp, v_disp });
+				node_displacements.push_back(local_disp);
 			}
 
 			// Calculate the element strain results
@@ -806,9 +823,18 @@ void stress2d_solver::set_element_results()
 				double u_disp = polynomial_2dmesh.polynomial_node_list[nd_id].displ_x;
 				double v_disp = polynomial_2dmesh.polynomial_node_list[nd_id].displ_y;
 
+				// double u_disp = polynomial_2dmesh.polynomial_node_list[nd_id].untransformed_displ_x;
+				// double v_disp = polynomial_2dmesh.polynomial_node_list[nd_id].untransformed_displ_y;
+
+				// Transform the displacements to the local coordinate system based on support inclination
+				// int start_idx = nd_id * 2;
+				// Eigen::Matrix2d local_inclination_matrix = this->global_supportInclination_matrix.block(start_idx, start_idx, 2, 2);
+
+				Eigen::Vector2d local_disp = Eigen::Vector2d(u_disp, v_disp);
+
 
 				node_coords.push_back({ x_coord, y_coord });
-				node_displacements.push_back({ u_disp, v_disp });
+				node_displacements.push_back(local_disp);
 			}
 
 			// Calculate the element strain results
