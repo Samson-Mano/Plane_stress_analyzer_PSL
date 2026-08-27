@@ -89,8 +89,8 @@ struct polynomial_node_store
 	double x_coord = 0.0;
 	double y_coord = 0.0;
 
-	double untransformed_displ_x = 0.0; // Untransformed displacement in x direction
-	double untransformed_displ_y = 0.0; // Untransformed displacement in y direction
+	//double untransformed_displ_x = 0.0; // Untransformed displacement in x direction
+	//double untransformed_displ_y = 0.0; // Untransformed displacement in y direction
 
 	double displ_x = 0.0; // Displacement in x direction
 	double displ_y = 0.0; // Displacement in y direction

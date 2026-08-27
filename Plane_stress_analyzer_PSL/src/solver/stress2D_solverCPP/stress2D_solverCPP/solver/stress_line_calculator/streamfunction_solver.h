@@ -69,6 +69,8 @@ private:
 	Eigen::Vector3d getElementFVector(const std::unordered_map<int, renderer_node>& renderer_node_points,
 		const renderer_triangle& renderer_tri);
 
+	Eigen::Vector3d getElementFVector_S1(const std::unordered_map<int, renderer_node>& renderer_node_points,
+		const renderer_triangle& renderer_tri);
 
 
 	void report(const char* msg);

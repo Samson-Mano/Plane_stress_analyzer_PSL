@@ -201,9 +201,7 @@ Eigen::Matrix3d streamfunction_solver::getElementKMatrix(const std::unordered_ma
 
 
 
-
-
-Eigen::Vector3d streamfunction_solver::getElementFVector(const std::unordered_map<int, renderer_node>& renderer_node_points, 
+Eigen::Vector3d streamfunction_solver::getElementFVector(const std::unordered_map<int, renderer_node>& renderer_node_points,
 	const renderer_triangle& tri_element)
 {
 
@@ -265,6 +263,83 @@ Eigen::Vector3d streamfunction_solver::getElementFVector(const std::unordered_ma
 		gx = costheta;
 		gy = sintheta;
 	}
+
+
+	// F_i = ∫ ∇N_i · (gx,gy) dA = (1/2)(b_i*gx + c_i*gy)   [since ∇N_i = (b_i,c_i)/(2A), integrated over area A]
+	double F1 = 0.5 * (b1 * gx + c1 * gy);
+	double F2 = 0.5 * (b2 * gx + c2 * gy);
+	double F3 = 0.5 * (b3 * gx + c3 * gy);
+
+
+	return Eigen::Vector3d(F1, F2, F3);
+}
+
+
+
+
+Eigen::Vector3d streamfunction_solver::getElementFVector_S1(const std::unordered_map<int, renderer_node>& renderer_node_points, 
+	const renderer_triangle& tri_element)
+{
+
+	// Get the node data for the triangle's vertices
+	renderer_node node1 = renderer_node_points.at(tri_element.n1);
+	renderer_node node2 = renderer_node_points.at(tri_element.n2);
+	renderer_node node3 = renderer_node_points.at(tri_element.n3);
+
+	// Get the node coordinates
+	double p1_X = node1.x;
+	double p1_Y = node1.y;
+
+	double p2_X = node2.x;
+	double p2_Y = node2.y;
+
+	double p3_X = node3.x;
+	double p3_Y = node3.y;
+
+
+
+	double b1 = p2_Y - p3_Y;
+	double c1 = p3_X - p2_X;
+
+	double b2 = p3_Y - p1_Y;
+	double c2 = p1_X - p3_X;
+
+	double b3 = p1_Y - p2_Y;
+	double c3 = p2_X - p1_X;
+
+
+	double sigmaXX_avg = (node1.sigma_x + node2.sigma_x + node3.sigma_x) / 3.0;
+	double sigmaYY_avg = (node1.sigma_y + node2.sigma_y + node3.sigma_y) / 3.0;
+	double tauXY_avg = (node1.tau_xy + node2.tau_xy + node3.tau_xy) / 3.0;
+
+	double sigma_diff = (sigmaXX_avg - sigmaYY_avg) / 2.0;
+	double R = std::sqrt(sigma_diff * sigma_diff + tauXY_avg * tauXY_avg);
+
+	// Degenerate/isotropic point (sigma_xx = sigma_yy, tau_xy = 0):
+		  // principal direction is undefined. Element contributes nothing.
+	if (R < 1e-9)
+		return Eigen::Vector3d(0.0, 0.0, 0.0);
+
+	double cos2theta = sigma_diff / R;                                   // clamp guards fp drift
+	double costheta = std::sqrt(std::max(0.0, (1.0 + cos2theta) / 2.0));
+	double sintheta = std::sqrt(std::max(0.0, (1.0 - cos2theta) / 2.0));
+	if (tauXY_avg < 0.0) sintheta = -sintheta;
+
+	double gx, gy; // = target ∇phi direction (unit vector)
+
+	if (this->isTensionLine)
+	{
+		// grad(phi) = minor principal direction (perp to major/tension direction)
+		gx = -sintheta;
+		gy = costheta;
+	}
+	else
+	{
+		// grad(phi) = major principal direction (perp to minor/compression direction)
+		gx = costheta;
+		gy = sintheta;
+	}
+
 
 	// F_i = ∫ ∇N_i · (gx,gy) dA = (1/2)(b_i*gx + c_i*gy)   [since ∇N_i = (b_i,c_i)/(2A), integrated over area A]
 	double F1 = 0.5 * (b1 * gx + c1 * gy);

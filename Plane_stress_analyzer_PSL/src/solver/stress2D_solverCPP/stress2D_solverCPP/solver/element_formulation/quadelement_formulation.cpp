@@ -165,8 +165,8 @@ std::vector<Eigen::Vector3d> quadelement_formulation::compute_quadelement_strain
 
 	for (int i = 0; i < this->nodes_per_element; ++i)
 	{
-		displ(2 * i) = node_displacements[i].x();
-		displ(2 * i + 1) = node_displacements[i].y();
+		displ((2 * i) + 0) = node_displacements[i].x();
+		displ((2 * i) + 1) = node_displacements[i].y();
 	}
 
 	const auto& quad_sf_datas_all = quad_sf_store.get_data();

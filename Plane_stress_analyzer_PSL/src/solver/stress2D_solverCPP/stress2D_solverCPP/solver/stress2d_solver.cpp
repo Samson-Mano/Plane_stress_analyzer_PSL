@@ -129,8 +129,8 @@ bool stress2d_solver::perform_solve()
 	// Find the global resultant forces
 	this->global_reaction_vector = (this->global_stiffness_matrix * this->global_displacement_vector) - this->global_load_vector;
 
-	// Temporarily store the untransformed global displacement vector for validation
-	Eigen::VectorXd displacement_vector_untransformed = this->global_displacement_vector;
+	// // Temporarily store the untransformed global displacement vector for validation
+	// Eigen::VectorXd displacement_vector_untransformed = this->global_displacement_vector;
 
 
 	// Transform the global displacement vector back to the original coordinate system
@@ -154,8 +154,8 @@ bool stress2d_solver::perform_solve()
 	for (int i = 0; i < static_cast<int>(polynomial_2dmesh.polynomial_node_list.size()); ++i)
 	{
 
-		polynomial_2dmesh.polynomial_node_list[i].untransformed_displ_x = displacement_vector_untransformed((i * 2) + 0);
-		polynomial_2dmesh.polynomial_node_list[i].untransformed_displ_y = displacement_vector_untransformed((i * 2) + 1);
+		//polynomial_2dmesh.polynomial_node_list[i].untransformed_displ_x = displacement_vector_untransformed((i * 2) + 0);
+		//polynomial_2dmesh.polynomial_node_list[i].untransformed_displ_y = displacement_vector_untransformed((i * 2) + 1);
 
 		polynomial_2dmesh.polynomial_node_list[i].displ_x = this->global_displacement_vector((i * 2) + 0);
 		polynomial_2dmesh.polynomial_node_list[i].displ_y = this->global_displacement_vector((i * 2) + 1);
@@ -954,6 +954,24 @@ void stress2d_solver::map_results_to_rendererelements()
 
 	extrapolator.extrapolate_results_to_nodes(polynomial_2dmesh.polynomial_node_list);
 
+	// Perform transformation of the results back to the global coordinate system based on support inclination
+
+
+	//std::unordered_map<int, double> constrained_nodes_angle;
+
+	//for (const auto& constraint : polynomial_2dmesh.get_constraint_data())
+	//{
+	//	const constraint_store& constraint_data = constraint.second;
+
+	//	for (const auto& node_id : constraint_data.node_ids)
+	//	{
+	//		// Store the constraint angle for the node 
+	//		// (Last constraint angle will be stored if multiple constraints exist for the same node)
+	//		constrained_nodes_angle[node_id] = constraint_data.constraintangle;
+	//	}
+	//}
+
+
 
 	// Map the results to the renderer nodes for visualization
 
@@ -971,7 +989,41 @@ void stress2d_solver::map_results_to_rendererelements()
 		renderer_node_data.reaction_x = node_data.reaction_x;
 		renderer_node_data.reaction_y = node_data.reaction_y;
 
-		// Stress results at the node (averaged from connected elements)
+		//// Transformation of the results back to the global coordinate system based on support inclination
+		//if (constrained_nodes_angle.find(node_data.node_id) != constrained_nodes_angle.end())
+		//{
+		//	// Node is constrained, apply support inclination transformation
+		//	// Get the constraint angle for the node
+		//	double constraint_angle = constrained_nodes_angle[node_data.node_id];
+		//	double constraint_angle_rad = constraint_angle * M_PI / 180.0;
+
+		//	// Find cos 2theta and sin 2theta
+		//	double cos_2theta = std::cos(2.0 * constraint_angle_rad);
+		//	double sin_2theta = std::sin(2.0 * constraint_angle_rad);	
+
+
+		//	double sigma_avg = (node_data.sigma_x + node_data.sigma_y) / 2.0;
+		//	double sigma_diff = (node_data.sigma_x - node_data.sigma_y) / 2.0;
+
+		//	double sigma_x_global = sigma_avg + (sigma_diff * cos_2theta) + (node_data.tau_xy * 0.5 * sin_2theta);
+		//	double sigma_y_global = sigma_avg - (sigma_diff * cos_2theta) - (node_data.tau_xy * 0.5 * sin_2theta);
+		//	double tau_xy_global = -sigma_diff * 2.0 * sin_2theta + node_data.tau_xy * cos_2theta;
+
+		//	renderer_node_data.sigma_x = sigma_x_global;
+		//	renderer_node_data.sigma_y = sigma_y_global;
+		//	renderer_node_data.tau_xy = tau_xy_global;
+		//}
+		//else
+		//{
+		//	// Node is not constrained, use the results directly
+		//	renderer_node_data.sigma_x = node_data.sigma_x;
+		//	renderer_node_data.sigma_y = node_data.sigma_y;
+		//	renderer_node_data.tau_xy = node_data.tau_xy;
+		//}
+
+
+
+		// Stress results at the node (averaged from connected elements)	
 		renderer_node_data.sigma_x = node_data.sigma_x;
 		renderer_node_data.sigma_y = node_data.sigma_y;
 		renderer_node_data.tau_xy = node_data.tau_xy;

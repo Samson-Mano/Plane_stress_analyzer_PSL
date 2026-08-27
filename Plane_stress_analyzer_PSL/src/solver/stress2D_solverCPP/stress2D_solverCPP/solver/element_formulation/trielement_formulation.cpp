@@ -169,8 +169,8 @@ std::vector<Eigen::Vector3d> trielement_formulation::compute_trielement_strain(
 
 	for (int i = 0; i < this->nodes_per_element; ++i)
 	{
-		displ(2 * i) = node_displacements[i].x();
-		displ(2 * i + 1) = node_displacements[i].y();
+		displ((2 * i) + 0) = node_displacements[i].x();
+		displ((2 * i) + 1) = node_displacements[i].y();
 	}
 
 	const auto& tri_sf_datas_all = tri_sf_store.get_data();
