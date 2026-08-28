@@ -48,7 +48,7 @@ public:
 	~stress2d_solver() = default;
 
 	bool initialize_solver(stress_system_store* stress_system, const char* output_file_char, 
-		bool isSelfWeight, double accl_x, double accl_y,
+		bool isSelfWeight, double accl_x, double accl_y, double orientation_angle,
 		stopwatch_events* stopwatch, void(*callback)(const char*));
 
 	bool perform_solve();
@@ -64,6 +64,8 @@ private:
 
 	double accl_x = 0.0;
 	double accl_y = 0.0;
+
+	double orientation_angle = 0.0; // Orientation angle in degrees
 
 	int trielement_dof = 0;
 	int quadelement_dof = 0;

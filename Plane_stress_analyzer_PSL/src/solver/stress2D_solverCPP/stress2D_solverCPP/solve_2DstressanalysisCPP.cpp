@@ -27,6 +27,7 @@ struct SolverSettings
 	double selfWeight;
 	double xAcceleration;
 	double yAcceleration;
+	double orientationAngle;
 };
 #pragma pack(pop)
 
@@ -72,6 +73,7 @@ extern "C" __declspec(dllexport) void solve_2DstressanalysisCPP(const char* inpu
 	bool isSelfWeight = static_cast<int>(settings->selfWeight) == 0 ? false : true;
 	double accl_x = settings->xAcceleration;
 	double accl_y = settings->yAcceleration;
+	double orientation_angle = settings->orientationAngle;
 
 	if (accl_x == 0 && accl_y == 0)
 		isSelfWeight = false;
@@ -379,7 +381,7 @@ extern "C" __declspec(dllexport) void solve_2DstressanalysisCPP(const char* inpu
 		stress2d_solver solver(solvertype, polynomial_order);
 
 		isSolverInitialized = solver.initialize_solver(&stress_system, output_file,
-			isSelfWeight, accl_x, accl_y, &stopwatch, callback);
+			isSelfWeight, accl_x, accl_y, orientation_angle, &stopwatch, callback);
 
 
 		if (isSolverInitialized == true)

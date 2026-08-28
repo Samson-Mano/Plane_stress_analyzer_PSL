@@ -292,7 +292,7 @@ int main()
 	const char* output_file_char = "test_model_output.bin";
 
 	isSolverInitialized = solver.initialize_solver(&stress_system, output_file_char,
-		isSelfWeight, 0.0, -9806.65, &stopwatch, m_callback);
+		isSelfWeight, 0.0, -9806.65, 0.0,  &stopwatch, m_callback);
 
 
 

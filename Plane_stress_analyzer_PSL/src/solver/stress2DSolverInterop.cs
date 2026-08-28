@@ -26,6 +26,7 @@ namespace src.solver
             public double SelfWeight;        // 0.0 or 1.0
             public double XAcceleration;     // Self-weight X
             public double YAcceleration;     // Self-weight Y
+            public double modelorientationangle;     // 0.0 to 360.0
         }
 
 

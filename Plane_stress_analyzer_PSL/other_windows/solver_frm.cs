@@ -210,6 +210,27 @@ namespace Plane_stress_analyzer_PSL.other_windows
                     return;
                 }
 
+
+                // Validate the model orientation value
+                if (double.TryParse(textBox_modelorientation.Text, out double modelOrientation))
+                {
+                    // Use the modelOrientation value as needed
+                    if(modelOrientation < 0.0 || modelOrientation > 360.0)
+                    {
+                        AppendStatus("Model orientation must be between 0.0 and 360.0 degrees.\n");
+                        return;
+                    }
+
+                    solver_settings.modelorientationangle = modelOrientation;
+                }
+                else
+                {
+                    AppendStatus("Invalid model orientation value. Please enter a valid number.\n");
+                    return;
+                }
+
+
+
                 bool isAnalysisSuccess = false;
 
 

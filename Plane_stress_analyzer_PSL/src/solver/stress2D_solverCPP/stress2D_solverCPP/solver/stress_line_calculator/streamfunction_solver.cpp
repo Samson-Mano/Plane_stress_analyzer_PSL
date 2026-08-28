@@ -201,7 +201,7 @@ Eigen::Matrix3d streamfunction_solver::getElementKMatrix(const std::unordered_ma
 
 
 
-Eigen::Vector3d streamfunction_solver::getElementFVector(const std::unordered_map<int, renderer_node>& renderer_node_points,
+Eigen::Vector3d streamfunction_solver::getElementFVector_S1(const std::unordered_map<int, renderer_node>& renderer_node_points,
 	const renderer_triangle& tri_element)
 {
 
@@ -244,26 +244,45 @@ Eigen::Vector3d streamfunction_solver::getElementFVector(const std::unordered_ma
 	if (R < 1e-9)
 		return Eigen::Vector3d(0.0, 0.0, 0.0);
 
-	double cos2theta = sigma_diff / R;                                   // clamp guards fp drift
-	double costheta = std::sqrt(std::max(0.0, (1.0 + cos2theta) / 2.0));
-	double sintheta = std::sqrt(std::max(0.0, (1.0 - cos2theta) / 2.0));
-	if (tauXY_avg < 0.0) sintheta = -sintheta;
+	// Compute principal direction (major) 
+	double eigen_major = ((sigmaXX_avg + sigmaYY_avg) / 2.0) + R;
+	double vx, vy;
 
-	double gx, gy; // = target ∇phi direction (unit vector)
-
-	if (this->isTensionLine)
+	if (std::abs(tauXY_avg) > 1e-12) 
 	{
-		// grad(phi) = minor principal direction (perp to major/tension direction)
-		gx = -sintheta;
-		gy = costheta;
+		vx = tauXY_avg;
+		vy = eigen_major - sigmaXX_avg;
 	}
-	else
+	else 
 	{
-		// grad(phi) = major principal direction (perp to minor/compression direction)
-		gx = costheta;
-		gy = sintheta;
+		if (sigmaXX_avg >= sigmaYY_avg) 
+		{
+			vx = 1.0; vy = 0.0;
+		}
+		else 
+		{
+			vx = 0.0; vy = 1.0;
+		}
 	}
 
+	double length = std::sqrt(vx * vx + vy * vy);
+	vx /= length;
+	vy /= length;
+
+	// Gradient direction of phi
+	double gx, gy;
+	if (isTensionLine) 
+	{
+		// Minor principal direction (perp to major/tension)
+		gx = -vy;
+		gy = vx;
+	}
+	else 
+	{
+		// Major principal direction
+		gx = vx;
+		gy = vy;
+	}
 
 	// F_i = ∫ ∇N_i · (gx,gy) dA = (1/2)(b_i*gx + c_i*gy)   [since ∇N_i = (b_i,c_i)/(2A), integrated over area A]
 	double F1 = 0.5 * (b1 * gx + c1 * gy);
@@ -277,7 +296,7 @@ Eigen::Vector3d streamfunction_solver::getElementFVector(const std::unordered_ma
 
 
 
-Eigen::Vector3d streamfunction_solver::getElementFVector_S1(const std::unordered_map<int, renderer_node>& renderer_node_points, 
+Eigen::Vector3d streamfunction_solver::getElementFVector(const std::unordered_map<int, renderer_node>& renderer_node_points, 
 	const renderer_triangle& tri_element)
 {
 
@@ -311,6 +330,10 @@ Eigen::Vector3d streamfunction_solver::getElementFVector_S1(const std::unordered
 	double sigmaXX_avg = (node1.sigma_x + node2.sigma_x + node3.sigma_x) / 3.0;
 	double sigmaYY_avg = (node1.sigma_y + node2.sigma_y + node3.sigma_y) / 3.0;
 	double tauXY_avg = (node1.tau_xy + node2.tau_xy + node3.tau_xy) / 3.0;
+
+	//double sigmaXX_avg = (node1.sigma_1 + node2.sigma_1 + node3.sigma_1) / 3.0;
+	//double sigmaYY_avg = (node1.sigma_2 + node2.sigma_2 + node3.sigma_2) / 3.0;
+	//double tauXY_avg = (node1.max_shear + node2.max_shear + node3.max_shear) / 3.0;
 
 	double sigma_diff = (sigmaXX_avg - sigmaYY_avg) / 2.0;
 	double R = std::sqrt(sigma_diff * sigma_diff + tauXY_avg * tauXY_avg);

@@ -48,7 +48,12 @@
             this.label5 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.checkBox_selfweight = new System.Windows.Forms.CheckBox();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.label6 = new System.Windows.Forms.Label();
+            this.textBox_modelorientation = new System.Windows.Forms.TextBox();
+            this.label7 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
+            this.groupBox2.SuspendLayout();
             this.SuspendLayout();
             // 
             // richTextBox_AnalysisUpdate
@@ -65,7 +70,7 @@
             this.label9.AutoSize = true;
             this.label9.Location = new System.Drawing.Point(65, 288);
             this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(122, 20);
+            this.label9.Size = new System.Drawing.Size(101, 17);
             this.label9.TabIndex = 17;
             this.label9.Text = "Solver Type: ";
             // 
@@ -78,7 +83,7 @@
             "Lagrange Augmentation method"});
             this.comboBox_solvertype.Location = new System.Drawing.Point(172, 285);
             this.comboBox_solvertype.Name = "comboBox_solvertype";
-            this.comboBox_solvertype.Size = new System.Drawing.Size(322, 28);
+            this.comboBox_solvertype.Size = new System.Drawing.Size(322, 25);
             this.comboBox_solvertype.TabIndex = 16;
             // 
             // label1
@@ -86,7 +91,7 @@
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(41, 319);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(155, 20);
+            this.label1.Size = new System.Drawing.Size(125, 17);
             this.label1.TabIndex = 18;
             this.label1.Text = "H - Refinement: ";
             // 
@@ -100,7 +105,7 @@
             "16 (Split each element into 16)"});
             this.comboBox_HRefinement.Location = new System.Drawing.Point(172, 316);
             this.comboBox_HRefinement.Name = "comboBox_HRefinement";
-            this.comboBox_HRefinement.Size = new System.Drawing.Size(273, 28);
+            this.comboBox_HRefinement.Size = new System.Drawing.Size(273, 25);
             this.comboBox_HRefinement.TabIndex = 19;
             // 
             // label2
@@ -108,7 +113,7 @@
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(43, 350);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(152, 20);
+            this.label2.Size = new System.Drawing.Size(123, 17);
             this.label2.TabIndex = 20;
             this.label2.Text = "P - Refinement: ";
             // 
@@ -123,7 +128,7 @@
             "P = 4 (Quartic T15, Q25)"});
             this.comboBox_polynomialrefinement.Location = new System.Drawing.Point(172, 347);
             this.comboBox_polynomialrefinement.Name = "comboBox_polynomialrefinement";
-            this.comboBox_polynomialrefinement.Size = new System.Drawing.Size(273, 28);
+            this.comboBox_polynomialrefinement.Size = new System.Drawing.Size(273, 25);
             this.comboBox_polynomialrefinement.TabIndex = 21;
             // 
             // button_solve
@@ -141,7 +146,7 @@
             this.label3.AutoSize = true;
             this.label3.Location = new System.Drawing.Point(15, 381);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(186, 20);
+            this.label3.Size = new System.Drawing.Size(151, 17);
             this.label3.TabIndex = 23;
             this.label3.Text = "Solver Formulation: ";
             // 
@@ -154,7 +159,7 @@
             "Plane Strain Formulation"});
             this.comboBox_formulation.Location = new System.Drawing.Point(172, 378);
             this.comboBox_formulation.Name = "comboBox_formulation";
-            this.comboBox_formulation.Size = new System.Drawing.Size(273, 28);
+            this.comboBox_formulation.Size = new System.Drawing.Size(273, 25);
             this.comboBox_formulation.TabIndex = 24;
             // 
             // checkBox_extendconstraints
@@ -162,7 +167,7 @@
             this.checkBox_extendconstraints.AutoSize = true;
             this.checkBox_extendconstraints.Location = new System.Drawing.Point(172, 409);
             this.checkBox_extendconstraints.Name = "checkBox_extendconstraints";
-            this.checkBox_extendconstraints.Size = new System.Drawing.Size(384, 24);
+            this.checkBox_extendconstraints.Size = new System.Drawing.Size(318, 21);
             this.checkBox_extendconstraints.TabIndex = 25;
             this.checkBox_extendconstraints.Text = "Extend Constraints to Refined Mid Nodes";
             this.checkBox_extendconstraints.UseVisualStyleBackColor = true;
@@ -172,7 +177,7 @@
             this.checkBox_extendloads.AutoSize = true;
             this.checkBox_extendloads.Location = new System.Drawing.Point(172, 436);
             this.checkBox_extendloads.Name = "checkBox_extendloads";
-            this.checkBox_extendloads.Size = new System.Drawing.Size(324, 24);
+            this.checkBox_extendloads.Size = new System.Drawing.Size(269, 21);
             this.checkBox_extendloads.TabIndex = 26;
             this.checkBox_extendloads.Text = "Exten Loads to Refined Mid Nodes";
             this.checkBox_extendloads.UseVisualStyleBackColor = true;
@@ -182,7 +187,7 @@
             this.checkBox_saveHrefinedmodel.AutoSize = true;
             this.checkBox_saveHrefinedmodel.Location = new System.Drawing.Point(172, 463);
             this.checkBox_saveHrefinedmodel.Name = "checkBox_saveHrefinedmodel";
-            this.checkBox_saveHrefinedmodel.Size = new System.Drawing.Size(219, 24);
+            this.checkBox_saveHrefinedmodel.Size = new System.Drawing.Size(179, 21);
             this.checkBox_saveHrefinedmodel.TabIndex = 27;
             this.checkBox_saveHrefinedmodel.Text = "Save h-Refined Model";
             this.checkBox_saveHrefinedmodel.UseVisualStyleBackColor = true;
@@ -205,7 +210,7 @@
             // 
             this.textBox_yaccl.Location = new System.Drawing.Point(138, 81);
             this.textBox_yaccl.Name = "textBox_yaccl";
-            this.textBox_yaccl.Size = new System.Drawing.Size(110, 28);
+            this.textBox_yaccl.Size = new System.Drawing.Size(110, 24);
             this.textBox_yaccl.TabIndex = 4;
             this.textBox_yaccl.Text = "-9806.65";
             // 
@@ -213,7 +218,7 @@
             // 
             this.textBox_xaccl.Location = new System.Drawing.Point(138, 51);
             this.textBox_xaccl.Name = "textBox_xaccl";
-            this.textBox_xaccl.Size = new System.Drawing.Size(110, 28);
+            this.textBox_xaccl.Size = new System.Drawing.Size(110, 24);
             this.textBox_xaccl.TabIndex = 3;
             this.textBox_xaccl.Text = "0.0";
             // 
@@ -222,7 +227,7 @@
             this.label5.AutoSize = true;
             this.label5.Location = new System.Drawing.Point(15, 84);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(144, 20);
+            this.label5.Size = new System.Drawing.Size(117, 17);
             this.label5.TabIndex = 2;
             this.label5.Text = "Y Acceleration: ";
             // 
@@ -231,7 +236,7 @@
             this.label4.AutoSize = true;
             this.label4.Location = new System.Drawing.Point(15, 54);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(146, 20);
+            this.label4.Size = new System.Drawing.Size(118, 17);
             this.label4.TabIndex = 1;
             this.label4.Text = "X Acceleration: ";
             // 
@@ -240,17 +245,56 @@
             this.checkBox_selfweight.AutoSize = true;
             this.checkBox_selfweight.Location = new System.Drawing.Point(18, 23);
             this.checkBox_selfweight.Name = "checkBox_selfweight";
-            this.checkBox_selfweight.Size = new System.Drawing.Size(93, 24);
+            this.checkBox_selfweight.Size = new System.Drawing.Size(77, 21);
             this.checkBox_selfweight.TabIndex = 0;
             this.checkBox_selfweight.Text = "Gravity";
             this.checkBox_selfweight.UseVisualStyleBackColor = true;
             this.checkBox_selfweight.CheckedChanged += new System.EventHandler(this.checkBox_selfweight_CheckedChanged);
             // 
+            // groupBox2
+            // 
+            this.groupBox2.Controls.Add(this.label7);
+            this.groupBox2.Controls.Add(this.textBox_modelorientation);
+            this.groupBox2.Controls.Add(this.label6);
+            this.groupBox2.Location = new System.Drawing.Point(509, 424);
+            this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Size = new System.Drawing.Size(262, 94);
+            this.groupBox2.TabIndex = 29;
+            this.groupBox2.TabStop = false;
+            this.groupBox2.Text = "Model Orientation: ";
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(6, 39);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(145, 17);
+            this.label6.TabIndex = 0;
+            this.label6.Text = "Global Orientation: ";
+            // 
+            // textBox_modelorientation
+            // 
+            this.textBox_modelorientation.Location = new System.Drawing.Point(157, 36);
+            this.textBox_modelorientation.Name = "textBox_modelorientation";
+            this.textBox_modelorientation.Size = new System.Drawing.Size(51, 24);
+            this.textBox_modelorientation.TabIndex = 1;
+            this.textBox_modelorientation.Text = "0";
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(214, 39);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(34, 17);
+            this.label7.TabIndex = 2;
+            this.label7.Text = "deg";
+            // 
             // solver_frm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 20F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(784, 571);
+            this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.checkBox_saveHrefinedmodel);
             this.Controls.Add(this.checkBox_extendloads);
@@ -275,6 +319,8 @@
             this.Load += new System.EventHandler(this.solver_frm_Load);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
+            this.groupBox2.ResumeLayout(false);
+            this.groupBox2.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -301,5 +347,9 @@
         private System.Windows.Forms.TextBox textBox_yaccl;
         private System.Windows.Forms.TextBox textBox_xaccl;
         private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.TextBox textBox_modelorientation;
+        private System.Windows.Forms.Label label6;
     }
 }

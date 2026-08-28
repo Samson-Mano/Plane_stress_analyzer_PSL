@@ -11,7 +11,7 @@ stress2d_solver::stress2d_solver(int solver_type, int polynomial_order) :
 
 bool stress2d_solver::initialize_solver(stress_system_store* stress_system, 
 	const char* output_file_char,
-	bool isSelfWeight, double accl_x, double accl_y,
+	bool isSelfWeight, double accl_x, double accl_y, double orientation_angle,
 	stopwatch_events* stopwatch, void(*callback)(const char*))
 {
 
@@ -39,6 +39,9 @@ bool stress2d_solver::initialize_solver(stress_system_store* stress_system,
 		this->accl_y = accl_y;
 	}
 
+
+	// Store the orientation angle
+	this->orientation_angle = orientation_angle;
 
 	report("Solver initialized successfully");
 
@@ -129,10 +132,6 @@ bool stress2d_solver::perform_solve()
 	// Find the global resultant forces
 	this->global_reaction_vector = (this->global_stiffness_matrix * this->global_displacement_vector) - this->global_load_vector;
 
-	// // Temporarily store the untransformed global displacement vector for validation
-	// Eigen::VectorXd displacement_vector_untransformed = this->global_displacement_vector;
-
-
 	// Transform the global displacement vector back to the original coordinate system
 	this->global_displacement_vector = this->global_supportInclination_matrix * this->global_displacement_vector;
 	this->global_reaction_vector = this->global_supportInclination_matrix * this->global_reaction_vector;
@@ -153,9 +152,6 @@ bool stress2d_solver::perform_solve()
 	// Map the results back to the original node IDs and store them in the polynomial_2dmesh structure
 	for (int i = 0; i < static_cast<int>(polynomial_2dmesh.polynomial_node_list.size()); ++i)
 	{
-
-		//polynomial_2dmesh.polynomial_node_list[i].untransformed_displ_x = displacement_vector_untransformed((i * 2) + 0);
-		//polynomial_2dmesh.polynomial_node_list[i].untransformed_displ_y = displacement_vector_untransformed((i * 2) + 1);
 
 		polynomial_2dmesh.polynomial_node_list[i].displ_x = this->global_displacement_vector((i * 2) + 0);
 		polynomial_2dmesh.polynomial_node_list[i].displ_y = this->global_displacement_vector((i * 2) + 1);
@@ -891,7 +887,7 @@ element_results stress2d_solver::compute_element_result_at_ip(const Eigen::Vecto
 	double theta_p = 0.0;
 	if (std::abs(sig_diff) > 1e-10 || std::abs(tau_xy) > 1e-10) 
 	{
-		theta_p = 0.5 * std::atan2(2.0 * tau_xy, sigma_x - sigma_y) * 180.0 / M_PI;
+		theta_p = 0.5 * std::atan2(2.0 * tau_xy, (sigma_x - sigma_y)); // *(180.0 / M_PI);
 	}
 	
 
@@ -989,44 +985,27 @@ void stress2d_solver::map_results_to_rendererelements()
 		renderer_node_data.reaction_x = node_data.reaction_x;
 		renderer_node_data.reaction_y = node_data.reaction_y;
 
-		//// Transformation of the results back to the global coordinate system based on support inclination
-		//if (constrained_nodes_angle.find(node_data.node_id) != constrained_nodes_angle.end())
-		//{
-		//	// Node is constrained, apply support inclination transformation
-		//	// Get the constraint angle for the node
-		//	double constraint_angle = constrained_nodes_angle[node_data.node_id];
-		//	double constraint_angle_rad = constraint_angle * M_PI / 180.0;
 
-		//	// Find cos 2theta and sin 2theta
-		//	double cos_2theta = std::cos(2.0 * constraint_angle_rad);
-		//	double sin_2theta = std::sin(2.0 * constraint_angle_rad);	
+		double sigmaXX_local = node_data.sigma_x;
+		double sigmaYY_local = node_data.sigma_y;
+		double tauXY_local = node_data.tau_xy;	
 
 
-		//	double sigma_avg = (node_data.sigma_x + node_data.sigma_y) / 2.0;
-		//	double sigma_diff = (node_data.sigma_x - node_data.sigma_y) / 2.0;
+		// Transformation of the results back to the global coordinate system based on orientation angle
+		double orientation_angle = this->orientation_angle; // in degrees
+		double orientation_angle_rad = orientation_angle * (M_PI / 180.0);
 
-		//	double sigma_x_global = sigma_avg + (sigma_diff * cos_2theta) + (node_data.tau_xy * 0.5 * sin_2theta);
-		//	double sigma_y_global = sigma_avg - (sigma_diff * cos_2theta) - (node_data.tau_xy * 0.5 * sin_2theta);
-		//	double tau_xy_global = -sigma_diff * 2.0 * sin_2theta + node_data.tau_xy * cos_2theta;
+		double cosT = std::cos(orientation_angle_rad);
+		double sinT = std::sin(orientation_angle_rad);
 
-		//	renderer_node_data.sigma_x = sigma_x_global;
-		//	renderer_node_data.sigma_y = sigma_y_global;
-		//	renderer_node_data.tau_xy = tau_xy_global;
-		//}
-		//else
-		//{
-		//	// Node is not constrained, use the results directly
-		//	renderer_node_data.sigma_x = node_data.sigma_x;
-		//	renderer_node_data.sigma_y = node_data.sigma_y;
-		//	renderer_node_data.tau_xy = node_data.tau_xy;
-		//}
-
-
+		double sigmaXX_global = sigmaXX_local * cosT * cosT + sigmaYY_local * sinT * sinT + 2 * tauXY_local * sinT * cosT;
+		double sigmaYY_global = sigmaXX_local * sinT * sinT + sigmaYY_local * cosT * cosT - 2 * tauXY_local * sinT * cosT;
+		double tauXY_global = (sigmaXX_local - sigmaYY_local) * sinT * cosT + tauXY_local * (cosT * cosT - sinT * sinT);
 
 		// Stress results at the node (averaged from connected elements)	
-		renderer_node_data.sigma_x = node_data.sigma_x;
-		renderer_node_data.sigma_y = node_data.sigma_y;
-		renderer_node_data.tau_xy = node_data.tau_xy;
+		renderer_node_data.sigma_x = sigmaXX_global;
+		renderer_node_data.sigma_y = sigmaYY_global;
+		renderer_node_data.tau_xy = tauXY_global;
 
 		renderer_node_data.sigma_1 = node_data.sigma_1;
 		renderer_node_data.sigma_2 = node_data.sigma_2;
@@ -1295,6 +1274,54 @@ void stress2d_solver::store_k_m_matrices_text_debug()
 		}
 	}
 	text_file << "\n";
+
+	// Write Stress Results
+	text_file << "=== Stress Results ===\n";
+	text_file << "Node id, x,y,displ_x, displ_y, sigma_xx, sigma_yy, tau_xy, sigma_1, sigma_2, max_shear, principal_angle" << "\n";
+
+	for (const auto& node_m : polynomial_2dmesh.renderer_node_points)
+	{
+		renderer_node node = node_m.second;
+
+		int32_t nodeid = static_cast<int32_t>(node.n_id);
+		// double rand_result = std::sin(node.x * 10.0) * std::cos(node.y * 10.0); // Random value between 0 and 1
+
+		// retrive the results
+		// Displacement at the node
+		double displ_x = node.displ_x;
+		double displ_y = node.displ_y;
+
+		// Reaction at the node
+		int constraint_type = node.constraint_type;
+		double constraint_angle = node.constraint_angle;
+
+		double reaction_x = node.reaction_x;
+		double reaction_y = node.reaction_y;
+
+		// Stress results at the node
+		double sigma_x = node.sigma_x;
+		double sigma_y = node.sigma_y;
+		double tau_xy = node.tau_xy;
+
+		double sigma_1 = node.sigma_1;
+		double sigma_2 = node.sigma_2;
+
+		double von_mises = node.von_mises;
+		double max_shear = node.max_shear;
+		double theta_p = node.theta_p;
+
+		double streamfunction_tension = node.streamfunction_tension;
+		double streamfunction_compression = node.streamfunction_compression;
+
+		text_file << nodeid << ", " << node.x << ", " << node.y << ", "
+			<< displ_x << ", " << displ_y << ", "
+			<< sigma_x << ", " << sigma_y << ", " << tau_xy << ", "
+			<< sigma_1 << ", " << sigma_2 << ", "
+			<< max_shear << ", " << theta_p
+			<< "\n";
+	}
+
+
 
 
 	// Write Ke Matrix

@@ -313,9 +313,10 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
             _rslt_extremes.min_vonMises = double.MaxValue;
             _rslt_extremes.max_shearStress = double.MinValue;
             _rslt_extremes.min_shearStress = double.MaxValue;
-            
 
-            foreach (var pt in points.Values)
+
+
+                foreach (var pt in points.Values)
             {
                 // Maximum displacement magnitude
                 _rslt_extremes.max_displacement = Math.Max(_rslt_extremes.max_displacement, pt.displ_magnitude);
