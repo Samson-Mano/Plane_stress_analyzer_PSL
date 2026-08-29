@@ -8,10 +8,13 @@ streamfunction_solver::streamfunction_solver()
 void streamfunction_solver::compute_streamfunction(std::unordered_map<int, renderer_node>& renderer_node_points, 
 	const std::vector<renderer_triangle>& renderer_triangles,
 	bool _isTensionLine,
+	double orientation_angle,
 	void(*callback)(const char*))
 {
 	this->isTensionLine = _isTensionLine;
 	this->m_callback = callback;
+
+	this->orientation_angle = orientation_angle;
 
 	// Create the node map id
 	std::unordered_map<int, int> node_id_to_index;
@@ -348,21 +351,26 @@ Eigen::Vector3d streamfunction_solver::getElementFVector(const std::unordered_ma
 	double sintheta = std::sqrt(std::max(0.0, (1.0 - cos2theta) / 2.0));
 	if (tauXY_avg < 0.0) sintheta = -sintheta;
 
-	double gx, gy; // = target ∇phi direction (unit vector)
+	double local_gx, local_gy; // = target ∇phi direction (unit vector)
 
 	if (this->isTensionLine)
 	{
 		// grad(phi) = minor principal direction (perp to major/tension direction)
-		gx = -sintheta;
-		gy = costheta;
+		local_gx = -sintheta;
+		local_gy = costheta;
 	}
 	else
 	{
 		// grad(phi) = major principal direction (perp to minor/compression direction)
-		gx = costheta;
-		gy = sintheta;
+		local_gx = costheta;
+		local_gy = sintheta;
 	}
 
+	// Rotate local_gx, local_gy to global coordinates (using orientation angle of the model)
+	double orientation_angle_rad = this->orientation_angle* (M_PI / 180.0);
+
+	double gx = local_gx * std::cos(orientation_angle_rad) - local_gy * std::sin(orientation_angle_rad);
+	double gy = local_gx * std::sin(orientation_angle_rad) + local_gy * std::cos(orientation_angle_rad);
 
 	// F_i = ∫ ∇N_i · (gx,gy) dA = (1/2)(b_i*gx + c_i*gy)   [since ∇N_i = (b_i,c_i)/(2A), integrated over area A]
 	double F1 = 0.5 * (b1 * gx + c1 * gy);

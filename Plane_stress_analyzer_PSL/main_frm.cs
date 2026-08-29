@@ -695,6 +695,14 @@ namespace Plane_stress_analyzer_PSL
         }
 
 
+        public void CallFrom_rsltoption_frm()
+        {
+            modeldata.update_openTK_uniforms();
+            glControl_main_panel.Invalidate();
+        }
+
+
+
         public void callFrom_annotate_frm()
         {
             modeldata.update_openTK_uniforms();

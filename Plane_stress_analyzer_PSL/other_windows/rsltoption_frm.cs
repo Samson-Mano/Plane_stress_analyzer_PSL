@@ -90,23 +90,25 @@ namespace other_windows
             checkBox_paintrsltmeshboundaries.Checked = gvariables_static.is_paint_resultmesh_boundaries;
             checkBox_paintcontourlines.Checked = gvariables_static.is_paint_result_contourlines;
 
+            
+
             // Contour levels selection
             // 0 = 5, 1 = 10, 2 = 20, 3 = 40, 4 = 80
             switch (gvariables_static.contourline_level)
             {
-                case 0:
+                case 5:
                     comboBox_contourlevels.SelectedIndex = 0; // 5
                     break;
-                case 1:
+                case 10:
                     comboBox_contourlevels.SelectedIndex = 1; // 10
                     break;
-                case 2:
+                case 20:
                     comboBox_contourlevels.SelectedIndex = 2; // 20
                     break;
-                case 3:
+                case 40:
                     comboBox_contourlevels.SelectedIndex = 3; // 40
                     break;
-                case 4:
+                case 80:
                     comboBox_contourlevels.SelectedIndex = 4; // 80
                     break;
                 default:
@@ -287,7 +289,7 @@ namespace other_windows
 
             if (this.Owner is main_frm mainForm)
             {
-                mainForm.CallFrom_option_frm();
+                mainForm.CallFrom_rsltoption_frm();
             }
         }
 
@@ -318,7 +320,7 @@ namespace other_windows
 
             if (this.Owner is main_frm mainForm)
             {
-                mainForm.CallFrom_option_frm();
+                mainForm.CallFrom_rsltoption_frm();
             }
 
         }
@@ -444,7 +446,7 @@ namespace other_windows
 
             if (this.Owner is main_frm mainForm)
             {
-                mainForm.CallFrom_option_frm();
+                mainForm.CallFrom_rsltoption_frm();
             }
 
         }
@@ -484,7 +486,7 @@ namespace other_windows
                     // Optional: Trigger immediate redraw
                     if (this.Owner is main_frm mainForm)
                     {
-                        mainForm.CallFrom_option_frm();
+                        mainForm.CallFrom_rsltoption_frm();
                     }
                 }
                 else

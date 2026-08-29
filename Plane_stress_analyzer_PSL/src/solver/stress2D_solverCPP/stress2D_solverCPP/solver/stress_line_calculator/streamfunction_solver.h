@@ -43,12 +43,13 @@ public:
 	void compute_streamfunction(std::unordered_map<int, renderer_node>& renderer_node_points,
 		const std::vector<renderer_triangle>& renderer_triangles,
 		bool _isTensionLine,
+		double orientation_angle,
 		void(*callback)(const char*));
 
 
 
 private:
-
+	const double M_PI = 3.14159265358979323846;
 
 
 	void(*m_callback)(const char*) = nullptr;
@@ -60,7 +61,7 @@ private:
 	//Eigen::SparseMatrix<double> globalKMatrix; // Global Stiffness Matrix [K]
 
 	//Eigen::VectorXd globalFVector; // Global Force Vector [F]
-
+	double orientation_angle = 0.0; // Orientation angle in degrees
 
 
 	Eigen::Matrix3d getElementKMatrix(const std::unordered_map<int, renderer_node>& renderer_node_points,

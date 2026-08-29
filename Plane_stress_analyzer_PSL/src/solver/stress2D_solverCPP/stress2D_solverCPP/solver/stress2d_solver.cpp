@@ -1000,12 +1000,12 @@ void stress2d_solver::map_results_to_rendererelements()
 
 		double sigmaXX_global = sigmaXX_local * cosT * cosT + sigmaYY_local * sinT * sinT + 2 * tauXY_local * sinT * cosT;
 		double sigmaYY_global = sigmaXX_local * sinT * sinT + sigmaYY_local * cosT * cosT - 2 * tauXY_local * sinT * cosT;
-		double tauXY_global = (sigmaXX_local - sigmaYY_local) * sinT * cosT + tauXY_local * (cosT * cosT - sinT * sinT);
+		double tauXY_global = -1.0 *(sigmaXX_local - sigmaYY_local) * sinT * cosT + tauXY_local * (cosT * cosT - sinT * sinT);
 
 		// Stress results at the node (averaged from connected elements)	
 		renderer_node_data.sigma_x = sigmaXX_global;
 		renderer_node_data.sigma_y = sigmaYY_global;
-		renderer_node_data.tau_xy = tauXY_global;
+		renderer_node_data.tau_xy =  tauXY_global;
 
 		renderer_node_data.sigma_1 = node_data.sigma_1;
 		renderer_node_data.sigma_2 = node_data.sigma_2;
@@ -1021,13 +1021,13 @@ void stress2d_solver::map_results_to_rendererelements()
 	streamfunction_solver streamtension_solver;
 
 	streamtension_solver.compute_streamfunction(polynomial_2dmesh.renderer_node_points, polynomial_2dmesh.renderer_element_triangles, 
-		true, nullptr);
+		true, this->orientation_angle, nullptr);
 
 
 	streamfunction_solver streamcompression_solver;
 
 	streamcompression_solver.compute_streamfunction(polynomial_2dmesh.renderer_node_points, polynomial_2dmesh.renderer_element_triangles, 
-		false, nullptr);
+		false, this->orientation_angle, nullptr);
 
 
 	report("Streamfunction results generated for tension and compression stress lines");
