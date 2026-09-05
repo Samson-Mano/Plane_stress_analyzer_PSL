@@ -408,7 +408,7 @@ namespace Plane_stress_analyzer_PSL.src.events_handler
                     material_id = 0, // material id
                     material_name = "Aluminum", // Default material name
                     material_density = 2.9e-9, // Density
-                    youngs_modulus = 69.5e+5, // Youngs modulus
+                    youngs_modulus = 69.5e+3, // Youngs modulus 69500.0 MPa
                     poissons_ratio = 0.33,
                     yield_point = 110.0,
                     thickness = 10.0,
