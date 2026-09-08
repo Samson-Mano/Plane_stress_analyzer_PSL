@@ -38,7 +38,7 @@
             this.rectangleSelectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.button_deleteconstraint = new System.Windows.Forms.Button();
-            this.label3 = new System.Windows.Forms.Label();
+            this.label_selectedNodeCount = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.textBox_constraintangle = new System.Windows.Forms.TextBox();
             this.comboBox_constrainttype = new System.Windows.Forms.ComboBox();
@@ -115,7 +115,7 @@
             // circleSelectionToolStripMenuItem
             // 
             this.circleSelectionToolStripMenuItem.Name = "circleSelectionToolStripMenuItem";
-            this.circleSelectionToolStripMenuItem.Size = new System.Drawing.Size(100, 20);
+            this.circleSelectionToolStripMenuItem.Size = new System.Drawing.Size(125, 24);
             this.circleSelectionToolStripMenuItem.Text = "Circle Selection";
             this.circleSelectionToolStripMenuItem.Click += new System.EventHandler(this.circleSelectionToolStripMenuItem_Click);
             // 
@@ -124,7 +124,7 @@
             this.rectangleSelectionToolStripMenuItem.Checked = true;
             this.rectangleSelectionToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.rectangleSelectionToolStripMenuItem.Name = "rectangleSelectionToolStripMenuItem";
-            this.rectangleSelectionToolStripMenuItem.Size = new System.Drawing.Size(122, 20);
+            this.rectangleSelectionToolStripMenuItem.Size = new System.Drawing.Size(154, 24);
             this.rectangleSelectionToolStripMenuItem.Text = "Rectangle Selection";
             this.rectangleSelectionToolStripMenuItem.Click += new System.EventHandler(this.rectangleSelectionToolStripMenuItem_Click);
             // 
@@ -136,7 +136,7 @@
             this.circleSelectionToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(794, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(794, 28);
             this.menuStrip1.TabIndex = 13;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -150,14 +150,14 @@
             this.button_deleteconstraint.UseVisualStyleBackColor = true;
             this.button_deleteconstraint.Click += new System.EventHandler(this.button_deleteconstraint_Click);
             // 
-            // label3
+            // label_selectedNodeCount
             // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(329, 289);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(121, 16);
-            this.label3.TabIndex = 9;
-            this.label3.Text = "Selected Nodes: ";
+            this.label_selectedNodeCount.AutoSize = true;
+            this.label_selectedNodeCount.Location = new System.Drawing.Point(329, 289);
+            this.label_selectedNodeCount.Name = "label_selectedNodeCount";
+            this.label_selectedNodeCount.Size = new System.Drawing.Size(156, 20);
+            this.label_selectedNodeCount.TabIndex = 9;
+            this.label_selectedNodeCount.Text = "Selected Nodes: ";
             // 
             // groupBox1
             // 
@@ -176,7 +176,7 @@
             // 
             this.textBox_constraintangle.Location = new System.Drawing.Point(160, 63);
             this.textBox_constraintangle.Name = "textBox_constraintangle";
-            this.textBox_constraintangle.Size = new System.Drawing.Size(100, 23);
+            this.textBox_constraintangle.Size = new System.Drawing.Size(100, 27);
             this.textBox_constraintangle.TabIndex = 5;
             // 
             // comboBox_constrainttype
@@ -188,7 +188,7 @@
             "Roller"});
             this.comboBox_constrainttype.Location = new System.Drawing.Point(160, 26);
             this.comboBox_constrainttype.Name = "comboBox_constrainttype";
-            this.comboBox_constrainttype.Size = new System.Drawing.Size(121, 24);
+            this.comboBox_constrainttype.Size = new System.Drawing.Size(121, 26);
             this.comboBox_constrainttype.TabIndex = 4;
             // 
             // label2
@@ -196,7 +196,7 @@
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(27, 66);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(127, 16);
+            this.label2.Size = new System.Drawing.Size(167, 20);
             this.label2.TabIndex = 3;
             this.label2.Text = "Constraint Angle: ";
             // 
@@ -205,7 +205,7 @@
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(31, 29);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(123, 16);
+            this.label1.Size = new System.Drawing.Size(157, 20);
             this.label1.TabIndex = 2;
             this.label1.Text = "Constraint Type: ";
             // 
@@ -240,14 +240,14 @@
             // 
             // constraint_frm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 18F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(794, 421);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.dataGridView_ConstraintList);
             this.Controls.Add(this.menuStrip1);
             this.Controls.Add(this.button_deleteconstraint);
-            this.Controls.Add(this.label3);
+            this.Controls.Add(this.label_selectedNodeCount);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.button_applyconstraint);
             this.Controls.Add(this.textBox_selectednodes);
@@ -277,7 +277,7 @@
         private System.Windows.Forms.ToolStripMenuItem rectangleSelectionToolStripMenuItem;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.Button button_deleteconstraint;
-        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Label label_selectedNodeCount;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Button button_applyconstraint;
         private System.Windows.Forms.TextBox textBox_selectednodes;

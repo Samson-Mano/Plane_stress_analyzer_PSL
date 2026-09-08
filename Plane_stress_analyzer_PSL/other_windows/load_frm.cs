@@ -210,6 +210,8 @@ namespace Plane_stress_analyzer_PSL.other_windows
             // Clear the text box
             textBox_selectednodes.Clear();
 
+            label_selectedNodeCount.Text = $"Selected Nodes: {modeldata.fe_data.selected_node_ids.Count}";
+
             List<int> all_selected_nodes = new List<int>();
 
             all_selected_nodes.AddRange(modeldata.fe_data.selected_node_ids);

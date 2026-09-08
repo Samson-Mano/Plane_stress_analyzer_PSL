@@ -347,6 +347,8 @@ namespace Plane_stress_analyzer_PSL.other_windows
             // Clear the text box
             textBox_selectedelements.Clear();
 
+            label_selectedElementCount.Text = $"Selected Elements: {modeldata.fe_data.selected_tri_ids.Count + modeldata.fe_data.selected_quad_ids.Count}";
+
             List<int> all_selected_ids = new List<int>();
 
            all_selected_ids.AddRange(modeldata.fe_data.selected_tri_ids);

@@ -343,8 +343,8 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
 
             return @"
             
-           #version 330 core
-
+            #version 330 core
+            uniform float uNumContours = 10.0;      // number of contour bands
             uniform float uLineWidthMax = 2.0;
             uniform float uLineWidthMin = 1.0;
             uniform float uDensity = 1.0;
@@ -370,7 +370,7 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
                 float alpha = 0.2;
                 
                 // Adjust density based on geomscale to maintain consistent visual density across different scales
-                float adjustedDensity = uDensity / v_geomscale; // Adjust density based on geomscale
+                float adjustedDensity = (uDensity / v_geomscale) * (uNumContours / 10.0); // Adjust density based on geomscale
                 float adjustedLineWidthMax = uLineWidthMax * v_geomscale; // Adjust max line width based on geomscale
                 float adjustedLineWidthMin = uLineWidthMin * v_geomscale; // Adjust min line width based on geomscale
 

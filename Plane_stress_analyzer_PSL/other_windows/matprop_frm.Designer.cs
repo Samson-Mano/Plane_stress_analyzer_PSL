@@ -34,7 +34,7 @@
             this.rectangleSelectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.button_assignmaterial = new System.Windows.Forms.Button();
             this.textBox_selectedelements = new System.Windows.Forms.TextBox();
-            this.label5 = new System.Windows.Forms.Label();
+            this.label_selectedElementCount = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.button_delete = new System.Windows.Forms.Button();
             this.button_update = new System.Windows.Forms.Button();
@@ -48,11 +48,11 @@
             this.textBox_materialname = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.dataGridView_MaterialList = new System.Windows.Forms.DataGridView();
-            this.textBox_yieldpoint = new System.Windows.Forms.TextBox();
-            this.textBox_thickness = new System.Windows.Forms.TextBox();
-            this.label6 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
+            this.label6 = new System.Windows.Forms.Label();
+            this.textBox_thickness = new System.Windows.Forms.TextBox();
+            this.textBox_yieldpoint = new System.Windows.Forms.TextBox();
+            this.dataGridView_MaterialList = new System.Windows.Forms.DataGridView();
             this.Column1_materialid = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column2_materialname = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column3_youngsmodulus = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -70,7 +70,7 @@
             // circleSelectionToolStripMenuItem
             // 
             this.circleSelectionToolStripMenuItem.Name = "circleSelectionToolStripMenuItem";
-            this.circleSelectionToolStripMenuItem.Size = new System.Drawing.Size(100, 20);
+            this.circleSelectionToolStripMenuItem.Size = new System.Drawing.Size(125, 24);
             this.circleSelectionToolStripMenuItem.Text = "Circle Selection";
             this.circleSelectionToolStripMenuItem.Click += new System.EventHandler(this.circleSelectionToolStripMenuItem_Click);
             // 
@@ -82,7 +82,7 @@
             this.circleSelectionToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(884, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(884, 28);
             this.menuStrip1.TabIndex = 7;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -91,7 +91,7 @@
             this.rectangleSelectionToolStripMenuItem.Checked = true;
             this.rectangleSelectionToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.rectangleSelectionToolStripMenuItem.Name = "rectangleSelectionToolStripMenuItem";
-            this.rectangleSelectionToolStripMenuItem.Size = new System.Drawing.Size(122, 20);
+            this.rectangleSelectionToolStripMenuItem.Size = new System.Drawing.Size(154, 24);
             this.rectangleSelectionToolStripMenuItem.Text = "Rectangle Selection";
             this.rectangleSelectionToolStripMenuItem.Click += new System.EventHandler(this.rectangleSelectionToolStripMenuItem_Click);
             // 
@@ -114,20 +114,20 @@
             this.textBox_selectedelements.Size = new System.Drawing.Size(467, 147);
             this.textBox_selectedelements.TabIndex = 2;
             // 
-            // label5
+            // label_selectedElementCount
             // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(6, 33);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(140, 16);
-            this.label5.TabIndex = 1;
-            this.label5.Text = "Selected Elements: ";
+            this.label_selectedElementCount.AutoSize = true;
+            this.label_selectedElementCount.Location = new System.Drawing.Point(6, 33);
+            this.label_selectedElementCount.Name = "label_selectedElementCount";
+            this.label_selectedElementCount.Size = new System.Drawing.Size(183, 20);
+            this.label_selectedElementCount.TabIndex = 1;
+            this.label_selectedElementCount.Text = "Selected Elements: ";
             // 
             // groupBox2
             // 
             this.groupBox2.Controls.Add(this.button_assignmaterial);
             this.groupBox2.Controls.Add(this.textBox_selectedelements);
-            this.groupBox2.Controls.Add(this.label5);
+            this.groupBox2.Controls.Add(this.label_selectedElementCount);
             this.groupBox2.Location = new System.Drawing.Point(390, 248);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(482, 260);
@@ -169,21 +169,21 @@
             // 
             this.textBox_poissonsratio.Location = new System.Drawing.Point(176, 118);
             this.textBox_poissonsratio.Name = "textBox_poissonsratio";
-            this.textBox_poissonsratio.Size = new System.Drawing.Size(130, 23);
+            this.textBox_poissonsratio.Size = new System.Drawing.Size(130, 27);
             this.textBox_poissonsratio.TabIndex = 7;
             // 
             // textBox_density
             // 
             this.textBox_density.Location = new System.Drawing.Point(176, 89);
             this.textBox_density.Name = "textBox_density";
-            this.textBox_density.Size = new System.Drawing.Size(130, 23);
+            this.textBox_density.Size = new System.Drawing.Size(130, 27);
             this.textBox_density.TabIndex = 6;
             // 
             // textBox_youngsmodulus
             // 
             this.textBox_youngsmodulus.Location = new System.Drawing.Point(176, 60);
             this.textBox_youngsmodulus.Name = "textBox_youngsmodulus";
-            this.textBox_youngsmodulus.Size = new System.Drawing.Size(130, 23);
+            this.textBox_youngsmodulus.Size = new System.Drawing.Size(130, 27);
             this.textBox_youngsmodulus.TabIndex = 5;
             // 
             // label4
@@ -191,7 +191,7 @@
             this.label4.AutoSize = true;
             this.label4.Location = new System.Drawing.Point(33, 121);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(137, 16);
+            this.label4.Size = new System.Drawing.Size(178, 20);
             this.label4.TabIndex = 4;
             this.label4.Text = "Poissons Ratio (ν): ";
             // 
@@ -200,7 +200,7 @@
             this.label3.AutoSize = true;
             this.label3.Location = new System.Drawing.Point(78, 92);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(92, 16);
+            this.label3.Size = new System.Drawing.Size(121, 20);
             this.label3.TabIndex = 3;
             this.label3.Text = "Density (μ): ";
             // 
@@ -209,7 +209,7 @@
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(22, 63);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(148, 16);
+            this.label2.Size = new System.Drawing.Size(194, 20);
             this.label2.TabIndex = 2;
             this.label2.Text = "Youngs Modulus (E): ";
             // 
@@ -217,7 +217,7 @@
             // 
             this.textBox_materialname.Location = new System.Drawing.Point(176, 31);
             this.textBox_materialname.Name = "textBox_materialname";
-            this.textBox_materialname.Size = new System.Drawing.Size(130, 23);
+            this.textBox_materialname.Size = new System.Drawing.Size(130, 27);
             this.textBox_materialname.TabIndex = 1;
             // 
             // label1
@@ -225,7 +225,7 @@
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(59, 34);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(111, 16);
+            this.label1.Size = new System.Drawing.Size(147, 20);
             this.label1.TabIndex = 0;
             this.label1.Text = "Material Name: ";
             // 
@@ -253,6 +253,38 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Material Data: ";
             // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(66, 179);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(136, 20);
+            this.label7.TabIndex = 14;
+            this.label7.Text = "Thickness (t): ";
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(59, 150);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(145, 20);
+            this.label6.TabIndex = 13;
+            this.label6.Text = "Yield Point (Y): ";
+            // 
+            // textBox_thickness
+            // 
+            this.textBox_thickness.Location = new System.Drawing.Point(176, 176);
+            this.textBox_thickness.Name = "textBox_thickness";
+            this.textBox_thickness.Size = new System.Drawing.Size(130, 27);
+            this.textBox_thickness.TabIndex = 12;
+            // 
+            // textBox_yieldpoint
+            // 
+            this.textBox_yieldpoint.Location = new System.Drawing.Point(176, 147);
+            this.textBox_yieldpoint.Name = "textBox_yieldpoint";
+            this.textBox_yieldpoint.Size = new System.Drawing.Size(130, 27);
+            this.textBox_yieldpoint.TabIndex = 11;
+            // 
             // dataGridView_MaterialList
             // 
             this.dataGridView_MaterialList.AllowUserToAddRows = false;
@@ -279,38 +311,6 @@
             this.dataGridView_MaterialList.Size = new System.Drawing.Size(860, 199);
             this.dataGridView_MaterialList.TabIndex = 4;
             this.dataGridView_MaterialList.SelectionChanged += new System.EventHandler(this.dataGridView_MaterialList_SelectionChanged);
-            // 
-            // textBox_yieldpoint
-            // 
-            this.textBox_yieldpoint.Location = new System.Drawing.Point(176, 147);
-            this.textBox_yieldpoint.Name = "textBox_yieldpoint";
-            this.textBox_yieldpoint.Size = new System.Drawing.Size(130, 23);
-            this.textBox_yieldpoint.TabIndex = 11;
-            // 
-            // textBox_thickness
-            // 
-            this.textBox_thickness.Location = new System.Drawing.Point(176, 176);
-            this.textBox_thickness.Name = "textBox_thickness";
-            this.textBox_thickness.Size = new System.Drawing.Size(130, 23);
-            this.textBox_thickness.TabIndex = 12;
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(59, 150);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(113, 16);
-            this.label6.TabIndex = 13;
-            this.label6.Text = "Yield Point (Y): ";
-            // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(66, 179);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(106, 16);
-            this.label7.TabIndex = 14;
-            this.label7.Text = "Thickness (t): ";
             // 
             // Column1_materialid
             // 
@@ -354,11 +354,13 @@
             this.Column5_poissonsratio.MinimumWidth = 8;
             this.Column5_poissonsratio.Name = "Column5_poissonsratio";
             this.Column5_poissonsratio.ReadOnly = true;
+            this.Column5_poissonsratio.Width = 125;
             // 
             // Column6_yieldpoint
             // 
             this.Column6_yieldpoint.FillWeight = 120F;
             this.Column6_yieldpoint.HeaderText = "Yield Point (Y)";
+            this.Column6_yieldpoint.MinimumWidth = 6;
             this.Column6_yieldpoint.Name = "Column6_yieldpoint";
             this.Column6_yieldpoint.ReadOnly = true;
             this.Column6_yieldpoint.Width = 120;
@@ -367,6 +369,7 @@
             // 
             this.Column7_thickness.FillWeight = 80F;
             this.Column7_thickness.HeaderText = "Thickness (t)";
+            this.Column7_thickness.MinimumWidth = 6;
             this.Column7_thickness.Name = "Column7_thickness";
             this.Column7_thickness.ReadOnly = true;
             this.Column7_thickness.Width = 80;
@@ -382,7 +385,7 @@
             // 
             // matprop_frm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 18F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(884, 517);
             this.Controls.Add(this.menuStrip1);
@@ -417,7 +420,7 @@
         private System.Windows.Forms.ToolStripMenuItem rectangleSelectionToolStripMenuItem;
         private System.Windows.Forms.Button button_assignmaterial;
         private System.Windows.Forms.TextBox textBox_selectedelements;
-        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label label_selectedElementCount;
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.Button button_delete;
         private System.Windows.Forms.Button button_update;

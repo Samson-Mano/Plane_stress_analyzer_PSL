@@ -61,7 +61,7 @@ namespace Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("10")]
+        [global::System.Configuration.DefaultSettingValueAttribute("40")]
         public double Sett_displ_scale {
             get {
                 return ((double)(this["Sett_displ_scale"]));
@@ -73,7 +73,7 @@ namespace Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("10")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0.4")]
         public double Sett_resp_animation_speed {
             get {
                 return ((double)(this["Sett_resp_animation_speed"]));
@@ -85,7 +85,7 @@ namespace Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("10")]
+        [global::System.Configuration.DefaultSettingValueAttribute("20")]
         public int Sett_contourlevel_option {
             get {
                 return ((int)(this["Sett_contourlevel_option"]));

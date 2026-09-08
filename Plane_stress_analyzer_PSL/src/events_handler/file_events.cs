@@ -157,7 +157,6 @@ namespace Plane_stress_analyzer_PSL.src.events_handler
                     // Console.WriteLine($"Quadrilateral Elements read completed at {stopwatch.Elapsed.TotalSeconds:F2} secs");
                 }
 
-
                 if (line == "*MATERIAL_DATA")
                 {
                     is_material_inpt_exists = true;
@@ -389,6 +388,38 @@ namespace Plane_stress_analyzer_PSL.src.events_handler
                 j++;
 
             }
+
+
+            //____________________________________________________________________________________________________________
+            // Clear the dummy nodes (Nodes not associated with any element)
+            List<int> dummynode_ids = new List<int>();
+
+            foreach (var nodes in fedata.fe_nodes.nodeMap.Values.ToList())
+            {
+                int nodeId = nodes.node_id;
+
+                // Check if the node is associated with any triangle element
+                bool isNodeUsedInTri = fedata.fe_tris.elementtriMap.Values.Any(tri => tri.nodeid1 == nodeId ||
+                tri.nodeid2 == nodeId || tri.nodeid3 == nodeId);
+
+                // Check if the node is associated with any quadrilateral element
+                bool isNodeUsedInQuad = fedata.fe_quads.elementquadMap.Values.Any(quad => quad.nodeid1 == nodeId ||
+                quad.nodeid2 == nodeId || quad.nodeid3 == nodeId || quad.nodeid4 == nodeId);
+
+                if (!isNodeUsedInTri && !isNodeUsedInQuad)
+                {
+                    // Node is not used in any element, remove it from the list
+                    dummynode_ids.Add(nodeId);
+                }
+
+            }
+
+            // Remove dummy nodes
+            foreach (var nodeId in dummynode_ids)
+            {
+                fedata.fe_nodes.nodeMap.Remove(nodeId);
+            }
+
 
 
             // Check the model

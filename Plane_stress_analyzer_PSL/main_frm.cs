@@ -446,6 +446,37 @@ namespace Plane_stress_analyzer_PSL
             glControl_main_panel.Invalidate();
         }
 
+
+        private void CenterFormOnParent(Form childForm)
+        {
+            // Helper method to center a form on its owner
+            if (childForm.Owner == null)
+                return;
+
+            // Get the screen bounds of the parent form
+            Screen parentScreen = Screen.FromControl(childForm.Owner);
+            Rectangle parentBounds = childForm.Owner.Bounds;
+
+            // Calculate center position relative to the parent form
+            int x = parentBounds.X + (parentBounds.Width - childForm.Width) / 2;
+            int y = parentBounds.Y + (parentBounds.Height - childForm.Height) / 2;
+
+            // Ensure the form stays within the screen bounds
+            Rectangle screenBounds = parentScreen.WorkingArea;
+
+            // Adjust if the form would go off-screen
+            if (x < screenBounds.Left)
+                x = screenBounds.Left;
+            if (y < screenBounds.Top)
+                y = screenBounds.Top;
+            if (x + childForm.Width > screenBounds.Right)
+                x = screenBounds.Right - childForm.Width;
+            if (y + childForm.Height > screenBounds.Bottom)
+                y = screenBounds.Bottom - childForm.Height;
+
+            childForm.Location = new Point(x, y);
+        }
+
         private void optionToolStripMenuItem_Click(object sender, EventArgs e)
         {
              if (modeldata.IsModelSet == false)
@@ -462,11 +493,11 @@ namespace Plane_stress_analyzer_PSL
                 option_Form.TopLevel = true;
                 option_Form.Owner = this;
 
-                // Manually center the form on the parent
-                int x = this.Location.X + (this.Width - option_Form.Width) / 2;
-                int y = this.Location.Y + (this.Height - option_Form.Height) / 2;
+                // Set the start position to manual so we can control placement
                 option_Form.StartPosition = FormStartPosition.Manual;
-                option_Form.Location = new Point(Math.Max(x, 0), Math.Max(y, 0)); // avoid negative positions
+
+                // Center the form on the parent
+                CenterFormOnParent(option_Form);
 
             }
 
@@ -508,11 +539,11 @@ namespace Plane_stress_analyzer_PSL
                 load_Form.TopLevel = true;
                 load_Form.Owner = this;
 
-                // Manually center the form on the parent
-                int x = this.Location.X + (this.Width - load_Form.Width) / 2;
-                int y = this.Location.Y + (this.Height - load_Form.Height) / 2;
+                // Set the start position to manual so we can control placement
                 load_Form.StartPosition = FormStartPosition.Manual;
-                load_Form.Location = new Point(Math.Max(x, 0), Math.Max(y, 0)); // avoid negative positions
+
+                // Center the form on the parent
+                CenterFormOnParent(load_Form);
 
             }
 
@@ -552,11 +583,11 @@ namespace Plane_stress_analyzer_PSL
                 constraint_Form.TopLevel = true;
                 constraint_Form.Owner = this;
 
-                // Manually center the form on the parent
-                int x = this.Location.X + (this.Width - constraint_Form.Width) / 2;
-                int y = this.Location.Y + (this.Height - constraint_Form.Height) / 2;
+                // Set the start position to manual so we can control placement
                 constraint_Form.StartPosition = FormStartPosition.Manual;
-                constraint_Form.Location = new Point(Math.Max(x, 0), Math.Max(y, 0)); // avoid negative positions
+
+                // Center the form on the parent
+                CenterFormOnParent(constraint_Form);
 
             }
 
@@ -595,13 +626,11 @@ namespace Plane_stress_analyzer_PSL
                 // matprop_Form.MdiParent = this;
                 matprop_Form.Owner = this;
 
-                // Manually center the form on the parent
-                int x = this.Location.X + (this.Width - matprop_Form.Width) / 2;
-                int y = this.Location.Y + (this.Height - matprop_Form.Height) / 2;
+                // Set the start position to manual so we can control placement
                 matprop_Form.StartPosition = FormStartPosition.Manual;
-                matprop_Form.Location = new Point(Math.Max(x, 0), Math.Max(y, 0)); // avoid negative positions
 
-                // matprop_Form.StartPosition = FormStartPosition.CenterParent;
+                // Center the form on the parent
+                CenterFormOnParent(matprop_Form);
 
             }
 
@@ -639,11 +668,11 @@ namespace Plane_stress_analyzer_PSL
                 solver_Form.TopLevel = true;
                 solver_Form.Owner = this;
 
-                // Manually center the form on the parent
-                int x = this.Location.X + (this.Width - solver_Form.Width) / 2;
-                int y = this.Location.Y + (this.Height - solver_Form.Height) / 2;
+                // Set the start position to manual so we can control placement
                 solver_Form.StartPosition = FormStartPosition.Manual;
-                solver_Form.Location = new Point(Math.Max(x, 0), Math.Max(y, 0)); // avoid negative positions
+
+                // Center the form on the parent
+                CenterFormOnParent(solver_Form);
 
             }
 
@@ -879,17 +908,17 @@ namespace Plane_stress_analyzer_PSL
                 rsltoption_Form.TopLevel = true;
                 rsltoption_Form.Owner = this;
 
-                // Manually center the form on the parent
-                int x = this.Location.X + (this.Width - rsltoption_Form.Width) / 2;
-                int y = this.Location.Y + (this.Height - rsltoption_Form.Height) / 2;
+                // Set the start position to manual so we can control placement
                 rsltoption_Form.StartPosition = FormStartPosition.Manual;
-                rsltoption_Form.Location = new Point(Math.Max(x, 0), Math.Max(y, 0)); // avoid negative positions
+
+                // Center the form on the parent
+                CenterFormOnParent(rsltoption_Form);
 
             }
 
 
             // Show the form
-            if(!rsltoption_Form.Visible)
+            if (!rsltoption_Form.Visible)
             {
                 
                 rsltoption_Form.Show(this);
@@ -917,11 +946,11 @@ namespace Plane_stress_analyzer_PSL
                 annotate_Form.TopLevel = true;
                 annotate_Form.Owner = this;
 
-                // Manually center the form on the parent
-                int x = this.Location.X + (this.Width - annotate_Form.Width) / 2;
-                int y = this.Location.Y + (this.Height - annotate_Form.Height) / 2;
+                // Set the start position to manual so we can control placement
                 annotate_Form.StartPosition = FormStartPosition.Manual;
-                annotate_Form.Location = new Point(Math.Max(x, 0), Math.Max(y, 0)); // avoid negative positions
+
+                // Center the form on the parent
+                CenterFormOnParent(annotate_Form);
 
             }
 

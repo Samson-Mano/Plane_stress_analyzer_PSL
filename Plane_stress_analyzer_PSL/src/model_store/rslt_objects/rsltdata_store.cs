@@ -65,20 +65,6 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
         }
 
 
-        private struct reaction_store
-        {
-            public int point_id;
-            public double x_coord;
-            public double y_coord;
-
-            public int constraint_type; // 0 = free, 1 = pinned, 2 = roller
-            public double constraint_angle;
-
-            public double reaction_x;
-            public double reaction_y;
-        }
-
-
         public struct result_extremes
         {
             // Displacement (option = 1)
@@ -121,7 +107,9 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
         private Dictionary<int, point_store> points = new Dictionary<int, point_store>();
         private List<line_store> wireframe_lines = new List<line_store>();
         private List<tri_store> tris = new List<tri_store>();
-        private List<reaction_store> reactions = new List<reaction_store>();
+        // private List<reaction_store> reactions = new List<reaction_store>();
+
+        private reactionforce_list_store reactionForces; // = new reactionforce_list_store();
 
 
         public result_extremes rslt_extremes {  get { return _rslt_extremes; } }
@@ -181,6 +169,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
         {
             InitializeShader();
 
+            reactionForces = new reactionforce_list_store();
             result_point_label = new label_list_store();
         }
 
@@ -234,16 +223,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
 
             if(constraint_type != 0)
             {
-                reactions.Add(new reaction_store()
-                {
-                    point_id = point_id,
-                    x_coord = x_coord,
-                    y_coord = y_coord,
-                    constraint_type = constraint_type,
-                    constraint_angle = constraint_angle,
-                    reaction_x = reaction_x,
-                    reaction_y = reaction_y
-                });
+                reactionForces.add_reactionForce(point_id, x_coord, y_coord, constraint_type, constraint_angle, reaction_x, reaction_y);
             }
 
             double displ_magnitude = Math.Sqrt(displ_x * displ_x + displ_y * displ_y);
@@ -381,6 +361,11 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
             {
                 return false;
             }
+
+
+            // Update the reaction force visualization buffer data
+            reactionForces.update_buffer_data();
+
 
             return true;
         }
@@ -553,6 +538,9 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
 
                 psl_point_vao.UnBind();
                 rsltPSLShader.UnBind();
+
+                // Paint the reaction forces
+                reactionForces.paint_reaction_forces();
 
             }
             else if(option == 10)
@@ -919,42 +907,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
                         return normalizedValue;
 
                     }
-                //case 9: // PSL Lines
-                //    {
-                //        // For PSL lines, we can return a default value or handle it differently
-                //        float pi2_value = (float)Math.PI * 0.5f;
-
-
-                //        float c_value = (float)Math.Atan2(pt.tau_xy, pt.sigma_x - pt.sigma_y) / 2.0f;
-
-                //        float actualRangeMin = (float)(-pi2_value +
-                //          ((pi2_value + pi2_value) * zoomMin));
-
-                //        float actualRangeMax = (float)(-pi2_value + +
-                //            ((pi2_value + pi2_value) * zoomMax));
-
-                //        float actualRangeSpan = actualRangeMax - actualRangeMin;
-
-                //        float normalizedValue = ((float)c_value - actualRangeMin) / actualRangeSpan;
-
-                //        if (normalizedValue < -EPSILON)
-                //        {
-                //            normalizedValue = -1.0f;
-                //        }
-                //        else if (normalizedValue > 1.0f + EPSILON)
-                //        {
-                //            normalizedValue = 2.0f;
-                //        }
-                //        else
-                //        {
-                //            // Clamp the normalized value to [0, 1] range
-                //            normalizedValue = Math.Max(0.0f, Math.Min(1.0f, normalizedValue));
-                //        }
-
-                //        normalizedValue = (normalizedValue * 2.0f) - 1.0f; // Scale to [-1, 1]
-
-                //        return normalizedValue;
-                //    }
+           
             }
 
             return 0.0f; // Default case, should not reach here
@@ -1582,8 +1535,10 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
             // Update the PSL shader uniforms
             rsltPSLShader.SetMatrix4("uMVP", uMVP);
             rsltPSLShader.SetFloat("geomscale", gvariables_static.geom_size);
-
+            rsltPSLShader.SetFloat("uNumContours", gvariables_static.contourline_level);
             rsltPSLShader.SetFloat("modelpercent", model_percent);
+
+            reactionForces.update_openTK_uniforms(graphic_events_control);
 
             //rsltPSLShader.SetFloat("vertexTransparency", gvariables_static.rslt_transparency);
 
@@ -1836,7 +1791,7 @@ namespace Plane_stress_analyzer_PSL.src.model_store.rslt_objects
             }
 
             // Update the label buffer
-            result_point_label.update_buffer(gvariables_static.geom_size * 0.5f);
+            result_point_label.update_buffer(gvariables_static.geom_size * 0.8f);
 
 
         }
