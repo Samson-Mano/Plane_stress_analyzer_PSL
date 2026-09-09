@@ -15,6 +15,7 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
             TextShader,
             ConstraintShader,
             LoadShader,
+            ReactionForceShader,
             RsltMeshShader,
             RsltWireframeShader,
             RsltPSLShader,
@@ -1064,11 +1065,13 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
 	            // apply Translation to the text origin
 	            vec4 finalTextorigin =  uMVP * vec4(origin,0.0f,1.0f);
     
+
 	            // Remove the zoom scale
 	            vec2 scaled_pt = vec2(finalPosition.x - finalTextorigin.x,finalPosition.y - finalTextorigin.y) / zoomscale;
 		
 	            // Set the final position of the vertex
 	            gl_Position = vec4(scaled_pt.x + finalTextorigin.x, scaled_pt.y + finalTextorigin.y, 0.0f, 1.0f);
+
 
 	            // Calculate texture coordinates for the glyph
 	            v_textureCoord = textureCoord;
@@ -1238,6 +1241,81 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
 
 
         public static string load_frag_shader()
+        {
+            return @"
+
+            #version 330 core
+
+            in vec4 vColor;
+            out vec4 fColor;
+    
+            void main()
+            {
+                // Simple color output without lighting
+                fColor = vColor;
+            }
+
+                    ";
+
+        }
+
+
+
+        #endregion
+
+
+
+        #region "Reaction Force Shader"
+
+        public static string reactionForce_vert_shader()
+        {
+            return @"
+
+            #version 330 core
+
+            uniform mat4 uMVP;
+            uniform vec4 vertexColor;
+            uniform float zoomscale = 1.0f;
+    
+            layout(location = 0) in vec2 aPosition;
+            layout(location = 1) in vec2 aOrigin;
+            layout(location = 2) in float IsArrowPt;
+    
+            out vec4 vColor;
+    
+            void main()
+            {
+                // Transform to clip space
+                vec4 clipPos = uMVP * vec4(aPosition, 0.0, 1.0);
+                vec4 clipOrigin = uMVP * vec4(aOrigin, 0.0, 1.0);
+        
+                // Calculate NDC coordinates
+                vec3 ndcPos = clipPos.xyz / clipPos.w;
+                vec3 ndcOrigin = clipOrigin.xyz / clipOrigin.w;
+                
+                float zscale = zoomscale;
+
+                if (IsArrowPt == 0)
+                {
+                    zscale = 1.0f; // For non-arrow points, we scale with zoom
+                }
+
+
+                // Scale offset in NDC space
+                vec2 scaledOffset = (ndcPos.xy - ndcOrigin.xy) / zscale;
+        
+                // Final position (back to clip space)
+                gl_Position = vec4(ndcOrigin.xy + scaledOffset, 0.0, 1.0);
+        
+                vColor = vertexColor;
+            }
+
+                    ";
+
+        }
+
+
+        public static string reactionForce_frag_shader()
         {
             return @"
 
@@ -1453,6 +1531,8 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
                     return constraint_vert_shader();
                 case ShaderType.LoadShader:
                     return load_vert_shader();
+                case ShaderType.ReactionForceShader:
+                    return reactionForce_vert_shader();
                 case ShaderType.TextShader:
                     return text_vert_shader();
                 case ShaderType.DrawingAxisShader:
@@ -1488,6 +1568,8 @@ namespace Plane_stress_analyzer_PSL.src.opentk_control.shader_compiler
                     return constraint_frag_shader();
                 case ShaderType.LoadShader:
                     return load_frag_shader();
+                case ShaderType.ReactionForceShader:
+                    return reactionForce_frag_shader();
                 case ShaderType.TextShader:
                     return text_frag_shader();
                 case ShaderType.DrawingAxisShader:
