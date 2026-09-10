@@ -392,26 +392,31 @@ namespace Plane_stress_analyzer_PSL.src.events_handler
 
             //____________________________________________________________________________________________________________
             // Clear the dummy nodes (Nodes not associated with any element)
+            HashSet<int> nodes_connected_to_elements = new HashSet<int>();
+
+            foreach (elementtri_store tri in fedata.fe_tris.elementtriMap.Values)
+            {
+                nodes_connected_to_elements.Add(tri.nodeid1);
+                nodes_connected_to_elements.Add(tri.nodeid2);
+                nodes_connected_to_elements.Add(tri.nodeid3);
+            }
+
+            foreach (elementquad_store quad in fedata.fe_quads.elementquadMap.Values)
+            {
+                nodes_connected_to_elements.Add(quad.nodeid1);
+                nodes_connected_to_elements.Add(quad.nodeid2);
+                nodes_connected_to_elements.Add(quad.nodeid3);
+                nodes_connected_to_elements.Add(quad.nodeid4);
+            }
+
             List<int> dummynode_ids = new List<int>();
 
-            foreach (var nodes in fedata.fe_nodes.nodeMap.Values.ToList())
+            foreach (node_store nd in fedata.fe_nodes.nodeMap.Values)
             {
-                int nodeId = nodes.node_id;
-
-                // Check if the node is associated with any triangle element
-                bool isNodeUsedInTri = fedata.fe_tris.elementtriMap.Values.Any(tri => tri.nodeid1 == nodeId ||
-                tri.nodeid2 == nodeId || tri.nodeid3 == nodeId);
-
-                // Check if the node is associated with any quadrilateral element
-                bool isNodeUsedInQuad = fedata.fe_quads.elementquadMap.Values.Any(quad => quad.nodeid1 == nodeId ||
-                quad.nodeid2 == nodeId || quad.nodeid3 == nodeId || quad.nodeid4 == nodeId);
-
-                if (!isNodeUsedInTri && !isNodeUsedInQuad)
+                if (!nodes_connected_to_elements.Contains(nd.node_id))
                 {
-                    // Node is not used in any element, remove it from the list
-                    dummynode_ids.Add(nodeId);
+                    dummynode_ids.Add(nd.node_id);
                 }
-
             }
 
             // Remove dummy nodes
@@ -422,6 +427,7 @@ namespace Plane_stress_analyzer_PSL.src.events_handler
 
 
 
+            //____________________________________________________________________________________________________________
             // Check the model
             if (fedata.fe_nodes.node_count < 2 || (fedata.fe_tris.elementtri_count + fedata.fe_quads.elementquad_count) < 1)
             {
