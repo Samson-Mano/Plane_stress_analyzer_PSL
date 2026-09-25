@@ -55,12 +55,16 @@
             this.principalStress2ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.maxShearStressToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pSLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.pSLType2ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.hideResultsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel_zoom_value = new System.Windows.Forms.ToolStripStatusLabel();
             this.glControl_main_panel = new OpenTK.GLControl();
-            this.pSLType2ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.generalInstructionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.menuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -71,7 +75,8 @@
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
             this.boundaryConditionToolStripMenuItem,
-            this.solveToolStripMenuItem});
+            this.solveToolStripMenuItem,
+            this.helpToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Padding = new System.Windows.Forms.Padding(5, 2, 0, 2);
@@ -217,77 +222,94 @@
             // displacementToolStripMenuItem
             // 
             this.displacementToolStripMenuItem.Name = "displacementToolStripMenuItem";
-            this.displacementToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.displacementToolStripMenuItem.Size = new System.Drawing.Size(203, 26);
             this.displacementToolStripMenuItem.Text = "Displacement";
             this.displacementToolStripMenuItem.Click += new System.EventHandler(this.displacementToolStripMenuItem_Click);
             // 
             // stressXToolStripMenuItem
             // 
             this.stressXToolStripMenuItem.Name = "stressXToolStripMenuItem";
-            this.stressXToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.stressXToolStripMenuItem.Size = new System.Drawing.Size(203, 26);
             this.stressXToolStripMenuItem.Text = "Stress X";
             this.stressXToolStripMenuItem.Click += new System.EventHandler(this.stressXToolStripMenuItem_Click);
             // 
             // stressYToolStripMenuItem
             // 
             this.stressYToolStripMenuItem.Name = "stressYToolStripMenuItem";
-            this.stressYToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.stressYToolStripMenuItem.Size = new System.Drawing.Size(203, 26);
             this.stressYToolStripMenuItem.Text = "Stress Y";
             this.stressYToolStripMenuItem.Click += new System.EventHandler(this.stressYToolStripMenuItem_Click);
             // 
             // tauXYToolStripMenuItem
             // 
             this.tauXYToolStripMenuItem.Name = "tauXYToolStripMenuItem";
-            this.tauXYToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.tauXYToolStripMenuItem.Size = new System.Drawing.Size(203, 26);
             this.tauXYToolStripMenuItem.Text = "Tau XY";
             this.tauXYToolStripMenuItem.Click += new System.EventHandler(this.tauXYToolStripMenuItem_Click);
             // 
             // vonMisesToolStripMenuItem
             // 
             this.vonMisesToolStripMenuItem.Name = "vonMisesToolStripMenuItem";
-            this.vonMisesToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.vonMisesToolStripMenuItem.Size = new System.Drawing.Size(203, 26);
             this.vonMisesToolStripMenuItem.Text = "Von Mises";
             this.vonMisesToolStripMenuItem.Click += new System.EventHandler(this.vonMisesToolStripMenuItem_Click);
             // 
             // principalStress1ToolStripMenuItem
             // 
             this.principalStress1ToolStripMenuItem.Name = "principalStress1ToolStripMenuItem";
-            this.principalStress1ToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.principalStress1ToolStripMenuItem.Size = new System.Drawing.Size(203, 26);
             this.principalStress1ToolStripMenuItem.Text = "Principal Stress 1";
             this.principalStress1ToolStripMenuItem.Click += new System.EventHandler(this.principalStress1ToolStripMenuItem_Click);
             // 
             // principalStress2ToolStripMenuItem
             // 
             this.principalStress2ToolStripMenuItem.Name = "principalStress2ToolStripMenuItem";
-            this.principalStress2ToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.principalStress2ToolStripMenuItem.Size = new System.Drawing.Size(203, 26);
             this.principalStress2ToolStripMenuItem.Text = "Principal Stress 2";
             this.principalStress2ToolStripMenuItem.Click += new System.EventHandler(this.principalStress2ToolStripMenuItem_Click);
             // 
             // maxShearStressToolStripMenuItem
             // 
             this.maxShearStressToolStripMenuItem.Name = "maxShearStressToolStripMenuItem";
-            this.maxShearStressToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.maxShearStressToolStripMenuItem.Size = new System.Drawing.Size(203, 26);
             this.maxShearStressToolStripMenuItem.Text = "Max Shear Stress";
             this.maxShearStressToolStripMenuItem.Click += new System.EventHandler(this.maxShearStressToolStripMenuItem_Click);
             // 
             // pSLToolStripMenuItem
             // 
             this.pSLToolStripMenuItem.Name = "pSLToolStripMenuItem";
-            this.pSLToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.pSLToolStripMenuItem.Size = new System.Drawing.Size(203, 26);
             this.pSLToolStripMenuItem.Text = "PSL Type 1";
             this.pSLToolStripMenuItem.Click += new System.EventHandler(this.pSLToolStripMenuItem_Click);
+            // 
+            // pSLType2ToolStripMenuItem
+            // 
+            this.pSLType2ToolStripMenuItem.Name = "pSLType2ToolStripMenuItem";
+            this.pSLType2ToolStripMenuItem.Size = new System.Drawing.Size(203, 26);
+            this.pSLType2ToolStripMenuItem.Text = "PSL Type 2";
+            this.pSLType2ToolStripMenuItem.Click += new System.EventHandler(this.pSLType2ToolStripMenuItem_Click);
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(221, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(200, 6);
             // 
             // hideResultsToolStripMenuItem
             // 
             this.hideResultsToolStripMenuItem.Name = "hideResultsToolStripMenuItem";
-            this.hideResultsToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.hideResultsToolStripMenuItem.Size = new System.Drawing.Size(203, 26);
             this.hideResultsToolStripMenuItem.Text = "Hide Results";
             this.hideResultsToolStripMenuItem.Click += new System.EventHandler(this.hideResultsToolStripMenuItem_Click);
+            // 
+            // helpToolStripMenuItem
+            // 
+            this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.generalInstructionToolStripMenuItem,
+            this.toolStripSeparator3,
+            this.aboutToolStripMenuItem});
+            this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
+            this.helpToolStripMenuItem.Size = new System.Drawing.Size(55, 24);
+            this.helpToolStripMenuItem.Text = "Help";
             // 
             // statusStrip1
             // 
@@ -311,7 +333,7 @@
             // 
             this.glControl_main_panel.BackColor = System.Drawing.Color.Black;
             this.glControl_main_panel.Location = new System.Drawing.Point(217, 176);
-            this.glControl_main_panel.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
+            this.glControl_main_panel.Margin = new System.Windows.Forms.Padding(5);
             this.glControl_main_panel.Name = "glControl_main_panel";
             this.glControl_main_panel.Size = new System.Drawing.Size(344, 185);
             this.glControl_main_panel.TabIndex = 2;
@@ -327,12 +349,24 @@
             this.glControl_main_panel.MouseUp += new System.Windows.Forms.MouseEventHandler(this.glControl_main_panel_MouseUp);
             this.glControl_main_panel.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.glControl_main_panel_MouseWheel);
             // 
-            // pSLType2ToolStripMenuItem
+            // generalInstructionToolStripMenuItem
             // 
-            this.pSLType2ToolStripMenuItem.Name = "pSLType2ToolStripMenuItem";
-            this.pSLType2ToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
-            this.pSLType2ToolStripMenuItem.Text = "PSL Type 2";
-            this.pSLType2ToolStripMenuItem.Click += new System.EventHandler(this.pSLType2ToolStripMenuItem_Click);
+            this.generalInstructionToolStripMenuItem.Name = "generalInstructionToolStripMenuItem";
+            this.generalInstructionToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.generalInstructionToolStripMenuItem.Text = "General Instruction";
+            this.generalInstructionToolStripMenuItem.Click += new System.EventHandler(this.generalInstructionToolStripMenuItem_Click);
+            // 
+            // aboutToolStripMenuItem
+            // 
+            this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.aboutToolStripMenuItem.Text = "About";
+            this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator3
+            // 
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
+            this.toolStripSeparator3.Size = new System.Drawing.Size(221, 6);
             // 
             // main_frm
             // 
@@ -344,7 +378,7 @@
             this.Controls.Add(this.menuStrip1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "main_frm";
             this.Text = "Plane Stress Analyzer - Principal Stress Line PSL";
             this.Load += new System.EventHandler(this.main_frm_Load);
@@ -391,6 +425,10 @@
         private System.Windows.Forms.ToolStripMenuItem pSLToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem annotateResultsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem pSLType2ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem generalInstructionToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+        private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
     }
 }
 
