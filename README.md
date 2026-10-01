@@ -1,5 +1,10 @@
 # Plane Stress Analyzer
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![.NET](https://img.shields.io/badge/.NET-Framework%2F.NET-blue)](https://dotnet.microsoft.com/)
+[![C++](https://img.shields.io/badge/C%2B%2B-20-blue.svg)](https://isocpp.org/)
+[![OpenTK](https://img.shields.io/badge/OpenTK-3.3-green)](https://opentk.net/)
+
 A C# front-end for a plane stress/plane strain finite element analyzer with a C++ solver, supporting h- and p-refinement, Abaqus-style input, interactive OpenTK visualization, and stress line (PSL) post-processing.
 
 ---
@@ -281,7 +286,7 @@ This project is licensed under the **MIT License**.
 ```
 MIT License
 
-Copyright (c) 2025 Samson Mano
+Copyright (c) 2026 Samson Mano (Nova Propulsion) <mano@novapropulsion.space>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
